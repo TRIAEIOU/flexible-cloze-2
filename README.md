@@ -40,7 +40,7 @@ Flexible cloze is an Anki addon (https://ankiweb.net/shared/info/1632356464) for
 .fcz-show-all-btn
 { display: inline;  background-color: #465A65; color: white; text-align: center; text-transform: uppercase;
 font-size: 15px; font-weight: bold; padding: 5px; border-bottom: 1px solid white; }</code></pre>
-  If you are updating from a previous version of the template and choose to not "overwrite all" (overwriting any personal changes you have made) you will have to manually add the actual button on the front as this requires changing the HTML outside the FCZ BEGIN/END tags. Insert <div id="fcz-show-all" class="fcz-show-all-btn" style="cursor: pointer;" onclick="fcz_toggle_all()">Show all</div> just after the closing </div>-tag of the <div id="fcz-additional" style="z-index: 2;"> (have a look in the add-on directory in fcz-front.html).
+  If you are updating from a previous version of the template and choose to not "overwrite all" (overwriting any personal changes you have made) you will have to manually add the actual button on the front as this requires changing the HTML outside the FCZ BEGIN/END tags. Insert `<div id="fcz-show-all" class="fcz-show-all-btn" style="cursor: pointer;" onclick="fcz_toggle_all()">Show all</div>` just after the closing div-tag of the `<div id="fcz-additional" style="z-index: 2;">` (have a look in the add-on directory in fcz-front.html).
 
 ## Regarding styling
 As there have been a few questions regarding the default styling of the template not looking like "regular Anki clozes". You can have the clozes display however you want by adjusting the CSS on the "Styling" page of the "Cards" dialog. To achieve the "regular Anki cloze styling":
