@@ -2,7 +2,9 @@
 Flexible cloze is an Anki addon (https://ankiweb.net/shared/info/1632356464) for a configurable cloze note type for keeping related information (and cards) on the same note (Anki forum thread https://forums.ankiweb.net/t/flexible-cloze-support-thread/14504).
 
 **Ideas for the functionality of this cloze variant blatantly stolen from trgkanki's Cloze (Hide all) [https://ankiweb.net/shared/info/1709973686] and RisingOrange's Enhanced Cloze (for Anki 2.1) [https://ankiweb.net/shared/info/1990296174] - both of which are excellent addons. However all code written from scratch (ok, I peeked at some other code).**
+
 **ALL CREDIT FOR INNOVATION GOES TO TRGANKI AND RISINGORANGE**
+
 <img src="https://aws1.discourse-cdn.com/standard11/uploads/anki2/original/2X/c/cd79af177ab8298f861868740a357429984f4a59.jpeg" height="300">
 <img src="https://aws1.discourse-cdn.com/standard11/uploads/anki2/original/2X/f/f00bd7c90b8f0163a91aa96e9abd75a1666b53b6.jpeg" height="300">
 
