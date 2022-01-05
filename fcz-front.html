@@ -1,13 +1,13 @@
-<div id="fcz-root" style="display: flex; flex-flow: column; height: 100%; margin: 0;">
-    <div class="{{Tags}} title" style="flex: content;">{{Title}}</div>
+<div id="fcz-root" style="height: 100%; display: flex; flex-flow: column nowrap;">
+    <div class="{{Tags}} title" style="flex: 0 0;">{{Title}}</div>
 
-    <div id="fcz-scroll-area" class="fcz-scroll-area" style="flex-grow: 1; overflow: auto; display: flex; flex-flow: column;">
+    <div id="fcz-scroll-area" class="fcz-scroll-area" style="flex: 1 1; display: flex; flex-flow: column nowrap; overflow: auto; box-sizing: border-box;">
 
         <!-- Below is the main content field, this has to be present on the card but can be styled/layouted differently -->
-        <div id="fcz-content" class="fcz-front" style="flex-grow: 1;"></div>
+        <div id="fcz-content" class="fcz-front" style="flex: 1 1;"></div>
 
         <!-- Below are the additional fields, delete the divs to remove some or all of the from the card -->
-        <div id="fcz-additional" style="z-index: 2;">
+        <div id="fcz-additional" style="flex: 0 0; z-index: 2;">
             {{#Note}}
             <div id="note-header" class="additional-header" style="cursor: pointer;" onclick="fcz_toggle_field(this, 'note')">Note</div>
             <div id="note" class="additional-content fcz-hide">{{Note}}</div>
@@ -27,19 +27,19 @@
             </div>
         </div>
 
-        <div id="fcz-show-all" class="fcz-show-all-btn" style="cursor: pointer;" onclick="fcz_toggle_all()">Show all</div>
+        <div id="fcz-show-all" class="fcz-show-all-btn" style="flex: 0 0; cursor: pointer;" onclick="fcz_toggle_all()">Show all</div>
 
     </div>
 
-    <div class="Footer" style="z-index: 2; flex-shrink: 0;">
+    <div id="fcz-footer" style="flex: 0 0; z-index: 2;">
         <!-- Below is the symbol legend footer, delete the divs to remove it or modify number and content of child divs to add/remove symbols -->
-        <div id="fcz-legend-footer" style="display: flex;">
-            <div id="fcz-legend-entry" style="flex-grow: 1;">&#8594; Becomes</div><div id="fcz-legend-entry" style="flex-grow: 1;">&#8658; Leads to</div><div id="fcz-legend-entry" style="flex-grow: 1;">&#10521; Excite/activate</div><div id="fcz-legend-entry" style="flex-grow: 1;">&#8867; Inhibit/deactivate</div>
+        <div id="fcz-legend-footer" style="display: flex; flex-flow: row nowrap">
+            <div id="fcz-legend-entry" style="flex: 1 1;">&#8594; Becomes</div><div id="fcz-legend-entry" style="flex: 1 1;">&#8658; Leads to</div><div id="fcz-legend-entry" style="flex: 1 1;">&#10521; Excite/activate</div><div id="fcz-legend-entry" style="flex: 1 1;">&#8867; Inhibit/deactivate</div>
         </div>
 
         <!-- Below is the flag legend footer, delete the divs to remove, text and color can be set on the "Styles" page -->
-        <div id="fcz-flag-footer" style="display: flex;">
-            <div id="fcz-flag-red" style="flex-basis: 100%;"></div><div id="fcz-flag-orange" style="flex-basis: 100%;"></div><div id="fcz-flag-green" style="flex-basis: 100%;"></div><div id="fcz-flag-blue" style="flex-basis: 100%;"></div><div id="fcz-flag-pink" style="flex-basis: 100%;"></div><div id="fcz-flag-turquoise" style="flex-basis: 100%;"></div><div id="fcz-flag-purple" style="flex-basis: 100%;"></div>
+        <div id="fcz-flag-footer" style="display: flex; flex-flow: row nowrap">
+            <div id="fcz-flag-red" style="flex: 1 1 100%;"></div><div id="fcz-flag-orange" style="flex: 1 1 100%;"></div><div id="fcz-flag-green" style="flex: 1 1 100%;"></div><div id="fcz-flag-blue" style="flex: 1 1 100%;"></div><div id="fcz-flag-pink" style="flex: 1 1 100%;"></div><div id="fcz-flag-turquoise" style="flex: 1 1 100%;"></div><div id="fcz-flag-purple" style="flex: 1 1 100%;"></div>
         </div>
 
     </div>
@@ -51,7 +51,7 @@
         <div id="nav-next-cloze" class="nav-area-side" onclick="fcz_next()" style="height: 100%; right: 0; position: fixed; top: 0;"></div>
     </div>
 </div>
-<!-- FCZ 1632356464 BEGIN [1.4] -->
+<!-- FCZ 1632356464 BEGIN [1.5] -->
 <!-- FUNCTIONALITY BEGIN -->
 <span id="fcz-cloze" style="display: none;">{{cloze:Text}}</span>
 <span id="fcz-field" style="display: none;">{{Text}}</span>
@@ -280,16 +280,17 @@
                 nd.style.border = '0px';
                 nd.style.margin = '0px';
                 nd.style.padding = '0px';
-                document.body.appendChild(nd);
+                fcz.root.appendChild(nd);
                 lh = nd.offsetHeight;
-                document.body.removeChild(nd);
-                return lh;
-            } else if (lh = parseInt(style.lineHeight)) {
-                return lh;
+                fcz.root.removeChild(nd);
             }
+			
+			if (lh <= 0) { lh = parseInt(style.lineHeight); }
 
             // Unable to figure out line height, default to 20 px
-            return 20;
+			if (lh <= 0)  { lh = 20; }
+
+            return lh;
         }
 
         if (!last) { last = first; }
@@ -300,7 +301,7 @@
             fcz.viewport.scrollTo(0, top - line_height(window.getComputedStyle(first.node.previousElementSibling ? first.node.previousElementSibling : first.node, ':before')));
         } else if (bottom > (fcz.viewport.scrollTop + fcz.viewport_height)) {
             // All clozes will fit but last active cloze below viewport
-            fcz.viewport.scrollTo(0, bottom - fcz.viewport_height - line_height(window.getComputedStyle(last.node.nextElementSibling ? last.node.nextElementSibling : last.node, ':after')));
+            fcz.viewport.scrollTo(0, bottom - fcz.viewport_height + line_height(window.getComputedStyle(last.node.nextElementSibling ? last.node.nextElementSibling : last.node, ':after')));
         } else {
             // No need for scrolling
         }

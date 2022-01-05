@@ -1,11 +1,12 @@
-/*-- FCZ 1632356464 BEGIN [1.4] --*/
+/*-- FCZ 1632356464 BEGIN [1.5] --*/
 /*-- FUNCTIONALITY BEGIN --*/
 /* Content between FCZ begin and end will be overwritten on add-on update     */
 /* As updates will not update the styling and layout for existing users the latest  */
 /* default version of layout and complete styling can be found in the addon     */
 /* directory                                                                                                                */
 
-div#qa, div#content     { height: 100%; margin: 0; }
+:root, :root > body, :root > body > div, div#qa, div#content
+{ margin: 0px; padding: 0px; height: 100%; width: 100%; box-sizing: border-box; }
 .fcz-hide                           { display: none; }
 .fcz-show                           { display: block; }
 /*-- FUNCTIONALITY END --*/
@@ -43,11 +44,8 @@ div#qa, div#content     { height: 100%; margin: 0; }
 
 
 /* CARD GENERAL STYLING =========================================== */
-:root
-{ margin: 0; height: 100%;}
-
 .card
-{ font-family: Arial; font-size: 20px;  color: black; background-color: white; height: 100%; margin: 0; }
+{ font-family: Arial; font-size: 20px;  color: black; background-color: white; }
 
 
 /* TITLE FIELD STYLING ============================================= */
