@@ -34,7 +34,10 @@
     <div id="fcz-footer" style="flex: 0 0; z-index: 2;">
         <!-- Below is the symbol legend footer, delete the divs to remove it or modify number and content of child divs to add/remove symbols -->
         <div id="fcz-legend-footer" style="display: flex; flex-flow: row nowrap">
-            <div id="fcz-legend-entry" style="flex: 1 1;">&#8594; Becomes</div><div id="fcz-legend-entry" style="flex: 1 1;">&#8658; Leads to</div><div id="fcz-legend-entry" style="flex: 1 1;">&#10521; Excite/activate</div><div id="fcz-legend-entry" style="flex: 1 1;">&#8867; Inhibit/deactivate</div>
+            <div id="fcz-legend-entry" style="flex: 1 1;">&#8594; Becomes</div>
+            <div id="fcz-legend-entry" style="flex: 1 1;">&#8658; Leads to</div>
+            <div id="fcz-legend-entry" style="flex: 1 1;">&#10521; Excite/activate</div>
+            <div id="fcz-legend-entry" style="flex: 1 1;">⫣ Inhibit/deactivate</div>
         </div>
 
         <!-- Below is the flag legend footer, delete the divs to remove, text and color can be set on the "Styles" page -->
@@ -51,7 +54,7 @@
         <div id="nav-next-cloze" class="nav-area-side" onclick="fcz_next()" style="height: 100%; right: 0; position: fixed; top: 0;"></div>
     </div>
 </div>
-<!-- FCZ 1632356464 BEGIN [1.5] -->
+<!-- FCZ 1632356464 BEGIN [1.6] -->
 <!-- FUNCTIONALITY BEGIN -->
 <span id="fcz-cloze" style="display: none;">{{cloze:Text}}</span>
 <span id="fcz-field" style="display: none;">{{Text}}</span>
@@ -73,6 +76,8 @@
         lindex: -1, // Index of last active cloze
         root: document.getElementById("fcz-content"),
         element: "div", // Type of element used to wrap clozes, can be div or span
+        expose: "!", // String to mark clozes to be exposed/unhidden when inactive
+        scroll: "min", // How to scroll to current cloze, valid values are "min" and "center"
         shortcuts: { // Keyboard shortcuts
             next: { key: "j", shift: false, ctrl: false, alt: false, altgr: false, meta: false },
             prev: { key: "h", shift: false, ctrl: false, alt: false, altgr: false, meta: false },
@@ -129,6 +134,8 @@
                             else if (cfg[n][1] == "iteration-hides-previous") { fcz['iter_hide'] = cfg[n][2] == "true"; }
                             else if (cfg[n][1] == "show-all-on-back") { fcz['show_all_back'] = cfg[n][2] == "true"; }
                             else if (cfg[n][1] == "show-additional-on-back") { fcz['show_additional_back'] = cfg[n][2] == "true"; }
+                            else if (cfg[n][1] == "expose") { fcz['expose'] = cfg[n][2]; }
+                            else if (cfg[n][1] == "scroll") { fcz['scroll'] = cfg[n][2]; }
                         }
                     }
                 }
@@ -136,8 +143,7 @@
         }
 
         // Build page content by looping through pattern matches
-        const PATTERN =/[{]{2}c(\d+)[:]{2}?(!)?(.*?)(?:[:]{2}(.*?))?[}]{2}/gms;
-        let page = document.getElementById("fcz-field").innerHTML.replace(PATTERN, (match, cloze, expose, content, hint) => {
+		const PATTERN = new RegExp(`[{]{2}c(\\d+)[:]{2}?(${fcz['expose']})?(.*?)(?:[:]{2}(.*?))?[}]{2}`, 'gms');        let page = document.getElementById("fcz-field").innerHTML.replace(PATTERN, (match, cloze, expose, content, hint) => {
             // Sanitize input
             if (expose == undefined) { expose = ""; }
             if (content == undefined) { content = ""; }
@@ -256,7 +262,7 @@
             });
         }
 
-        // Scroll as little as possible, viewport and viewport_offset must be set before scroll_to_cloze
+        // Viewport and viewport_offset must be set before scroll_to_cloze
         fcz.viewport = document.getElementsByClassName('fcz-scroll-area')[0];
         fcz.viewport_offset = fcz.viewport.getBoundingClientRect().top;
         scroll_to_cloze(fcz.clozes[fcz.findex], fcz.clozes[fcz.lindex]);
@@ -296,14 +302,18 @@
         if (!last) { last = first; }
         const top = first.node.getBoundingClientRect().top + fcz.viewport.scrollTop - fcz.viewport_offset;
         const bottom = last.node.getBoundingClientRect().bottom + fcz.viewport.scrollTop - fcz.viewport_offset;
-        if ((bottom - top >= fcz.viewport_height) || top < fcz.viewport.scrollTop) {
-            // All clozes will not fit or first active cloze above viewport
+        if (bottom - top >= fcz.viewport_height) {
+			// All clozes will not fit - scroll to first at top regardless
+            fcz.viewport.scrollTo(0, top - line_height(window.getComputedStyle(first.node.previousElementSibling ? first.node.previousElementSibling : first.node, ':before')));
+        } else if (fcz['scroll'] === 'center'){
+        	// All clozes will fit and scrolling to center
+			fcz.viewport.scrollTo(0, top - (fcz.viewport_height - (bottom - top)) / 2);
+       	} else if (top < fcz.viewport.scrollTop) {
+            // Scrolling as little as possible, all will fit and first active above viewport
             fcz.viewport.scrollTo(0, top - line_height(window.getComputedStyle(first.node.previousElementSibling ? first.node.previousElementSibling : first.node, ':before')));
         } else if (bottom > (fcz.viewport.scrollTop + fcz.viewport_height)) {
-            // All clozes will fit but last active cloze below viewport
+            // Scrolling as little as possible, all will fit and last active below viewport
             fcz.viewport.scrollTo(0, bottom - fcz.viewport_height + line_height(window.getComputedStyle(last.node.nextElementSibling ? last.node.nextElementSibling : last.node, ':after')));
-        } else {
-            // No need for scrolling
         }
 
     }

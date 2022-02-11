@@ -1,4 +1,4 @@
-/*-- FCZ 1632356464 BEGIN [1.5] --*/
+/*-- FCZ 1632356464 BEGIN [1.6] --*/
 /*-- FUNCTIONALITY BEGIN --*/
 /* Content between FCZ begin and end will be overwritten on add-on update     */
 /* As updates will not update the styling and layout for existing users the latest  */
@@ -19,17 +19,19 @@
 
 /* FLEXIBLE CLOZE CONFIGURATION======================================= */
 .fcz-config {
-    --cloze-element: "div";                 /* What HTML element the clozes will be wrapped in                  */
-    --inactive-prompt: "";                  /* Text to display (if any) on inactive hidden clozes               */
-    --active-prompt: "";                    /* Text to display (if any) on active hidden clozes                 */
-    --key-next-cloze: "j";                  /* Keyboard shortcut to iterate forward                             */
-    --key-previous-cloze: "h";              /* Keyboard shortcut to iterate backward                            */
-    --key-toggle-all: "k";                  /* Keyboard shortcut to toggle all fields hide/show                 */
-    --iterate-from-top: "false";            /* true makes next/previous iteration always start from top         */
+    --cloze-element: "div";                 /* What HTML element the clozes will be wrapped in */
+    --expose: "#";                          /* String to mark clozes to be unhidden when inactive */
+	--scroll: "center";						/* How to scroll to current cloze, valid values are "min" and "center" */
+    --inactive-prompt: "";                  /* Text to display (if any) on inactive hidden clozes */
+    --active-prompt: "";                    /* Text to display (if any) on active hidden clozes */
+    --key-next-cloze: "j";                  /* Keyboard shortcut to iterate forward */
+    --key-previous-cloze: "h";              /* Keyboard shortcut to iterate backward */
+    --key-toggle-all: "k";                  /* Keyboard shortcut to toggle all fields hide/show */
+    --iterate-from-top: "false";            /* true makes next/previous iteration always start from top */
     --iterate-inactive: "false";            /* true makes next/previous navigation also iterate inactive clozes */
-    --iteration-hides-previous: "true";     /* false leaves cloze open when cycling forward/backward            */
-    --show-all-on-back: "false";            /* false initially hides inactive clozes on back                    */
-    --show-additional-on-back:  "true";     /* false initially hides the additional fields on back              */
+    --iteration-hides-previous: "true";     /* false leaves cloze open when cycling forward/backward */
+    --show-all-on-back: "false";            /* false initially hides inactive clozes on back */
+    --show-additional-on-back:  "true";     /* false initially hides the additional fields on back */
 }
 
 
@@ -168,15 +170,15 @@ font-size: 15px; font-weight: bold; padding: 5px; border-bottom: 1px solid white
 
 /* Pink flag legend look and feel, set content to whatever value that should be displayed */
 #fcz-flag-pink, #fcz-flag-pink::before
-{ background-color: #D89B9B; content: ""; }
+{ background-color: #D89B9B; content: "Discard"; }
 
 /* Turquoise flag legend look and feel, set content to whatever value that should be displayed */
 #fcz-flag-turquoise, #fcz-flag-turquoise::before
-{ background-color: #33B3A6; content: ""; }
+{ background-color: #33B3A6; content: "Consolidate"; }
 
 /* Purple flag legend look and feel, set content to whatever value that should be displayed */
 #fcz-flag-purple, #fcz-flag-purple::before
-{ background-color: #A64CA6; content: ""; }
+{ background-color: #A64CA6; content: "Mark"; }
 /*-- STYLE END --*/
 /*-- FCZ 1632356464 END --*/
 
