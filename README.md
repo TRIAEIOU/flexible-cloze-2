@@ -79,10 +79,10 @@ There is effectively no add-on, it's all JavaScript (and HTML/CSS) and runs 100%
 - As with Enhanced Cloze you can expand (and collapse) all clozes (active and inactive) by pressing the top of the screen. Additional fields (below the main Text field) can be expanded and collapsed by clicking them. It functions a little differently from Enhanced Cloze but the general idea is the same.
 
 ## Changelog
-- 2022-01-01: Scroll logic bug fix.
-- 2021-12-26: Adjustment of scroll logic to facilitate user custom card layout. If not using (or not updating to the latest version of) the "default" Flexible Cloze template the <div> that should be scrolled needs to have the "fcz-scroll-area" class (the scroll logic is applied to the first element with the fcz-scroll-area class).
-- 2021-12-15: Custom scroll logic implemented, it should now automatically scroll to fit as many active clozes as possible when required (scrolling as little as possible but with a single line margin). Minor code refactoring.
 - 2021-11-13: Added selective update dialog inc. temporary backup of previous template. Added exposed cloze functionality (see above). Added option to iterate inactive clozes (see above). Added option to always start next/previous iteration from top (see above). Split FCZ BEGIN/END content into FUNCTIONALITY and STYLING for selective updates. Added symbol legend at bottom. Refactoring of code.
 - 2021-11-15: Added functionality/options to initially show or hide inactive clozes (--show-all-on-back) and additional fields (--show-additional-on-back). Added a "show all button" (stylable under .fcz-show-all-btn-class).
-- 2022-01-06: Scroll logic bug fix.
+- 2021-12-15: Custom scroll logic implemented, it should now automatically scroll to fit as many active clozes as possible when required (scrolling as little as possible but with a single line margin). Minor code refactoring.
+- 2021-12-26: Adjustment of scroll logic to facilitate user custom card layout. If not using (or not updating to the latest version of) the "default" Flexible Cloze template the <div> that should be scrolled needs to have the "fcz-scroll-area" class (the scroll logic is applied to the first element with the fcz-scroll-area class).
+- 2022-01-01: Scroll logic bug fix.
+- 2022-01-06: 2022-01-05: Scroll logic bug fix (again), restructuring of HTML on "Front" to correct scroll bugs.
 - 2022-02-11: Made exposed cloze character/string configurable (to allow character/string that does not cause TTS to kick in), made scroll behaviour configurable (as little as possible or center active clozes).
