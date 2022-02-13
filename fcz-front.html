@@ -90,7 +90,7 @@
             iter_inactive: false, // If next and previous should also iterate inactive clozes
             show_all_back: true, // If true inactive clozes are shown on back initially
             show_addtional_back: true, // If true additional fields are shown on back initially
-            front: document.getElementById("fcz-back") ? false : true, // Are we showing the front/question or back/answer "side" of the card
+            front: document.getElementById('fcz-back') === null, // Are we showing the front/question or back/answer "side" of the card
             viewport: document.getElementById('fcz-scroll-area') // Scrollable area, "viewport div"
         };
 

@@ -86,10 +86,4 @@ There is effectively no add-on, it's all JavaScript (and HTML/CSS) and runs 100%
 - 2022-01-01: Scroll logic bug fix.
 - 2022-01-06: 2022-01-05: Scroll logic bug fix (again), restructuring of HTML on "Front" to correct scroll bugs.
 - 2022-02-11: Made exposed cloze character/string configurable (to allow character/string that does not cause TTS to kick in), made scroll behaviour configurable (as little as possible or center active clozes).
-- 2022-02-11: Bug fixes, refactoring. ** IMPORTANT ** For the new version to work the `{{FrontSide}}` on the back template must be after the `<!-- FCZ 1632356464 BEGIN [1.6] --><!-- FCZ 1632356464 END -->` tags i.e. it should read something like
-`<!-- FCZ 1632356464 BEGIN [1.6] -->
-<!-- FUNCTIONALITY BEGIN -->
-<span id="fcz-back" style="display: none;">{{cloze:Text}}</span>
-<!-- FUNCTIONALITY END -->
-<!-- FCZ 1632356464 END -->
-{{FrontSide}}`
+- 2022-02-13: Bug fixes, refactoring. Moved {{FrontSide}} on back of card inside FCZ functionality tag (required for current design).
