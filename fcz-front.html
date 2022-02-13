@@ -54,58 +54,48 @@
         <div id="nav-next-cloze" class="nav-area-side" onclick="fcz_next()" style="height: 100%; right: 0; position: fixed; top: 0;"></div>
     </div>
 </div>
-<!-- FCZ 1632356464 BEGIN [1.6] -->
+<!-- FCZ 1632356464 BEGIN [1.7] -->
 <!-- FUNCTIONALITY BEGIN -->
 <span id="fcz-cloze" style="display: none;">{{cloze:Text}}</span>
 <span id="fcz-field" style="display: none;">{{Text}}</span>
 <script type="application/javascript">
-    // Data structure with FCZ page persistent and global data w/ default values
-    var fcz = {
-        // Cloze content hash table with FCZ ID as key and data object with
-        //  content, hint text and active/inactive cloze
-        // (fcz_id: {_content: cloze text, _hint: cloze hint, _hide: text to show on hidden cloze})
-        // Note: use getters content(), hint() and hide() to get values as there are some calculations done
-        //
-        // Array of clozes in document order, each element a data object with
-        //  content, hint text and active/inactive cloze
-        // [{_content: cloze text, _hint: cloze hint, _hide: text to show on hidden cloze}]
-        // Note: use getters content(), hint() and hide() to get values as there are some calculations done
-        clozes: [],
-        cindex: -1, // Index of the currently selected cloze
-        findex: -1, // Index of first active cloze
-        lindex: -1, // Index of last active cloze
-        root: document.getElementById("fcz-content"),
-        element: "div", // Type of element used to wrap clozes, can be div or span
-        expose: "!", // String to mark clozes to be exposed/unhidden when inactive
-        scroll: "min", // How to scroll to current cloze, valid values are "min" and "center"
-        shortcuts: { // Keyboard shortcuts
-            next: { key: "j", shift: false, ctrl: false, alt: false, altgr: false, meta: false },
-            prev: { key: "h", shift: false, ctrl: false, alt: false, altgr: false, meta: false },
-            all: { key: "k", shift: false, ctrl: false, alt: false, altgr: false, meta: false }
-        },
-        iter_top: false, // Whether to start initial iteration from top or last clicked cloze
-        iter_hide: false, // If next and previous should collapse the preceding cloze or leave it shown
-        iter_inactive: false, // If next and previous should also iterate inactive clozes
-        show_all_back: true, // If true inactive clozes are shown on back initially
-        show_addtional_back: true, // If true additional fields are shown on back initially
-        front: undefined, // Are we showing the front/question or back/answer "side" of the card
-        viewport: -1, // Scrollable area, "viewport div"
-        viewport_height: -1, // "Viewport div" height; i.e. fcz-content + fcz-additional etc.; set after orginal content setup
-        viewport_offset: -1 // Offset of "viewport div" from window; set after original content setup
-    };
+    var fcz;
 
-    // This must be delayed to allow original sizes to set up.
-    setTimeout(fcz_init, 1);
+    if (!document.getElementById("fcz-content").hasAttribute("fcz-init")) {
+        fcz = {
+            // Cloze content hash table with FCZ ID as key and data object with
+            //  content, hint text and active/inactive cloze
+            // (fcz_id: {_content: cloze text, _hint: cloze hint, _hide: text to show on hidden cloze})
+            // Note: use getters content(), hint() and hide() to get values as there are some calculations done
+            //
+            // Array of clozes in document order, each element a data object with
+            //  content, hint text and active/inactive cloze
+            // [{_content: cloze text, _hint: cloze hint, _hide: text to show on hidden cloze}]
+            // Note: use getters content(), hint() and hide() to get values as there are some calculations done
+            clozes: [],
+            cindex: -1, // Index of the currently selected cloze
+            findex: -1, // Index of first active cloze
+            lindex: -1, // Index of last active cloze
+            root: document.getElementById("fcz-content"), // The containing div for all FCZ elements
+            element: "div", // Type of element used to wrap clozes, can be div or span
+            expose: "!", // String to mark clozes to be exposed/unhidden when inactive
+            scroll: "min", // How to scroll to current cloze, valid values are "min" and "center"
+            shortcuts: { // Keyboard shortcuts
+                next: { key: "j", shift: false, ctrl: false, alt: false, altgr: false, meta: false },
+                prev: { key: "h", shift: false, ctrl: false, alt: false, altgr: false, meta: false },
+                all: { key: "k", shift: false, ctrl: false, alt: false, altgr: false, meta: false }
+            },
+            iter_top: false, // Whether to start initial iteration from top or last clicked cloze
+            iter_hide: false, // If next and previous should collapse the preceding cloze or leave it shown
+            iter_inactive: false, // If next and previous should also iterate inactive clozes
+            show_all_back: true, // If true inactive clozes are shown on back initially
+            show_addtional_back: true, // If true additional fields are shown on back initially
+            front: document.getElementById("fcz-back") ? false : true, // Are we showing the front/question or back/answer "side" of the card
+            viewport: document.getElementById('fcz-scroll-area') // Scrollable area, "viewport div"
+        };
 
-    /*******************************************************
-    * Read config from style sheet, set up page content and register
-    * keyboard shortcuts. Should only be called once (for efficiency and
-    * avoiding multiple key press event listeners).
-    *******************************************************/
-    function fcz_init() {
-        // Check that page is not already initialized
-        if (fcz.root.hasAttribute("fcz-init")) { return; }
-        fcz.front = fcz.root.classList.contains("fcz-front");
+        // Set up HTML for front or back
+        if(!fcz.front) { fcz.root.classList.replace("fcz-front", "fcz-back"); }
 
         // Ordinal of the cloze card
         let ord = "{{#c1}}1{{/c1}}{{#c2}}2{{/c2}}{{#c3}}3{{/c3}}{{#c4}}4{{/c4}}{{#c5}}5{{/c5}}{{#c6}}6{{/c6}}{{#c7}}7{{/c7}}{{#c8}}8{{/c8}}{{#c9}}9{{/c9}}{{#c10}}10{{/c10}}{{#c11}}11{{/c11}}{{#c12}}12{{/c12}}{{#c13}}13{{/c13}}{{#c14}}14{{/c14}}{{#c15}}15{{/c15}}{{#c16}}16{{/c16}}{{#c17}}17{{/c17}}{{#c18}}18{{/c18}}{{#c19}}19{{/c19}}{{#c20}}20{{/c20}}{{#c21}}21{{/c21}}{{#c22}}22{{/c22}}{{#c23}}23{{/c23}}{{#c24}}24{{/c24}}{{#c25}}25{{/c25}}{{#c26}}26{{/c26}}{{#c27}}27{{/c27}}{{#c28}}28{{/c28}}{{#c29}}29{{/c29}}{{#c30}}30{{/c30}}{{#c31}}31{{/c31}}{{#c32}}32{{/c32}}{{#c33}}33{{/c33}}{{#c34}}34{{/c34}}{{#c35}}35{{/c35}}{{#c36}}36{{/c36}}{{#c37}}37{{/c37}}{{#c38}}38{{/c38}}{{#c39}}39{{/c39}}{{#c40}}40{{/c40}}{{#c41}}41{{/c41}}{{#c42}}42{{/c42}}{{#c43}}43{{/c43}}{{#c44}}44{{/c44}}{{#c45}}45{{/c45}}{{#c46}}46{{/c46}}{{#c47}}47{{/c47}}{{#c48}}48{{/c48}}{{#c49}}49{{/c49}}{{#c50}}50{{/c50}}{{#c51}}51{{/c51}}{{#c52}}52{{/c52}}{{#c53}}53{{/c53}}{{#c54}}54{{/c54}}{{#c55}}55{{/c55}}{{#c56}}56{{/c56}}{{#c57}}57{{/c57}}{{#c58}}58{{/c58}}{{#c59}}59{{/c59}}{{#c60}}60{{/c60}}{{#c61}}61{{/c61}}{{#c62}}62{{/c62}}{{#c63}}63{{/c63}}{{#c64}}64{{/c64}}{{#c65}}65{{/c65}}{{#c66}}66{{/c66}}{{#c67}}67{{/c67}}{{#c68}}68{{/c68}}{{#c69}}69{{/c69}}{{#c70}}70{{/c70}}{{#c71}}71{{/c71}}{{#c72}}72{{/c72}}{{#c73}}73{{/c73}}{{#c74}}74{{/c74}}{{#c75}}75{{/c75}}{{#c76}}76{{/c76}}{{#c77}}77{{/c77}}{{#c78}}78{{/c78}}{{#c79}}79{{/c79}}{{#c80}}80{{/c80}}{{#c81}}81{{/c81}}{{#c82}}82{{/c82}}{{#c83}}83{{/c83}}{{#c84}}84{{/c84}}{{#c85}}85{{/c85}}{{#c86}}86{{/c86}}{{#c87}}87{{/c87}}{{#c88}}88{{/c88}}{{#c89}}89{{/c89}}{{#c90}}90{{/c90}}{{#c91}}91{{/c91}}{{#c92}}92{{/c92}}{{#c93}}93{{/c93}}{{#c94}}94{{/c94}}{{#c95}}95{{/c95}}{{#c96}}96{{/c96}}{{#c97}}97{{/c97}}{{#c98}}98{{/c98}}{{#c99}}99{{/c99}}{{#c100}}100{{/c100}}{{#c101}}101{{/c101}}{{#c102}}102{{/c102}}{{#c103}}103{{/c103}}{{#c104}}104{{/c104}}{{#c105}}105{{/c105}}{{#c106}}106{{/c106}}{{#c107}}107{{/c107}}{{#c108}}108{{/c108}}{{#c109}}109{{/c109}}{{#c110}}110{{/c110}}{{#c111}}111{{/c111}}{{#c112}}112{{/c112}}{{#c113}}113{{/c113}}{{#c114}}114{{/c114}}{{#c115}}115{{/c115}}{{#c116}}116{{/c116}}{{#c117}}117{{/c117}}{{#c118}}118{{/c118}}{{#c119}}119{{/c119}}{{#c120}}120{{/c120}}{{#c121}}121{{/c121}}{{#c122}}122{{/c122}}{{#c123}}123{{/c123}}{{#c124}}124{{/c124}}{{#c125}}125{{/c125}}{{#c126}}126{{/c126}}{{#c127}}127{{/c127}}{{#c128}}128{{/c128}}{{#c129}}129{{/c129}}{{#c130}}130{{/c130}}{{#c131}}131{{/c131}}{{#c132}}132{{/c132}}{{#c133}}133{{/c133}}{{#c134}}134{{/c134}}{{#c135}}135{{/c135}}{{#c136}}136{{/c136}}{{#c137}}137{{/c137}}{{#c138}}138{{/c138}}{{#c139}}139{{/c139}}{{#c140}}140{{/c140}}{{#c141}}141{{/c141}}{{#c142}}142{{/c142}}{{#c143}}143{{/c143}}{{#c144}}144{{/c144}}{{#c145}}145{{/c145}}{{#c146}}146{{/c146}}{{#c147}}147{{/c147}}{{#c148}}148{{/c148}}{{#c149}}149{{/c149}}{{#c150}}150{{/c150}}{{#c151}}151{{/c151}}{{#c152}}152{{/c152}}{{#c153}}153{{/c153}}{{#c154}}154{{/c154}}{{#c155}}155{{/c155}}{{#c156}}156{{/c156}}{{#c157}}157{{/c157}}{{#c158}}158{{/c158}}{{#c159}}159{{/c159}}{{#c160}}160{{/c160}}{{#c161}}161{{/c161}}{{#c162}}162{{/c162}}{{#c163}}163{{/c163}}{{#c164}}164{{/c164}}{{#c165}}165{{/c165}}{{#c166}}166{{/c166}}{{#c167}}167{{/c167}}{{#c168}}168{{/c168}}{{#c169}}169{{/c169}}{{#c170}}170{{/c170}}{{#c171}}171{{/c171}}{{#c172}}172{{/c172}}{{#c173}}173{{/c173}}{{#c174}}174{{/c174}}{{#c175}}175{{/c175}}{{#c176}}176{{/c176}}{{#c177}}177{{/c177}}{{#c178}}178{{/c178}}{{#c179}}179{{/c179}}{{#c180}}180{{/c180}}{{#c181}}181{{/c181}}{{#c182}}182{{/c182}}{{#c183}}183{{/c183}}{{#c184}}184{{/c184}}{{#c185}}185{{/c185}}{{#c186}}186{{/c186}}{{#c187}}187{{/c187}}{{#c188}}188{{/c188}}{{#c189}}189{{/c189}}{{#c190}}190{{/c190}}{{#c191}}191{{/c191}}{{#c192}}192{{/c192}}{{#c193}}193{{/c193}}{{#c194}}194{{/c194}}{{#c195}}195{{/c195}}{{#c196}}196{{/c196}}{{#c197}}197{{/c197}}{{#c198}}198{{/c198}}{{#c199}}199{{/c199}}{{#c200}}200{{/c200}}{{#c201}}201{{/c201}}{{#c202}}202{{/c202}}{{#c203}}203{{/c203}}{{#c204}}204{{/c204}}{{#c205}}205{{/c205}}{{#c206}}206{{/c206}}{{#c207}}207{{/c207}}{{#c208}}208{{/c208}}{{#c209}}209{{/c209}}{{#c210}}210{{/c210}}{{#c211}}211{{/c211}}{{#c212}}212{{/c212}}{{#c213}}213{{/c213}}{{#c214}}214{{/c214}}{{#c215}}215{{/c215}}{{#c216}}216{{/c216}}{{#c217}}217{{/c217}}{{#c218}}218{{/c218}}{{#c219}}219{{/c219}}{{#c220}}220{{/c220}}{{#c221}}221{{/c221}}{{#c222}}222{{/c222}}{{#c223}}223{{/c223}}{{#c224}}224{{/c224}}{{#c225}}225{{/c225}}{{#c226}}226{{/c226}}{{#c227}}227{{/c227}}{{#c228}}228{{/c228}}{{#c229}}229{{/c229}}{{#c230}}230{{/c230}}{{#c231}}231{{/c231}}{{#c232}}232{{/c232}}{{#c233}}233{{/c233}}{{#c234}}234{{/c234}}{{#c235}}235{{/c235}}{{#c236}}236{{/c236}}{{#c237}}237{{/c237}}{{#c238}}238{{/c238}}{{#c239}}239{{/c239}}{{#c240}}240{{/c240}}{{#c241}}241{{/c241}}{{#c242}}242{{/c242}}{{#c243}}243{{/c243}}{{#c244}}244{{/c244}}{{#c245}}245{{/c245}}{{#c246}}246{{/c246}}{{#c247}}247{{/c247}}{{#c248}}248{{/c248}}{{#c249}}249{{/c249}}{{#c250}}250{{/c250}}{{#c251}}251{{/c251}}{{#c252}}252{{/c252}}{{#c253}}253{{/c253}}{{#c254}}254{{/c254}}{{#c255}}255{{/c255}}{{#c256}}256{{/c256}}{{#c257}}257{{/c257}}{{#c258}}258{{/c258}}{{#c259}}259{{/c259}}{{#c260}}260{{/c260}}{{#c261}}261{{/c261}}{{#c262}}262{{/c262}}{{#c263}}263{{/c263}}{{#c264}}264{{/c264}}{{#c265}}265{{/c265}}{{#c266}}266{{/c266}}{{#c267}}267{{/c267}}{{#c268}}268{{/c268}}{{#c269}}269{{/c269}}{{#c270}}270{{/c270}}{{#c271}}271{{/c271}}{{#c272}}272{{/c272}}{{#c273}}273{{/c273}}{{#c274}}274{{/c274}}{{#c275}}275{{/c275}}{{#c276}}276{{/c276}}{{#c277}}277{{/c277}}{{#c278}}278{{/c278}}{{#c279}}279{{/c279}}{{#c280}}280{{/c280}}{{#c281}}281{{/c281}}{{#c282}}282{{/c282}}{{#c283}}283{{/c283}}{{#c284}}284{{/c284}}{{#c285}}285{{/c285}}{{#c286}}286{{/c286}}{{#c287}}287{{/c287}}{{#c288}}288{{/c288}}{{#c289}}289{{/c289}}{{#c290}}290{{/c290}}{{#c291}}291{{/c291}}{{#c292}}292{{/c292}}{{#c293}}293{{/c293}}{{#c294}}294{{/c294}}{{#c295}}295{{/c295}}{{#c296}}296{{/c296}}{{#c297}}297{{/c297}}{{#c298}}298{{/c298}}{{#c299}}299{{/c299}}{{#c300}}300{{/c300}}{{#c301}}301{{/c301}}{{#c302}}302{{/c302}}{{#c303}}303{{/c303}}{{#c304}}304{{/c304}}{{#c305}}305{{/c305}}{{#c306}}306{{/c306}}{{#c307}}307{{/c307}}{{#c308}}308{{/c308}}{{#c309}}309{{/c309}}{{#c310}}310{{/c310}}{{#c311}}311{{/c311}}{{#c312}}312{{/c312}}{{#c313}}313{{/c313}}{{#c314}}314{{/c314}}{{#c315}}315{{/c315}}{{#c316}}316{{/c316}}{{#c317}}317{{/c317}}{{#c318}}318{{/c318}}{{#c319}}319{{/c319}}{{#c320}}320{{/c320}}{{#c321}}321{{/c321}}{{#c322}}322{{/c322}}{{#c323}}323{{/c323}}{{#c324}}324{{/c324}}{{#c325}}325{{/c325}}{{#c326}}326{{/c326}}{{#c327}}327{{/c327}}{{#c328}}328{{/c328}}{{#c329}}329{{/c329}}{{#c330}}330{{/c330}}{{#c331}}331{{/c331}}{{#c332}}332{{/c332}}{{#c333}}333{{/c333}}{{#c334}}334{{/c334}}{{#c335}}335{{/c335}}{{#c336}}336{{/c336}}{{#c337}}337{{/c337}}{{#c338}}338{{/c338}}{{#c339}}339{{/c339}}{{#c340}}340{{/c340}}{{#c341}}341{{/c341}}{{#c342}}342{{/c342}}{{#c343}}343{{/c343}}{{#c344}}344{{/c344}}{{#c345}}345{{/c345}}{{#c346}}346{{/c346}}{{#c347}}347{{/c347}}{{#c348}}348{{/c348}}{{#c349}}349{{/c349}}{{#c350}}350{{/c350}}{{#c351}}351{{/c351}}{{#c352}}352{{/c352}}{{#c353}}353{{/c353}}{{#c354}}354{{/c354}}{{#c355}}355{{/c355}}{{#c356}}356{{/c356}}{{#c357}}357{{/c357}}{{#c358}}358{{/c358}}{{#c359}}359{{/c359}}{{#c360}}360{{/c360}}{{#c361}}361{{/c361}}{{#c362}}362{{/c362}}{{#c363}}363{{/c363}}{{#c364}}364{{/c364}}{{#c365}}365{{/c365}}{{#c366}}366{{/c366}}{{#c367}}367{{/c367}}{{#c368}}368{{/c368}}{{#c369}}369{{/c369}}{{#c370}}370{{/c370}}{{#c371}}371{{/c371}}{{#c372}}372{{/c372}}{{#c373}}373{{/c373}}{{#c374}}374{{/c374}}{{#c375}}375{{/c375}}{{#c376}}376{{/c376}}{{#c377}}377{{/c377}}{{#c378}}378{{/c378}}{{#c379}}379{{/c379}}{{#c380}}380{{/c380}}{{#c381}}381{{/c381}}{{#c382}}382{{/c382}}{{#c383}}383{{/c383}}{{#c384}}384{{/c384}}{{#c385}}385{{/c385}}{{#c386}}386{{/c386}}{{#c387}}387{{/c387}}{{#c388}}388{{/c388}}{{#c389}}389{{/c389}}{{#c390}}390{{/c390}}{{#c391}}391{{/c391}}{{#c392}}392{{/c392}}{{#c393}}393{{/c393}}{{#c394}}394{{/c394}}{{#c395}}395{{/c395}}{{#c396}}396{{/c396}}{{#c397}}397{{/c397}}{{#c398}}398{{/c398}}{{#c399}}399{{/c399}}{{#c400}}400{{/c400}}{{#c401}}401{{/c401}}{{#c402}}402{{/c402}}{{#c403}}403{{/c403}}{{#c404}}404{{/c404}}{{#c405}}405{{/c405}}{{#c406}}406{{/c406}}{{#c407}}407{{/c407}}{{#c408}}408{{/c408}}{{#c409}}409{{/c409}}{{#c410}}410{{/c410}}{{#c411}}411{{/c411}}{{#c412}}412{{/c412}}{{#c413}}413{{/c413}}{{#c414}}414{{/c414}}{{#c415}}415{{/c415}}{{#c416}}416{{/c416}}{{#c417}}417{{/c417}}{{#c418}}418{{/c418}}{{#c419}}419{{/c419}}{{#c420}}420{{/c420}}{{#c421}}421{{/c421}}{{#c422}}422{{/c422}}{{#c423}}423{{/c423}}{{#c424}}424{{/c424}}{{#c425}}425{{/c425}}{{#c426}}426{{/c426}}{{#c427}}427{{/c427}}{{#c428}}428{{/c428}}{{#c429}}429{{/c429}}{{#c430}}430{{/c430}}{{#c431}}431{{/c431}}{{#c432}}432{{/c432}}{{#c433}}433{{/c433}}{{#c434}}434{{/c434}}{{#c435}}435{{/c435}}{{#c436}}436{{/c436}}{{#c437}}437{{/c437}}{{#c438}}438{{/c438}}{{#c439}}439{{/c439}}{{#c440}}440{{/c440}}{{#c441}}441{{/c441}}{{#c442}}442{{/c442}}{{#c443}}443{{/c443}}{{#c444}}444{{/c444}}{{#c445}}445{{/c445}}{{#c446}}446{{/c446}}{{#c447}}447{{/c447}}{{#c448}}448{{/c448}}{{#c449}}449{{/c449}}{{#c450}}450{{/c450}}{{#c451}}451{{/c451}}{{#c452}}452{{/c452}}{{#c453}}453{{/c453}}{{#c454}}454{{/c454}}{{#c455}}455{{/c455}}{{#c456}}456{{/c456}}{{#c457}}457{{/c457}}{{#c458}}458{{/c458}}{{#c459}}459{{/c459}}{{#c460}}460{{/c460}}{{#c461}}461{{/c461}}{{#c462}}462{{/c462}}{{#c463}}463{{/c463}}{{#c464}}464{{/c464}}{{#c465}}465{{/c465}}{{#c466}}466{{/c466}}{{#c467}}467{{/c467}}{{#c468}}468{{/c468}}{{#c469}}469{{/c469}}{{#c470}}470{{/c470}}{{#c471}}471{{/c471}}{{#c472}}472{{/c472}}{{#c473}}473{{/c473}}{{#c474}}474{{/c474}}{{#c475}}475{{/c475}}{{#c476}}476{{/c476}}{{#c477}}477{{/c477}}{{#c478}}478{{/c478}}{{#c479}}479{{/c479}}{{#c480}}480{{/c480}}{{#c481}}481{{/c481}}{{#c482}}482{{/c482}}{{#c483}}483{{/c483}}{{#c484}}484{{/c484}}{{#c485}}485{{/c485}}{{#c486}}486{{/c486}}{{#c487}}487{{/c487}}{{#c488}}488{{/c488}}{{#c489}}489{{/c489}}{{#c490}}490{{/c490}}{{#c491}}491{{/c491}}{{#c492}}492{{/c492}}{{#c493}}493{{/c493}}{{#c494}}494{{/c494}}{{#c495}}495{{/c495}}{{#c496}}496{{/c496}}{{#c497}}497{{/c497}}{{#c498}}498{{/c498}}{{#c499}}499{{/c499}}{{#c500}}500{{/c500}}";
@@ -143,7 +133,8 @@
         }
 
         // Build page content by looping through pattern matches
-		const PATTERN = new RegExp(`[{]{2}c(\\d+)[:]{2}?(${fcz['expose']})?(.*?)(?:[:]{2}(.*?))?[}]{2}`, 'gms');        let page = document.getElementById("fcz-field").innerHTML.replace(PATTERN, (match, cloze, expose, content, hint) => {
+        const PATTERN = new RegExp(`[{]{2}c(\\d+)[:]{2}?(${fcz.expose})?(.*?)(?:[:]{2}(.*?))?[}]{2}`, 'gms');
+        fcz.root.innerHTML = document.getElementById("fcz-field").innerHTML.replace(PATTERN, (match, cloze, expose, content, hint) => {
             // Sanitize input
             if (expose == undefined) { expose = ""; }
             if (content == undefined) { content = ""; }
@@ -210,22 +201,18 @@
                 if(fcz.findex == -1) { fcz.findex = fcz.cindex = index; }
                 fcz.lindex = index;
             }
-            let click_logic = `fcz.clozes[${index}].do_toggle(); ` + (fcz['iter_top'] ? ' ' : `if(fcz.iter_inactive || fcz.clozes[${index}].active) { fcz.cindex = ${index}; } `) + `if(this.getAttribute('state') == 'show') {scroll_to_cloze(fcz.clozes[fcz.cindex]);}`;                    
+            let click_logic = `fcz.clozes[${index}].do_toggle(); ` + (fcz.iter_top ? ' ' : `if(fcz.iter_inactive || fcz.clozes[${index}].active) { fcz.cindex = ${index}; } `) + `if(this.getAttribute('state') == 'show') {scroll_to_cloze(fcz.clozes[fcz.cindex]);}`;                    
             let initial_content = "";
             if (state == 'show') { initial_content = fcz.clozes[index].content; }
             else if (state == 'hint') { initial_content = fcz.clozes[index].hint; }
             else { initial_content = fcz.clozes[index].hide; }
             // Create element for each cloze with active ones in "hint" and inactive in "hide" state
-             return `<${fcz['element']} id="${id_str}" class="${active ? 'fcz-active': 'fcz-inactive'}" state="${fcz.clozes[index].state}" cloze="${cloze}" index="${index}" onclick="${click_logic}">${initial_content}</${fcz['element']}>`;
+             return `<${fcz.element} id="${id_str}" class="${active ? 'fcz-active': 'fcz-inactive'}" state="${fcz.clozes[index].state}" cloze="${cloze}" index="${index}" onclick="${click_logic}">${initial_content}</${fcz.element}>`;
         });
-        // Set this as late as possible to allow original content to be calculated but before setting new content
-        fcz.viewport_height = fcz.root.clientHeight;
-        fcz.root.innerHTML = page;
 
         // Store node references to all cloze elements in content array
-        var i = 0;
-        document.querySelectorAll('#fcz-content [id^="fcz-id-"]:not(.fcz-expose)').forEach(nd => {
-            fcz.clozes[i++].node = nd;
+        document.querySelectorAll('#fcz-content [id^="fcz-id-"]:not(.fcz-expose)').forEach((nd, i) => {
+            fcz.clozes[i].node = nd;
         });
 
 
@@ -236,37 +223,30 @@
             });
         }
 
+        document.addEventListener("keydown", function (evt) {
+            if (evt.key == fcz.shortcuts.next.key && evt.shiftKey == fcz.shortcuts.next.shift
+                && evt.ctrlKey == fcz.shortcuts.next.shift && evt.altKey == fcz.shortcuts.next.alt
+                && evt.getModifierState('AltGraph') == fcz.shortcuts.next.altgr
+                && evt.getModifierState('Meta') == fcz.shortcuts.next.meta)  {
+                    fcz_next();
+                    evt.preventDefault();
+            } else if (evt.key == fcz.shortcuts.prev.key && evt.shiftKey == fcz.shortcuts.prev.shift
+                && evt.ctrlKey == fcz.shortcuts.prev.shift && evt.altKey == fcz.shortcuts.prev.alt
+                && evt.getModifierState('AltGraph') == fcz.shortcuts.prev.altgr
+                && evt.getModifierState('Meta') == fcz.shortcuts.prev.meta)  {
+                    fcz_previous();
+                    evt.preventDefault();
+            } else if (evt.key == fcz.shortcuts.all.key && evt.shiftKey == fcz.shortcuts.all.shift
+                && evt.ctrlKey == fcz.shortcuts.all.shift && evt.altKey == fcz.shortcuts.all.alt
+                && evt.getModifierState('AltGraph') == fcz.shortcuts.all.altgr
+                && evt.getModifierState('Meta') == fcz.shortcuts.all.meta)  {
+                    fcz_toggle_all();
+                    evt.preventDefault();
+            }
+        });
 
-        // This check should not be needed but for some reason multiple event listeners are registered
-        if(!fcz.root.hasAttribute("fcz-init")) {
-            document.addEventListener("keydown", function (evt) {
-                if (evt.key == fcz['shortcuts']['next'].key && evt.shiftKey == fcz['shortcuts']['next'].shift
-                    && evt.ctrlKey == fcz['shortcuts']['next'].shift && evt.altKey == fcz['shortcuts']['next'].alt
-                    && evt.getModifierState('AltGraph') == fcz['shortcuts']['next'].altgr
-                    && evt.getModifierState('Meta') == fcz['shortcuts']['next'].meta)  {
-                        fcz_next();
-                        evt.preventDefault();
-                } else if (evt.key == fcz['shortcuts']['prev'].key && evt.shiftKey == fcz['shortcuts']['prev'].shift
-                    && evt.ctrlKey == fcz['shortcuts']['prev'].shift && evt.altKey == fcz['shortcuts']['prev'].alt
-                    && evt.getModifierState('AltGraph') == fcz['shortcuts']['prev'].altgr
-                    && evt.getModifierState('Meta') == fcz['shortcuts']['prev'].meta)  {
-                        fcz_previous();
-                        evt.preventDefault();
-                } else if (evt.key == fcz['shortcuts']['all'].key && evt.shiftKey == fcz['shortcuts']['all'].shift
-                    && evt.ctrlKey == fcz['shortcuts']['all'].shift && evt.altKey == fcz['shortcuts']['all'].alt
-                    && evt.getModifierState('AltGraph') == fcz['shortcuts']['all'].altgr
-                    && evt.getModifierState('Meta') == fcz['shortcuts']['all'].meta)  {
-                        fcz_toggle_all();
-                        evt.preventDefault();
-                }
-            });
-        }
-
-        // Viewport and viewport_offset must be set before scroll_to_cloze
-        fcz.viewport = document.getElementsByClassName('fcz-scroll-area')[0];
-        fcz.viewport_offset = fcz.viewport.getBoundingClientRect().top;
-        scroll_to_cloze(fcz.clozes[fcz.findex], fcz.clozes[fcz.lindex]);
-
+        // Scroll to active cloze once entire document loaded
+        window.onload = scroll_to_cloze(fcz.clozes[fcz.findex], fcz.clozes[fcz.lindex]);
         fcz.root.setAttribute("fcz-init", "true");
     }
 
@@ -275,7 +255,6 @@
     * Scrolls specific clozes into view by scrolling as little as possible
     *******************************************************/
     function scroll_to_cloze(first, last = undefined) {
-
         // Calculate line height from style
         function line_height(style) {
             let lh = -1;
@@ -290,30 +269,33 @@
                 lh = nd.offsetHeight;
                 fcz.root.removeChild(nd);
             }
-			
-			if (lh <= 0) { lh = parseInt(style.lineHeight); }
+            
+            if (lh <= 0) { lh = parseInt(style.lineHeight); }
 
             // Unable to figure out line height, default to 20 px
-			if (lh <= 0)  { lh = 20; }
+            if (lh <= 0)  { lh = 20; }
 
             return lh;
         }
 
         if (!last) { last = first; }
-        const top = first.node.getBoundingClientRect().top + fcz.viewport.scrollTop - fcz.viewport_offset;
-        const bottom = last.node.getBoundingClientRect().bottom + fcz.viewport.scrollTop - fcz.viewport_offset;
-        if (bottom - top >= fcz.viewport_height) {
-			// All clozes will not fit - scroll to first at top regardless
+        const top = first.node.offsetTop -  fcz.viewport.offsetTop;
+        const bottom = (last.node.offsetTop - fcz.viewport.offsetTop) + last.node.offsetHeight;
+
+        console.log('top: ' + top + '\nbottom: ' + bottom + '\noffh: ' + fcz.viewport.offsetHeight + '\nofft: ' + fcz.viewport.offsetTop + '\nvp: ' + fcz.viewport + "\nr: " + fcz.viewport.getBoundingClientRect().bottom)
+
+        if (bottom - top >= fcz.viewport.offsetHeight) {
+            // All clozes will not fit - scroll to first at top regardless
             fcz.viewport.scrollTo(0, top - line_height(window.getComputedStyle(first.node.previousElementSibling ? first.node.previousElementSibling : first.node, ':before')));
-        } else if (fcz['scroll'] === 'center'){
-        	// All clozes will fit and scrolling to center
-			fcz.viewport.scrollTo(0, top - (fcz.viewport_height - (bottom - top)) / 2);
-       	} else if (top < fcz.viewport.scrollTop) {
+        } else if (fcz.scroll === 'center'){
+            // All clozes will fit and scrolling to center
+            fcz.viewport.scrollTo(0, top - (fcz.viewport.offsetHeight - (bottom - top)) / 2);
+        } else if (top < fcz.viewport.scrollTop) {
             // Scrolling as little as possible, all will fit and first active above viewport
             fcz.viewport.scrollTo(0, top - line_height(window.getComputedStyle(first.node.previousElementSibling ? first.node.previousElementSibling : first.node, ':before')));
-        } else if (bottom > (fcz.viewport.scrollTop + fcz.viewport_height)) {
+        } else if (bottom > (fcz.viewport.scrollTop + fcz.viewport.offsetHeight)) {
             // Scrolling as little as possible, all will fit and last active below viewport
-            fcz.viewport.scrollTo(0, bottom - fcz.viewport_height + line_height(window.getComputedStyle(last.node.nextElementSibling ? last.node.nextElementSibling : last.node, ':after')));
+            fcz.viewport.scrollTo(0, bottom - fcz.viewport.offsetHeight + line_height(window.getComputedStyle(last.node.nextElementSibling ? last.node.nextElementSibling : last.node, ':after')));
         }
 
     }

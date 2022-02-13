@@ -147,6 +147,11 @@ def update():
     nback_parts = parse_tag(nback, FCZ_BTAG, FCZ_ETAG)
     ncss_parts = parse_tag(ncss, FCZ_BTAG, FCZ_ETAG)
 
+    # On back strip out {{FrontSide}} from outside tags from old versions
+    if float(cback_parts['ver']) < 1.7:
+        cback_parts['pre'] = cback_parts['pre'].replace('{{FrontSide}}', '')
+        cback_parts['post'] = cback_parts['post'].replace('{{FrontSide}}', '')
+
     if scope == FUNC:
         nfront = build_mix_page(cfront_parts['pre'], cfront_parts['tag'], nfront_parts['tag'], cfront_parts['post'])
         nback = build_mix_page(cback_parts['pre'], cback_parts['tag'], nback_parts['tag'], cback_parts['post'])
