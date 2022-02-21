@@ -1,27 +1,48 @@
-/*-- FCZ 1632356464 BEGIN [1.7] --*/
+/*-- FCZ 1632356464 BEGIN [1.8] --*/
 /*-- FUNCTIONALITY BEGIN --*/
-/* Content between FCZ begin and end will be overwritten on add-on update     */
+/* Content between FCZ begin and end will be overwritten on add-on update           */
 /* As updates will not update the styling and layout for existing users the latest  */
-/* default version of layout and complete styling can be found in the addon     */
-/* directory                                                                                                                */
+/* default version of layout and complete styling can be found in the addon         */
+/* directory                                                                        */
+.card
+{  position: fixed !important; top: 0; bottom: 0; left: 0; right: 0; display: flex; }
 
-:root, :root > body, :root > body > div, div#qa, div#content
-{ margin: 0px; padding: 0px; height: 100%; width: 100%; box-sizing: border-box; }
-.fcz-hide                           { display: none; }
-.fcz-show                           { display: block; }
+#qa, #content
+{ flex: 1 1; display: flex; flex-flow: column nowrap; overflow: auto; margin: 0px; }
+
+#title { flex: 0 0; }
+#fcz-scroll-area { flex: 1 1; display: flex; flex-flow: column nowrap; overflow: auto; }
+    #fcz-content { flex: 1 1; }
+    #fcz-additional { flex: 0 0; z-index: 2; }
+        .additional-header { cursor: pointer; }
+#fcz-show-all { flex: 0 0; cursor: pointer; }
+
+#fcz-footer { flex: 0 0; z-index: 2; }
+	#fcz-legend-footer { display: flex; flex-flow: row nowrap; }
+		.fcz-legend-entry, #fcz-legent-entry {flex: 1 1;}
+	#fcz-flag-footer { display: flex; flex-flow: row nowrap }
+		.fcz-flag { flex: 1 1 100%; }
+
+#nav-toggle-all { position: fixed; top: 0; left: 0; right: 0;  z-index: 1; }
+#nav-prev-cloze { position: fixed;  top: 0; left: 0; bottom: 0;  z-index: 1; }
+#nav-next-cloze { position: fixed;  top: 0; right: 0; bottom: 0;  z-index: 1; }
+	
+.fcz-hide   { display: none; }
+.fcz-show   { display: block; }
 /*-- FUNCTIONALITY END --*/
 /*-- STYLE BEGIN --*/
 /* ======================================================= */
 /* Below are configurations for the look and feel, changing/deleting these values will not break */
-/* the functionality (although incoherrent styling will make things strange).
+/* the functionality (although incoherrent styling will make things strange).                    */
 /* ======================================================= */
-
 
 /* FLEXIBLE CLOZE CONFIGURATION======================================= */
 .fcz-config {
     --cloze-element: "div";                 /* What HTML element the clozes will be wrapped in */
-    --expose: "#";                          /* String to mark clozes to be unhidden when inactive */
-	--scroll: "center";						/* How to scroll to current cloze, valid values are "min" and "center" */
+    --expose: "!";                          /* String to mark clozes to be unhidden when inactive */
+    --expose-pos: "begin";                  /* Position of expose character/string in cloze (pre, begin, end, post) */
+    --reverse-expose: "false";              /* "true" exposes all inactive clozes by default (reversing the use of the expose char/string) */
+    --scroll: "center";						/* How to scroll to current cloze, valid values are "min" and "center" */
     --inactive-prompt: "";                  /* Text to display (if any) on inactive hidden clozes */
     --active-prompt: "";                    /* Text to display (if any) on active hidden clozes */
     --key-next-cloze: "j";                  /* Keyboard shortcut to iterate forward */
@@ -47,7 +68,7 @@
 
 /* CARD GENERAL STYLING =========================================== */
 .card
-{ font-family: Arial; font-size: 20px;  color: black; background-color: white; }
+{ font-family: Arial; font-size: 20px;  color: black; background-color: white; margin: 0px; }
 
 
 /* TITLE FIELD STYLING ============================================= */
@@ -135,15 +156,15 @@ font-size: 15px; font-weight: bold; padding: 5px; border-bottom: 1px solid white
 
 /* SYMBOL LEGEND FOOTER STYLING ===================================== */
 /* Base symbol legend look and feel */
-#fcz-legend-entry
+.fcz-legend-entry
 {text-align: center; text-transform: uppercase; font-size: 10px; font-weight: bold; vertical-align: center; background-color: #465A65; color: white; border-left: 1px solid white;}
 
 /* Specific styling of first entry/div (to avaid a white border on left in default styling) */
-#fcz-legend-entry:first-child
+.fcz-legend-entry:first-child
 { border-left: unset; }
 
 /* Specific styling of first letter in each entry (make symbol bigger) */
-#fcz-legend-entry:first-letter
+.fcz-legend-entry:first-letter
 { font-size: 150%; }
 
 
