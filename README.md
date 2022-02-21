@@ -18,7 +18,7 @@ Flexible cloze is an Anki addon (https://ankiweb.net/shared/info/1632356464) for
 - To facilitate end user modifications of the layout, style and function of the template updates will come with a dialog allowing the user to determine which parts to update. A temporary backup (will be overwritten on next update) of the current template will be created in the add-on folder.
 - Changes will mainly be made inside "FCZ BEGIN/END" tags, which in turn is divided into functionality and styling allowing the user to avoid overwriting the styling part on update.
 - Configuration is made in the "Styling" section of the card template under the ".fcz-config" heading:
-<code>/* FLEXIBLE CLOZE CONFIGURATION======================================= */
+<pre><code>/* FLEXIBLE CLOZE CONFIGURATION======================================= */
 .fcz-config {
     --cloze-element: "div";                 /* What HTML element the clozes will be wrapped in */
     --expose: "!";                          /* String to mark clozes to be unhidden when inactive */
@@ -35,26 +35,26 @@ Flexible cloze is an Anki addon (https://ankiweb.net/shared/info/1632356464) for
     --iteration-hides-previous: "true";     /* false leaves cloze open when cycling forward/backward */
     --show-all-on-back: "false";            /* false initially hides inactive clozes on back */
     --show-additional-on-back:  "true";     /* false initially hides the additional fields on back */
-}</code>
+}</code></pre>
 - Clicking an active cloze on the front side will cycle it between hint (if there is one) and show.
 - Clicking an inactive cloze on the front side will cycle it through hide - hint - show.
 - A suggestion is using show new siblings in order / no same day spacing(randomization) for new siblings (https://ankiweb.net/shared/info/268644742) when writing notes that are "sequential" in nature. I.e. when the later clozes in the note requires knowing the earlier clozes. This makes the clozes be presented in ascending order on new cards (which is when it needs to be ordered). Once learned they will not be ordered (or even on the same day depending on how well/fast you learn the different clozes) but then you already "know the preceding clozes".
 - There is an optional "show all" button (styleable in class .fcz-show-all-btn), note that:
   - The button is set to display: none in default configuration, you have to set it to display: inline on the Styling page of the cards dialog to get it to show.
-<code>/* ANSWER SIDE STYLING ============================================== */
+<pre><code>/* ANSWER SIDE STYLING ============================================== */
 /* Show all button/bar styling (and if visible or not) */
 .fcz-show-all-btn
 { display: inline;  background-color: #465A65; color: white; text-align: center; text-transform: uppercase;
-font-size: 15px; font-weight: bold; padding: 5px; border-bottom: 1px solid white; }</code>
+font-size: 15px; font-weight: bold; padding: 5px; border-bottom: 1px solid white; }</code></pre>
   If you are updating from a previous version of the template and choose to not "overwrite all" (overwriting any personal changes you have made) you will have to manually add the actual button on the front as this requires changing the HTML outside the FCZ BEGIN/END tags. Insert `<div id="fcz-show-all" class="fcz-show-all-btn" style="cursor: pointer;" onclick="fcz_toggle_all()">Show all</div>` just after the closing div-tag of the `<div id="fcz-additional" style="z-index: 2;">` (have a look in the add-on directory in fcz-front.html).
 - https://github.com/TRIAEIOU/Flexible-cloze
 
 ## Regarding styling
 As there have been a few questions regarding the default styling of the template not looking like "regular Anki clozes". You can have the clozes display however you want by adjusting the CSS on the "Styling" page of the "Cards" dialog. To achieve the "regular Anki cloze styling":
 In the "FLEXIBLE CLOZE CONFIGURATION" section set:
-<code>--cloze-element: "span";
+<pre><code>--cloze-element: "span";
 --inactive-prompt: "[...]";
---active-prompt: "[...]";</code>
+--active-prompt: "[...]";</code></pre>
 Replace all the content under the "CLOZE STYLING" section with `.fcz-active { color: blue; font-weight: bold; }`. If by chance I am little off on the font-weight you can fine-tune it by starting at 400 which is normal font-weight and going upward (900 would be "very bold"). Similarly if by chance the blue nuance is off you can insert the correct RGB instead, e.g. #0000FF.
 
 <img src="https://aws1.discourse-cdn.com/standard11/uploads/anki2/original/2X/1/19e94cbb8a36c790df2b0595d617820ab8ece13e.jpeg" height="300">
