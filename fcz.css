@@ -1,16 +1,13 @@
-/*-- FCZ 1632356464 BEGIN [1.8] --*/
+/*-- FCZ 1632356464 BEGIN [1.10] --*/
 /*-- FUNCTIONALITY BEGIN --*/
-/* Content between FCZ begin and end will be overwritten on add-on update           */
-/* As updates will not update the styling and layout for existing users the latest  */
-/* default version of layout and complete styling can be found in the addon         */
-/* directory                                                                        */
+/* Content between FCZ begin and end will be overwritten on add-on update. As updates will not update the styling and layout for existing users the latest default version of layout and complete styling can be found in the addon directory */
 .card
 {  position: fixed !important; top: 0; bottom: 0; left: 0; right: 0; display: flex; }
 
 #qa, #content
 { flex: 1 1; display: flex; flex-flow: column nowrap; overflow: auto; margin: 0px; }
 
-#title { flex: 0 0; }
+#fcz-title, #title { flex: 0 0; }
 #fcz-scroll-area { flex: 1 1; display: flex; flex-flow: column nowrap; overflow: auto; }
     #fcz-content { flex: 1 1; }
     #fcz-additional { flex: 0 0; z-index: 2; }
@@ -31,33 +28,45 @@
 .fcz-show   { display: block; }
 /*-- FUNCTIONALITY END --*/
 /*-- STYLE BEGIN --*/
-/* ======================================================= */
-/* Below are configurations for the look and feel, changing/deleting these values will not break */
-/* the functionality (although incoherrent styling will make things strange).                    */
-/* ======================================================= */
+/* =======================================================
+Below are configurations for the look and feel, changing/deleting these values will not break the functionality (although incoherrent styling will make things strange).
+========================================================= */
 
-/* FLEXIBLE CLOZE CONFIGURATION======================================= */
+/* FLEXIBLE CLOZE CONFIGURATION=======================================
+--cloze-element: Type of HTML element (div or span) to enclose clozes in
+--inactive-prompt: Optional string to show on hidden inactive clozes
+--active-prompt: Optional string to show on hidden active clozes
+--expose: Character(s) and position to mark exposed clozes (always display) e.g. '--expose: ! begin;' means {{c1::!This will always be shown when inactive}}. First character(s) must be the character(s) to mark expose clozes, position options are pre, begin, end, post (correspoding to pre{{c1::begin xxx end}}post
+--scroll: Scroll behaviour, min will scroll as little as possible to display cloze
+  Scroll on initial card show/flip: center, min or none
+  Scroll on iteration (next/previous): iterate-center, iterate-min or iterate-none
+  Scroll on click: click-center, click-min or click-none
+--iterate: Iteration behaviour
+  Which clozes to iterate over: active, inactive or all
+  Always start from top (not from last clicked): top
+  Loop iteration (restart on last cloze): loop
+--key-next-cloze/previous-cloze/toggle-all: Keyboard shortcuts
+--show: When to automatically show inactive and non-cloze fields
+  Inactive clozes: inactive-front, inactive-back
+  Additional fields: additional-front, additional-back
+  Information field: info-front, info-back
+*/
 .fcz-config {
-    --cloze-element: "div";                 /* What HTML element the clozes will be wrapped in */
-    --expose: "!";                          /* String to mark clozes to be unhidden when inactive */
-    --expose-pos: "begin";                  /* Position of expose character/string in cloze (pre, begin, end, post) */
-    --reverse-expose: "false";              /* "true" exposes all inactive clozes by default (reversing the use of the expose char/string) */
-    --scroll: "center";						/* How to scroll to current cloze, valid values are "min" and "center" */
-    --inactive-prompt: "";                  /* Text to display (if any) on inactive hidden clozes */
-    --active-prompt: "";                    /* Text to display (if any) on active hidden clozes */
-    --key-next-cloze: "j";                  /* Keyboard shortcut to iterate forward */
-    --key-previous-cloze: "h";              /* Keyboard shortcut to iterate backward */
-    --key-toggle-all: "k";                  /* Keyboard shortcut to toggle all fields hide/show */
-    --iterate-from-top: "false";            /* true makes next/previous iteration always start from top */
-    --iterate-inactive: "false";            /* true makes next/previous navigation also iterate inactive clozes */
-    --iteration-hides-previous: "true";     /* false leaves cloze open when cycling forward/backward */
-    --show-all-on-back: "false";            /* false initially hides inactive clozes on back */
-    --show-additional-on-back:  "true";     /* false initially hides the additional fields on back */
+    --cloze-element: div;
+    --inactive-prompt: ;
+    --active-prompt: ;
+    --expose: ! begin;
+    --scroll: center iterate-min click-min;
+    --iterate: active hide loop top;
+    --key-next-cloze: j;
+    --key-previous-cloze: h;
+    --key-toggle-all: k;
+    --show: additional-back info-front info-back;
 }
 
 
-/* NAVIGATION AREA CONFIGURATION ====================================== */
-/* Top bar navigation area configuration, increase size by increasing height */
+/* NAVIGATION AREA CONFIGURATION ======================================
+Top bar navigation area configuration, increase size by increasing height */
 .nav-area-top
 { height: 30px; cursor: pointer; background-color: transparent; }
 
@@ -72,7 +81,7 @@
 
 
 /* TITLE FIELD STYLING ============================================= */
-.title
+#fcz-title, .title
 { border-bottom: solid black 3px; text-transform: uppercase; font-weight: bold; margin: 10px 10px 0px 10px; }
 
 
@@ -135,7 +144,7 @@ border-color: black; border-width: 1px; border-style: solid; }
 
 /* ANSWER SIDE STYLING ============================================== */
 /* Show all button/bar styling (and if visible or not) */
-.fcz-show-all-btn
+#fcz-show-all, .fcz-show-all-btn
 { display: none;  background-color: #465A65; color: white; text-align: center; text-transform: uppercase;
 font-size: 15px; font-weight: bold; padding: 5px; border-bottom: 1px solid white; }
 
@@ -218,11 +227,6 @@ li
 ul, ol
 { padding: 0em 0em 0em 2em; margin-top: 0.5em; margin-bottom: 0.5em; }
 
-/* Hide empty line in beginning of cloze */
-div[id^="fcz-id-"] > br:first-child,
-span[id^="fcz-id-"] > br:first-child
-{ display: none; }
-
 /* Reduce first list indent and spacing when a cloze begins with a list */
 div[id^="fcz-id-"] > ul:first-child, div[id^="fcz-id-"] > ol:first-child,
 div[id^="fcz-id-"] > br:first-child + ul, div[id^="fcz-id-"] > br:first-child + ol
@@ -231,3 +235,11 @@ div[id^="fcz-id-"] > br:first-child + ul, div[id^="fcz-id-"] > br:first-child + 
 /* Reduce list indents and spacing when in a table */
 td ul, td ol, td ul ul, td ol ol, td ul ul ul, td ol ol ol
 { padding: 0em 0em 0em 1em; margin-top: 0em; margin-bottom: 0em; }
+
+/* Default table formating */
+table:not([class]) { border-collapse: collapse; width: 100%; margin-bottom: 20px; margin-top: 5px; }
+th:not([class]) { border: 1px solid black; font-weight: bold; text-transform: uppercase; background-color: lightgray; }
+td:not([class]) { border: 1px solid black; }
+h2, h3, h4, h5, h6 { font-size: 20px; margin-bottom: 5px;}
+h1 { font-size: 24px; text-transform: uppercase; }
+h3 { font-style: italic; }

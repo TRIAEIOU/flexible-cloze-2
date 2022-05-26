@@ -10,31 +10,53 @@ Flexible cloze is an Anki addon (https://ankiweb.net/shared/info/1632356464) for
 <img src="https://aws1.discourse-cdn.com/standard11/uploads/anki2/original/2X/f/f00bd7c90b8f0163a91aa96e9abd75a1666b53b6.jpeg" height="300">
 
 ## General
-- Active cloze: Cloze(s) with the current ordinal, i.e. the cloze(s) that should be answered. To change styling of these change (or better yet override) "fcz-active" class in "Styling" of the card template.
-- Inactive cloze: Cloze(s) that are not the current ordinal, i.e. the cloze(s) that should not be answered. To change styling of these change (or better yet override) "fcz-inactive" class in "Styling" of the card template.
-- Exposed cloze: Cloze(s) that when inactive (see above) will always be in "shown" state on the front side. Mark a cloze as exposed in the editor by making the first character an exclamation mark (configurable character/string) (e.g. "{{c1::!This will be displayed on the front when the cloze ordinal is not 1}}"). Configurable position of the expose position (pre: !{{c1::content}}/begin (default): {{c1::!content}}/end: {{c1::content!}}/post: {{c1::content}}!) to allow use with {{type:cloze:Text}}. Configurable to reverse the expose status, i.e. all inactive clozes are exposed (similar to "regular" Anki cloze functonality) and those marked as "expose" will be hidden. To change styling of these change (or better yet override) "fcz-expose" class in "Styling" of the card template.
-- Scrolling: Configurable scrolling to active close behaviour ("min" scrolls as little as possible to get active cloze(s) into view, "center" centers the active clozes in the vindow).
-- Styling of different elements (e.g. "I want the answer to be displayed inline rather than in a block") can easily be configured in the "Styling" section of the card template (which is now fairly documented with descriptions).
+- Active cloze: Cloze(s) with the current ordinal, i.e. the cloze(s) that should be answered. To change styling of these change or override "fcz-active" class in "Styling" of the card template.
+- Inactive cloze: Cloze(s) that are not the current ordinal, i.e. the cloze(s) that should not be answered.To change styling of these change or override "fcz-inactive" class in "Styling" of the card template.
+- Exposed cloze: Cloze(s) that when inactive (see above) will always be in "shown" state on the front side. Mark a cloze as exposed in the editor by making the first character an exclamation mark (e.g. `{{c1::!This will be displayed on the front when the cloze ordinal is not 1}}`).
+  - Configurable expose character(s), default is _!_
+  - Configurable position of the expose position to allow use with {{type:cloze:Text}}:
+    - pre: **!**{{c1::content}}
+    - begin (default): {{c1::**!**content}}
+    - end: {{c1::content **!**}}
+    - post: {{c1::content}}**!**
+  - Configurable to reverse the expose status, i.e. all inactive clozes are exposed and those marked as "expose" will be hidden.
+  - Example: `--expose: # pre reverse;`
+  - To change styling of these change or override "fcz-expose" class in "Styling" of the card template.
+- Scrolling: Configurable scrolling behaviour on card show/flip, when clicking a hidden cloze and when cycling to next/previous with edge taps or keyboard shortcuts:
+  - none: no scroll
+  - min: scrolls as little as possible to get active cloze(s) into view
+  - center: centers the active clozes in the vindow.
+  - Scroll on initial show/flip: _center_, _min_ or _none_.
+  - Scroll on iterate (pressing next key etc.): _iterate-center_, _iterate-min_ or _iterate-none_.
+  - Scroll on click: _click-center_, _click-min_ or _click-none_.
+  - Example: `--scroll: center iterate-min click-min`;
+- Iteration - cycling active, inactive or all clozes with keyboard shortcut or edge tap. Iteration behaviour can be configured as follows:
+  - Which clozes should be cycled: _active_, _inactive_ or _all_.
+  - Hide the cloze "you are leaving" when iterating: _hide_
+  - Loop iteration once you reach the first/last (otherwise you will stop): _loop_
+  - Always start iteration from the top (otherwise iteration will "continue" from the last clicked item): _top_
+  - Example: `--iterate: active top loop hide;`
+- Non-active cloze and non-cloze field display behaviour can be configured to show per default as follows:
+  - Inactive clozes: _inactive-front_, _inactive-back_ (setting both these will make FCZ behave similar to core Anki clozes)
+  - Addtional fields (including Information field): _additional-front_, _additional-back_
+  - Information field (regardless of Additional fields): _info-front_, _info-back_
+  - Example: `--show: info-front additional-back`
+- Styling of different elements (e.g. "I want the answer to be displayed inline rather than in a block") can easily be configured in the "Styling" section of the card template.
 - To facilitate end user modifications of the layout, style and function of the template updates will come with a dialog allowing the user to determine which parts to update. A temporary backup (will be overwritten on next update) of the current template will be created in the add-on folder.
 - Changes will mainly be made inside "FCZ BEGIN/END" tags, which in turn is divided into functionality and styling allowing the user to avoid overwriting the styling part on update.
 - Configuration is made in the "Styling" section of the card template under the ".fcz-config" heading:
 <pre><code>/* FLEXIBLE CLOZE CONFIGURATION======================================= */
 .fcz-config {
-    --cloze-element: "div";                 /* What HTML element the clozes will be wrapped in */
-    --expose: "!";                          /* String to mark clozes to be unhidden when inactive */
-    --expose-pos: "begin";                  /* Position of expose character/string in cloze (pre, begin, end, post) */
-    --reverse-expose: "false";              /* "true" exposes all inactive clozes by default (reversing the use of the expose char/string) */
-    --scroll: "center";						/* How to scroll to current cloze, valid values are "min" and "center" */
-    --inactive-prompt: "";                  /* Text to display (if any) on inactive hidden clozes */
-    --active-prompt: "";                    /* Text to display (if any) on active hidden clozes */
-    --key-next-cloze: "j";                  /* Keyboard shortcut to iterate forward */
-    --key-previous-cloze: "h";              /* Keyboard shortcut to iterate backward */
-    --key-toggle-all: "k";                  /* Keyboard shortcut to toggle all fields hide/show */
-    --iterate-from-top: "false";            /* true makes next/previous iteration always start from top */
-    --iterate-inactive: "false";            /* true makes next/previous navigation also iterate inactive clozes */
-    --iteration-hides-previous: "true";     /* false leaves cloze open when cycling forward/backward */
-    --show-all-on-back: "false";            /* false initially hides inactive clozes on back */
-    --show-additional-on-back:  "true";     /* false initially hides the additional fields on back */
+    --cloze-element: div;
+    --inactive-prompt: ;
+    --active-prompt: ;
+    --expose: ! begin;
+    --scroll: center iterate-min click-min;
+    --iterate: active hide loop top;
+    --key-next-cloze: j;
+    --key-previous-cloze: h;
+    --key-toggle-all: k;
+    --show: info-front additional-back info-front;
 }</code></pre>
 - Clicking an active cloze on the front side will cycle it between hint (if there is one) and show.
 - Clicking an inactive cloze on the front side will cycle it through hide - hint - show.
@@ -46,15 +68,15 @@ Flexible cloze is an Anki addon (https://ankiweb.net/shared/info/1632356464) for
 .fcz-show-all-btn
 { display: inline;  background-color: #465A65; color: white; text-align: center; text-transform: uppercase;
 font-size: 15px; font-weight: bold; padding: 5px; border-bottom: 1px solid white; }</code></pre>
-  If you are updating from a previous version of the template and choose to not "overwrite all" (overwriting any personal changes you have made) you will have to manually add the actual button on the front as this requires changing the HTML outside the FCZ BEGIN/END tags. Insert `<div id="fcz-show-all" class="fcz-show-all-btn" style="cursor: pointer;" onclick="fcz_toggle_all()">Show all</div>` just after the closing div-tag of the `<div id="fcz-additional" style="z-index: 2;">` (have a look in the add-on directory in fcz-front.html).
+- If you are updating from a previous version of the template and choose to not "overwrite all" (overwriting any personal changes you have made) you will have to manually add the actual button on the front as this requires changing the HTML outside the FCZ BEGIN/END tags. Insert `<div id="fcz-show-all" class="fcz-show-all-btn" style="cursor: pointer;" onclick="fcz_toggle_all()">Show all</div>` just after the closing div-tag of the `<div id="fcz-additional" style="z-index: 2;">` (have a look in the add-on directory in fcz-front.html).
 - https://github.com/TRIAEIOU/Flexible-cloze
 
 ## Regarding styling
 As there have been a few questions regarding the default styling of the template not looking like "regular Anki clozes". You can have the clozes display however you want by adjusting the CSS on the "Styling" page of the "Cards" dialog. To achieve the "regular Anki cloze styling":
 In the "FLEXIBLE CLOZE CONFIGURATION" section set:
-<pre><code>--cloze-element: "span";
---inactive-prompt: "[...]";
---active-prompt: "[...]";</code></pre>
+<pre><code>--cloze-element: span;
+--inactive-prompt: [...];
+--active-prompt: [...];</code></pre>
 Replace all the content under the "CLOZE STYLING" section with `.fcz-active { color: blue; font-weight: bold; }`. If by chance I am little off on the font-weight you can fine-tune it by starting at 400 which is normal font-weight and going upward (900 would be "very bold"). Similarly if by chance the blue nuance is off you can insert the correct RGB instead, e.g. #0000FF.
 
 <img src="https://aws1.discourse-cdn.com/standard11/uploads/anki2/original/2X/1/19e94cbb8a36c790df2b0595d617820ab8ece13e.jpeg" height="300">
@@ -63,6 +85,7 @@ Replace all the content under the "CLOZE STYLING" section with `.fcz-active { co
 
 ## Main difference from the earlier mentioned add-ons
 There is effectively no add-on, it's all JavaScript (and HTML/CSS) and runs 100% "client side" (the only python is the update logic). This has a number of effects:
+
 - The only thing the add-on does is insert a new note type (Flexible Cloze) with the relevant JS/HTML/CSS, once you have it (and don't want any updates) feel free to uninstall the add-on. Similarly you can share decks with anyone without any need for them to install anything since everything is in the note type.
 - There are no special fields etc., the note type uses vanilla Anki clozes and parses them runtime.
 - There are no complaints from Anki on missing clozes and no insertions into the notes of any type of markup or extra fields (so for anyone wanting to go to Anki's limit of 500 clozes, go ahead).
@@ -79,7 +102,7 @@ There is effectively no add-on, it's all JavaScript (and HTML/CSS) and runs 100%
 - You set the class "fcz-scroll-area" on the element where you want scrolling to occur.
 - You have the {{FrontSide}} on the back side (to make the JS available).
 - As with Enhanced Cloze you can navigate with keyboard shortcuts (h-j-k per default, configurable) or the edges of the screen.
-- As with Enhanced Cloze you can expand individual clozes (active and inactive) on the front side as well as iterate through the active ones (e.g. all {{c:2}} clozes one by one) by pressing the side edges of the screen or keyboard shortcuts. This can be practical to learn lists or tables. You can have the cloze you iterate away from remain expanded or collapse (configurable) and also select whether all clozes or only active clozes should be iterated.
+- As with Enhanced Cloze you can expand individual clozes (active and inactive) on the front side as well as iterate through the active ones (e.g. all {{c:2}} clozes one by one) by pressing the side edges of the screen or keyboard shortcuts. This can be practical to learn lists or tables. You can have the cloze you iterate away from remain expanded or collapse (configurable) and also select whether all clozes, only active or inactive clozes should be iterated.
 - As with Enhanced Cloze you can expand (and collapse) all clozes (active and inactive) by pressing the top of the screen. Additional fields (below the main Text field) can be expanded and collapsed by clicking them. It functions a little differently from Enhanced Cloze but the general idea is the same.
 
 ## Changelog
@@ -92,3 +115,5 @@ There is effectively no add-on, it's all JavaScript (and HTML/CSS) and runs 100%
 - 2022-02-11: Made exposed cloze character/string configurable (to allow character/string that does not cause TTS to kick in), made scroll behaviour configurable (as little as possible or center active clozes).
 - 2022-02-13: Bug fixes, refactoring. Moved {{FrontSide}} on back of card inside FCZ functionality tag (required for current design).
 - 2022-02-21: Refactor front side HTML for better compatibility with addons that inject HTML on the card, such as Remaining time for Anki 21 (update requires migration to new HTML model). Further enhancement of scrolling (await loading of images on image heavy cards). Added configurable position of expose character/string: pre/begin (default)/end/post cloze tags for better compatibility with type-in-the-answer (avoid having to type the expose character/string). Added configurable reverse-expose: all inactive clozes per default exposed (similar to "regular" Anki clozes), expose character/string hides them.
+- 2022-03-06: Allow separate scroll behaviour on card show/flip, on cloze click and on next/previous iteration (--scroll, --scroll-iterate, --scroll-click: "none"/"min"/"center"). Replace --iterate-inactive option with --iterate: "active"/"inactive"/"all" to allow more fine grained customization.
+- 2022-05-27: Configuration options and internal logic becoming a bit of a mess, reworked so to new configuration options which unfortunately requires updates to new format to adapt old styles to the new format (see instructions above for use).
