@@ -143,10 +143,14 @@ def update():
                 cback_parts['pre'] = cback_parts['pre'].replace('{{FrontSide}}', '')
                 cback_parts['post'] = cback_parts['post'].replace('{{FrontSide}}', '')
 
+            # Inform of configuration option changes in 1.10
+            if float(cback_parts['ver']) < 1.10:
+                ver_msg += '<li>Configuration migration: Configuration options have been refactored for clarity, the current version will need to be migrated. Chose "Functionality and styling" to overwrite current version (but not personal styling) or migrate configuration changes manually (.fcz-config rule) from fcz.css in addon source directory.</li>'
+            
             # Inform of front HTML change in 1.8
             if float(cback_parts['ver']) < 1.8:
                 ver_msg += '<li>Version migration: Front side HTML has been refactored to be compatible with other addons, the current version will need to be migrated. Chose "All" to completely overwrite current version (including personal styling) or migrate front changes manually (HTML before the FCZ BEGIN tag) from fcz-front.html in addon source directory.</li>'
-            
+
             if ver_msg:
                 update_msg = f'''{update_msg}<br><b>IMPORTANT - VERSION SPECIFIC UPDATES</b><ul>{ver_msg}</ul>'''
 
