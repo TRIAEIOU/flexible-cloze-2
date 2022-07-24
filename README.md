@@ -5,7 +5,7 @@ Flexible cloze is an Anki addon (https://ankiweb.net/shared/info/1632356464) for
 
 **ALL CREDIT FOR INNOVATION GOES TO TRGANKI AND RISINGORANGE**
 
-<img src="https://github.com/TRIAEIOU/Flexible-cloze/blob/main/Screenshots/front-and-back.png" height="300">
+<img src="https://github.com/TRIAEIOU/Flexible-cloze/blob/main/Screenshots/front-and-back.png" height="500">
 
 ## General
 - Active cloze: Cloze(s) with the current ordinal, i.e. the cloze(s) that should be answered. To change styling of these change or override "fcz-active" class in "Styling" of the card template.
