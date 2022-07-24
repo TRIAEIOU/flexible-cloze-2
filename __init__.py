@@ -144,6 +144,13 @@ def update():
                 cback_parts['post'] = cback_parts['post'].replace('{{FrontSide}}', '')
 
             # Inform of configuration option changes in 1.10
+            if float(cback_parts['ver']) < 1.11:
+                cfront_parts['pre'] = cfront_parts['pre'].replace('fcz_toggle_field(', 'fcz().toggle_field(')
+                cfront_parts['pre'] = cfront_parts['pre'].replace('fcz_toggle_all(', 'fcz().toggle_all(')
+                cfront_parts['pre'] = cfront_parts['pre'].replace('fcz_iterate(', 'fcz().iterate(')
+                ver_msg += '<li>Code refactoring: FCZ code has been refactored and some function calls used in the HTML part of the front side has been change. The addon will automatically update these unless you discard the update.</li>'
+
+            # Inform of configuration option changes in 1.10
             if float(cback_parts['ver']) < 1.10:
                 ver_msg += '<li>Configuration migration: Configuration options have been refactored for clarity, the current version will need to be migrated. Chose "Functionality and styling" to overwrite current version (but not personal styling) or migrate configuration changes manually (.fcz-config rule) from fcz.css in addon source directory.</li>'
             
