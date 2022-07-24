@@ -77,10 +77,6 @@ In the "FLEXIBLE CLOZE CONFIGURATION" section set:
 --active-prompt: [...];</code></pre>
 Replace all the content under the "CLOZE STYLING" section with `.fcz-active { color: blue; font-weight: bold; }`. If by chance I am little off on the font-weight you can fine-tune it by starting at 400 which is normal font-weight and going upward (900 would be "very bold"). Similarly if by chance the blue nuance is off you can insert the correct RGB instead, e.g. #0000FF.
 
-<img src="https://aws1.discourse-cdn.com/standard11/uploads/anki2/original/2X/1/19e94cbb8a36c790df2b0595d617820ab8ece13e.jpeg" height="300">
-
-<img src="https://aws1.discourse-cdn.com/standard11/uploads/anki2/original/2X/2/20433455dd0c9ee1c2c6644e7c8e69fb2c3beec3.jpeg" height="300">
-
 ## Main difference from the earlier mentioned add-ons
 There is effectively no add-on, it's all JavaScript (and HTML/CSS) and runs 100% "client side" (the only python is the update logic). This has a number of effects:
 
