@@ -1,4 +1,4 @@
-/*-- FCZ 1632356464 BEGIN [1.11] --*/
+/*-- FCZ 1632356464 BEGIN [1.10] --*/
 /*-- FUNCTIONALITY BEGIN --*/
 /* Content between FCZ begin and end will be overwritten on add-on update. As updates will not update the styling and layout for existing users the latest default version of layout and complete styling can be found in the addon directory */
 .card
@@ -24,8 +24,17 @@
 #nav-prev-cloze { position: fixed;  top: 0; left: 0; bottom: 0;  z-index: 1; }
 #nav-next-cloze { position: fixed;  top: 0; right: 0; bottom: 0;  z-index: 1; }
 	
-.fcz-hide   { display: none; }
-.fcz-show   { display: block; }
+.fcz-field-hide   { display: none; }
+.fcz-field-show   { display: block; }
+[state="hide"] > .fcz-cloze-prompt {display:inline}
+[state="hint"] > .fcz-cloze-prompt {display:none}
+[state="show"] > .fcz-cloze-prompt {display:none}
+[state="hide"] > .fcz-cloze-hint {display:none}
+[state="hint"] > .fcz-cloze-hint {display:inline}
+[state="show"] > .fcz-cloze-hint {display:none}
+[state="hide"] > .fcz-cloze-content {display:none}
+[state="hint"] > .fcz-cloze-content {display:none}
+[state="show"] > .fcz-cloze-content {display:inline}
 /*-- FUNCTIONALITY END --*/
 /*-- STYLE BEGIN --*/
 /* =======================================================
@@ -38,9 +47,9 @@ Below are configurations for the look and feel, changing/deleting these values w
 --active-prompt: Optional string to show on hidden active clozes
 --expose: Character(s) and position to mark exposed clozes (always display) e.g. '--expose: ! begin;' means {{c1::!This will always be shown when inactive}}. First character(s) must be the character(s) to mark expose clozes, position options are pre, begin, end, post (correspoding to pre{{c1::begin xxx end}}post
 --scroll: Scroll behaviour, min will scroll as little as possible to display cloze
-  Scroll on initial card show/flip: center, min or none
-  Scroll on iteration (next/previous): iterate-center, iterate-min or iterate-none
-  Scroll on click: click-center, click-min or click-none
+  Scroll on initial card show/flip: center, min, none or context
+  Scroll on iteration (next/previous): iterate-center, iterate-min, iterate-none or iterate-context
+  Scroll on click: click-center, click-min, click-none or click-context
 --iterate: Iteration behaviour
   Which clozes to iterate over: active, inactive or all
   Always start from top (not from last clicked): top
@@ -56,7 +65,7 @@ Below are configurations for the look and feel, changing/deleting these values w
     --inactive-prompt: ;
     --active-prompt: ;
     --expose: ! begin;
-    --scroll: center iterate-min click-min;
+    --scroll: front-context back-min iterate-min click-min;
     --iterate: active hide loop top;
     --key-next-cloze: j;
     --key-previous-cloze: h;
@@ -103,6 +112,10 @@ border-color: black; border-width: 2px; border-style: solid; }
 /* Display form and style of active clozes on back */
 .fcz-back .fcz-active
 { background-color: #D0F0C0; }
+
+/* Display form and style of hint-state active clozes (front and back), change to "inline" for a continuous line */
+.fcz-active[state=hide]
+{ display: inline-block; }
 
 /* Display form and style of hint-state active clozes (front and back), change to "inline" for a continuous line */
 .fcz-active[state=hint]
@@ -217,6 +230,7 @@ font-size: 15px; font-weight: bold; padding: 5px; border-bottom: 1px solid white
 /* Miscellaneous sensible styling of various elements, remove/change as needed ======= */
 code, kbd, var, samp, tt
 { background-color: #F0F0F0; }
+/*code { background-color: #294958; color: #FFFFFF; }*/
 
 
 /* ======================================================= */
@@ -242,6 +256,17 @@ th:not([class]) { border: 1px solid black; font-weight: bold; text-transform: up
 td:not([class]) { border: 1px solid black; }
 
 /* Default header formating */
-h1, h2, h3, h4, h5, h6 { font-size: 20px; font-weight: bold; margin: 0px; margin-top: 10px;}
-h1 { text-transform: uppercase; }
-h2 { font-style: italic; }
+h1, h2, h3, h4, h5, h6 { font-size: 20px; margin: 0px; }
+h1:not(:first-child), h2:not(:first-child), h3:not(:first-child), h4:not(:first-child), h5:not(:first-child), h6:not(:first-child) { margin-top: 20px; }
+h1 { font-weight: 900; text-transform: uppercase; }
+h2 { font-weight: 900; }
+h3 { font-weight: 900; font-style: italic; }
+h4 { text-decoration: underline; }
+h5 { font-style: italic; text-decoration: underline; }
+h6 { font-style: italic }
+
+b { font-weight: bolder; }
+
+/* Definition lists formating */
+dt { font-weight: bold; }
+dd { margin-bottom: 10px; }
