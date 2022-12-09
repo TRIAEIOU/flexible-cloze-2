@@ -1,40 +1,39 @@
 <!-- Title field at top of page -->
-<div id="fcz-title" class="{{Tags}} title">{{Title}}</div>
+<div id="fcz-title" class="{{Tags}} title front">{{Title}}</div>
 
 <!-- Main scrollable area of the screen -->
-<div id="fcz-scroll-area" class="fcz-scroll-area">
+<div id="fcz-scroll-area" class="fcz-scroll-area front">
 
     <!-- Main content field, has to be present but can be styled/layouted differently -->
-    <div id="fcz-content" class="fcz-front"></div>
+    <div id="fcz-content">{{cloze:Text}}</div>
+    <div id="fcz-content-placeholder"></div>
 
     <!-- Additional fields, delete the divs to remove from the card -->
     <div id="fcz-additional">
         {{#Note}}
-        <div id="note-header" class="additional-header" onclick="fcz_toggle_field(this, 'note')">Note</div>
-        <div id="note" class="additional-content fcz-field-hide">{{Note}}</div>
+            <div id="note-header" class="additional-header">Note</div>
+            <div id="note" class="additional-content">{{Note}}</div>
         {{/Note}}
         {{#Mnemonics}}
-        <div id="mnemonics-header" class="additional-header" onclick="fcz_toggle_field(this, 'mnemonics')">Mnemonics</div>
-        <div id="mnemonics" class="additional-content fcz-field-hide">{{Mnemonics}}</div>
+            <div id="mnemonics-header" class="additional-header">Mnemonics</div>
+            <div id="mnemonics" class="additional-content">{{Mnemonics}}</div>
         {{/Mnemonics}}
         {{#Extra}}
-        <div id="extra-header" class="additional-header" onclick="fcz_toggle_field(this, 'extra')">Extra</div>
-        <div id="extra" class="additional-content fcz-field-hide">{{Extra}}</div>
+            <div id="extra-header" class="additional-header">Extra</div>
+            <div id="extra" class="additional-content">{{Extra}}</div>
         {{/Extra}}
-        <div id="info-header" class="additional-header" onclick="fcz_toggle_field(this, 'info')"> Information</div>
-        <div id="info" class="additional-content fcz-field-hide">
+        <div id="info-header" class="additional-header"> Information</div>
+        <div id="info" class="additional-content">
             <div id="deck"><b>Deck</b>: {{Deck}}</div>
             {{#Tags}}<div id="tags"><b>Tags</b>: {{Tags}}</div>{{/Tags}}
         </div>
     </div>
-
     <!-- Optional "show all button" -->
-    <div id="fcz-field-show-all" class="fcz-field-show-all-btn" onclick="fcz_toggle_all()">Show all</div>
-
+    <div id="fcz-show-all-btn">Show all</div>
 </div>
 
 <!-- Footer at the bottom of the screen, delete to remove or modify/add to change -->
-<div id="fcz-footer">
+<div id="fcz-footer" class="front">
     <!-- Symbol legend, delete divs to remove or modify number and content of child divs -->
     <div id="fcz-legend-footer">
         <div class="fcz-legend-entry">&#8594; Becomes</div>
@@ -42,7 +41,6 @@
         <div class="fcz-legend-entry">&#10521; Excite/activate</div>
         <div class="fcz-legend-entry">&#10979; Inhibit/deactivate</div>
     </div>
-
     <!-- Flag legend, delete divs to remove, text and color can be set on "Styles" page -->
     <div id="fcz-flag-footer">
         <div id="fcz-flag-red" class="fcz-flag"></div>
@@ -53,187 +51,268 @@
         <div id="fcz-flag-turquoise" class="fcz-flag"></div>
         <div id="fcz-flag-purple" class="fcz-flag"></div>
     </div>
-
 </div>
 
 <!-- Screen edge navigation controls, delete the divs to remove -->
-<div id="nav-toggle-all" class="nav-area-top" onclick="fcz_toggle_all()"></div>
-<div id="nav-prev-cloze" class="nav-area-side" onclick="fcz_iterate(false)"></div>
-<div id="nav-next-cloze" class="nav-area-side" onclick="fcz_iterate(true)"></div>
+<div id="nav-toggle-all" class="nav-area-top"></div>
+<div id="nav-prev-cloze" class="nav-area-side"></div>
+<div id="nav-next-cloze" class="nav-area-side"></div>
 
-<!-- FCZ 1632356464 BEGIN [1.12] -->
-<!-- FUNCTIONALITY BEGIN -->
-<span id="fcz-cloze" style="display: none;">{{cloze:Text}}</span>
-<span id="fcz-field" style="display: none;">{{Text}}</span>
+<!-- FCZ2 BEGIN [2.0] -->
 <script type="application/javascript">
-    var fcz
 
-    if (!document.getElementById("fcz-content").hasAttribute("fcz-init")) {
-        // Ordinal of the cloze card
-        const card_ord = "{{#c1}}1{{/c1}}{{#c2}}2{{/c2}}{{#c3}}3{{/c3}}{{#c4}}4{{/c4}}{{#c5}}5{{/c5}}{{#c6}}6{{/c6}}{{#c7}}7{{/c7}}{{#c8}}8{{/c8}}{{#c9}}9{{/c9}}{{#c10}}10{{/c10}}{{#c11}}11{{/c11}}{{#c12}}12{{/c12}}{{#c13}}13{{/c13}}{{#c14}}14{{/c14}}{{#c15}}15{{/c15}}{{#c16}}16{{/c16}}{{#c17}}17{{/c17}}{{#c18}}18{{/c18}}{{#c19}}19{{/c19}}{{#c20}}20{{/c20}}{{#c21}}21{{/c21}}{{#c22}}22{{/c22}}{{#c23}}23{{/c23}}{{#c24}}24{{/c24}}{{#c25}}25{{/c25}}{{#c26}}26{{/c26}}{{#c27}}27{{/c27}}{{#c28}}28{{/c28}}{{#c29}}29{{/c29}}{{#c30}}30{{/c30}}{{#c31}}31{{/c31}}{{#c32}}32{{/c32}}{{#c33}}33{{/c33}}{{#c34}}34{{/c34}}{{#c35}}35{{/c35}}{{#c36}}36{{/c36}}{{#c37}}37{{/c37}}{{#c38}}38{{/c38}}{{#c39}}39{{/c39}}{{#c40}}40{{/c40}}{{#c41}}41{{/c41}}{{#c42}}42{{/c42}}{{#c43}}43{{/c43}}{{#c44}}44{{/c44}}{{#c45}}45{{/c45}}{{#c46}}46{{/c46}}{{#c47}}47{{/c47}}{{#c48}}48{{/c48}}{{#c49}}49{{/c49}}{{#c50}}50{{/c50}}{{#c51}}51{{/c51}}{{#c52}}52{{/c52}}{{#c53}}53{{/c53}}{{#c54}}54{{/c54}}{{#c55}}55{{/c55}}{{#c56}}56{{/c56}}{{#c57}}57{{/c57}}{{#c58}}58{{/c58}}{{#c59}}59{{/c59}}{{#c60}}60{{/c60}}{{#c61}}61{{/c61}}{{#c62}}62{{/c62}}{{#c63}}63{{/c63}}{{#c64}}64{{/c64}}{{#c65}}65{{/c65}}{{#c66}}66{{/c66}}{{#c67}}67{{/c67}}{{#c68}}68{{/c68}}{{#c69}}69{{/c69}}{{#c70}}70{{/c70}}{{#c71}}71{{/c71}}{{#c72}}72{{/c72}}{{#c73}}73{{/c73}}{{#c74}}74{{/c74}}{{#c75}}75{{/c75}}{{#c76}}76{{/c76}}{{#c77}}77{{/c77}}{{#c78}}78{{/c78}}{{#c79}}79{{/c79}}{{#c80}}80{{/c80}}{{#c81}}81{{/c81}}{{#c82}}82{{/c82}}{{#c83}}83{{/c83}}{{#c84}}84{{/c84}}{{#c85}}85{{/c85}}{{#c86}}86{{/c86}}{{#c87}}87{{/c87}}{{#c88}}88{{/c88}}{{#c89}}89{{/c89}}{{#c90}}90{{/c90}}{{#c91}}91{{/c91}}{{#c92}}92{{/c92}}{{#c93}}93{{/c93}}{{#c94}}94{{/c94}}{{#c95}}95{{/c95}}{{#c96}}96{{/c96}}{{#c97}}97{{/c97}}{{#c98}}98{{/c98}}{{#c99}}99{{/c99}}{{#c100}}100{{/c100}}{{#c101}}101{{/c101}}{{#c102}}102{{/c102}}{{#c103}}103{{/c103}}{{#c104}}104{{/c104}}{{#c105}}105{{/c105}}{{#c106}}106{{/c106}}{{#c107}}107{{/c107}}{{#c108}}108{{/c108}}{{#c109}}109{{/c109}}{{#c110}}110{{/c110}}{{#c111}}111{{/c111}}{{#c112}}112{{/c112}}{{#c113}}113{{/c113}}{{#c114}}114{{/c114}}{{#c115}}115{{/c115}}{{#c116}}116{{/c116}}{{#c117}}117{{/c117}}{{#c118}}118{{/c118}}{{#c119}}119{{/c119}}{{#c120}}120{{/c120}}{{#c121}}121{{/c121}}{{#c122}}122{{/c122}}{{#c123}}123{{/c123}}{{#c124}}124{{/c124}}{{#c125}}125{{/c125}}{{#c126}}126{{/c126}}{{#c127}}127{{/c127}}{{#c128}}128{{/c128}}{{#c129}}129{{/c129}}{{#c130}}130{{/c130}}{{#c131}}131{{/c131}}{{#c132}}132{{/c132}}{{#c133}}133{{/c133}}{{#c134}}134{{/c134}}{{#c135}}135{{/c135}}{{#c136}}136{{/c136}}{{#c137}}137{{/c137}}{{#c138}}138{{/c138}}{{#c139}}139{{/c139}}{{#c140}}140{{/c140}}{{#c141}}141{{/c141}}{{#c142}}142{{/c142}}{{#c143}}143{{/c143}}{{#c144}}144{{/c144}}{{#c145}}145{{/c145}}{{#c146}}146{{/c146}}{{#c147}}147{{/c147}}{{#c148}}148{{/c148}}{{#c149}}149{{/c149}}{{#c150}}150{{/c150}}{{#c151}}151{{/c151}}{{#c152}}152{{/c152}}{{#c153}}153{{/c153}}{{#c154}}154{{/c154}}{{#c155}}155{{/c155}}{{#c156}}156{{/c156}}{{#c157}}157{{/c157}}{{#c158}}158{{/c158}}{{#c159}}159{{/c159}}{{#c160}}160{{/c160}}{{#c161}}161{{/c161}}{{#c162}}162{{/c162}}{{#c163}}163{{/c163}}{{#c164}}164{{/c164}}{{#c165}}165{{/c165}}{{#c166}}166{{/c166}}{{#c167}}167{{/c167}}{{#c168}}168{{/c168}}{{#c169}}169{{/c169}}{{#c170}}170{{/c170}}{{#c171}}171{{/c171}}{{#c172}}172{{/c172}}{{#c173}}173{{/c173}}{{#c174}}174{{/c174}}{{#c175}}175{{/c175}}{{#c176}}176{{/c176}}{{#c177}}177{{/c177}}{{#c178}}178{{/c178}}{{#c179}}179{{/c179}}{{#c180}}180{{/c180}}{{#c181}}181{{/c181}}{{#c182}}182{{/c182}}{{#c183}}183{{/c183}}{{#c184}}184{{/c184}}{{#c185}}185{{/c185}}{{#c186}}186{{/c186}}{{#c187}}187{{/c187}}{{#c188}}188{{/c188}}{{#c189}}189{{/c189}}{{#c190}}190{{/c190}}{{#c191}}191{{/c191}}{{#c192}}192{{/c192}}{{#c193}}193{{/c193}}{{#c194}}194{{/c194}}{{#c195}}195{{/c195}}{{#c196}}196{{/c196}}{{#c197}}197{{/c197}}{{#c198}}198{{/c198}}{{#c199}}199{{/c199}}{{#c200}}200{{/c200}}{{#c201}}201{{/c201}}{{#c202}}202{{/c202}}{{#c203}}203{{/c203}}{{#c204}}204{{/c204}}{{#c205}}205{{/c205}}{{#c206}}206{{/c206}}{{#c207}}207{{/c207}}{{#c208}}208{{/c208}}{{#c209}}209{{/c209}}{{#c210}}210{{/c210}}{{#c211}}211{{/c211}}{{#c212}}212{{/c212}}{{#c213}}213{{/c213}}{{#c214}}214{{/c214}}{{#c215}}215{{/c215}}{{#c216}}216{{/c216}}{{#c217}}217{{/c217}}{{#c218}}218{{/c218}}{{#c219}}219{{/c219}}{{#c220}}220{{/c220}}{{#c221}}221{{/c221}}{{#c222}}222{{/c222}}{{#c223}}223{{/c223}}{{#c224}}224{{/c224}}{{#c225}}225{{/c225}}{{#c226}}226{{/c226}}{{#c227}}227{{/c227}}{{#c228}}228{{/c228}}{{#c229}}229{{/c229}}{{#c230}}230{{/c230}}{{#c231}}231{{/c231}}{{#c232}}232{{/c232}}{{#c233}}233{{/c233}}{{#c234}}234{{/c234}}{{#c235}}235{{/c235}}{{#c236}}236{{/c236}}{{#c237}}237{{/c237}}{{#c238}}238{{/c238}}{{#c239}}239{{/c239}}{{#c240}}240{{/c240}}{{#c241}}241{{/c241}}{{#c242}}242{{/c242}}{{#c243}}243{{/c243}}{{#c244}}244{{/c244}}{{#c245}}245{{/c245}}{{#c246}}246{{/c246}}{{#c247}}247{{/c247}}{{#c248}}248{{/c248}}{{#c249}}249{{/c249}}{{#c250}}250{{/c250}}{{#c251}}251{{/c251}}{{#c252}}252{{/c252}}{{#c253}}253{{/c253}}{{#c254}}254{{/c254}}{{#c255}}255{{/c255}}{{#c256}}256{{/c256}}{{#c257}}257{{/c257}}{{#c258}}258{{/c258}}{{#c259}}259{{/c259}}{{#c260}}260{{/c260}}{{#c261}}261{{/c261}}{{#c262}}262{{/c262}}{{#c263}}263{{/c263}}{{#c264}}264{{/c264}}{{#c265}}265{{/c265}}{{#c266}}266{{/c266}}{{#c267}}267{{/c267}}{{#c268}}268{{/c268}}{{#c269}}269{{/c269}}{{#c270}}270{{/c270}}{{#c271}}271{{/c271}}{{#c272}}272{{/c272}}{{#c273}}273{{/c273}}{{#c274}}274{{/c274}}{{#c275}}275{{/c275}}{{#c276}}276{{/c276}}{{#c277}}277{{/c277}}{{#c278}}278{{/c278}}{{#c279}}279{{/c279}}{{#c280}}280{{/c280}}{{#c281}}281{{/c281}}{{#c282}}282{{/c282}}{{#c283}}283{{/c283}}{{#c284}}284{{/c284}}{{#c285}}285{{/c285}}{{#c286}}286{{/c286}}{{#c287}}287{{/c287}}{{#c288}}288{{/c288}}{{#c289}}289{{/c289}}{{#c290}}290{{/c290}}{{#c291}}291{{/c291}}{{#c292}}292{{/c292}}{{#c293}}293{{/c293}}{{#c294}}294{{/c294}}{{#c295}}295{{/c295}}{{#c296}}296{{/c296}}{{#c297}}297{{/c297}}{{#c298}}298{{/c298}}{{#c299}}299{{/c299}}{{#c300}}300{{/c300}}{{#c301}}301{{/c301}}{{#c302}}302{{/c302}}{{#c303}}303{{/c303}}{{#c304}}304{{/c304}}{{#c305}}305{{/c305}}{{#c306}}306{{/c306}}{{#c307}}307{{/c307}}{{#c308}}308{{/c308}}{{#c309}}309{{/c309}}{{#c310}}310{{/c310}}{{#c311}}311{{/c311}}{{#c312}}312{{/c312}}{{#c313}}313{{/c313}}{{#c314}}314{{/c314}}{{#c315}}315{{/c315}}{{#c316}}316{{/c316}}{{#c317}}317{{/c317}}{{#c318}}318{{/c318}}{{#c319}}319{{/c319}}{{#c320}}320{{/c320}}{{#c321}}321{{/c321}}{{#c322}}322{{/c322}}{{#c323}}323{{/c323}}{{#c324}}324{{/c324}}{{#c325}}325{{/c325}}{{#c326}}326{{/c326}}{{#c327}}327{{/c327}}{{#c328}}328{{/c328}}{{#c329}}329{{/c329}}{{#c330}}330{{/c330}}{{#c331}}331{{/c331}}{{#c332}}332{{/c332}}{{#c333}}333{{/c333}}{{#c334}}334{{/c334}}{{#c335}}335{{/c335}}{{#c336}}336{{/c336}}{{#c337}}337{{/c337}}{{#c338}}338{{/c338}}{{#c339}}339{{/c339}}{{#c340}}340{{/c340}}{{#c341}}341{{/c341}}{{#c342}}342{{/c342}}{{#c343}}343{{/c343}}{{#c344}}344{{/c344}}{{#c345}}345{{/c345}}{{#c346}}346{{/c346}}{{#c347}}347{{/c347}}{{#c348}}348{{/c348}}{{#c349}}349{{/c349}}{{#c350}}350{{/c350}}{{#c351}}351{{/c351}}{{#c352}}352{{/c352}}{{#c353}}353{{/c353}}{{#c354}}354{{/c354}}{{#c355}}355{{/c355}}{{#c356}}356{{/c356}}{{#c357}}357{{/c357}}{{#c358}}358{{/c358}}{{#c359}}359{{/c359}}{{#c360}}360{{/c360}}{{#c361}}361{{/c361}}{{#c362}}362{{/c362}}{{#c363}}363{{/c363}}{{#c364}}364{{/c364}}{{#c365}}365{{/c365}}{{#c366}}366{{/c366}}{{#c367}}367{{/c367}}{{#c368}}368{{/c368}}{{#c369}}369{{/c369}}{{#c370}}370{{/c370}}{{#c371}}371{{/c371}}{{#c372}}372{{/c372}}{{#c373}}373{{/c373}}{{#c374}}374{{/c374}}{{#c375}}375{{/c375}}{{#c376}}376{{/c376}}{{#c377}}377{{/c377}}{{#c378}}378{{/c378}}{{#c379}}379{{/c379}}{{#c380}}380{{/c380}}{{#c381}}381{{/c381}}{{#c382}}382{{/c382}}{{#c383}}383{{/c383}}{{#c384}}384{{/c384}}{{#c385}}385{{/c385}}{{#c386}}386{{/c386}}{{#c387}}387{{/c387}}{{#c388}}388{{/c388}}{{#c389}}389{{/c389}}{{#c390}}390{{/c390}}{{#c391}}391{{/c391}}{{#c392}}392{{/c392}}{{#c393}}393{{/c393}}{{#c394}}394{{/c394}}{{#c395}}395{{/c395}}{{#c396}}396{{/c396}}{{#c397}}397{{/c397}}{{#c398}}398{{/c398}}{{#c399}}399{{/c399}}{{#c400}}400{{/c400}}{{#c401}}401{{/c401}}{{#c402}}402{{/c402}}{{#c403}}403{{/c403}}{{#c404}}404{{/c404}}{{#c405}}405{{/c405}}{{#c406}}406{{/c406}}{{#c407}}407{{/c407}}{{#c408}}408{{/c408}}{{#c409}}409{{/c409}}{{#c410}}410{{/c410}}{{#c411}}411{{/c411}}{{#c412}}412{{/c412}}{{#c413}}413{{/c413}}{{#c414}}414{{/c414}}{{#c415}}415{{/c415}}{{#c416}}416{{/c416}}{{#c417}}417{{/c417}}{{#c418}}418{{/c418}}{{#c419}}419{{/c419}}{{#c420}}420{{/c420}}{{#c421}}421{{/c421}}{{#c422}}422{{/c422}}{{#c423}}423{{/c423}}{{#c424}}424{{/c424}}{{#c425}}425{{/c425}}{{#c426}}426{{/c426}}{{#c427}}427{{/c427}}{{#c428}}428{{/c428}}{{#c429}}429{{/c429}}{{#c430}}430{{/c430}}{{#c431}}431{{/c431}}{{#c432}}432{{/c432}}{{#c433}}433{{/c433}}{{#c434}}434{{/c434}}{{#c435}}435{{/c435}}{{#c436}}436{{/c436}}{{#c437}}437{{/c437}}{{#c438}}438{{/c438}}{{#c439}}439{{/c439}}{{#c440}}440{{/c440}}{{#c441}}441{{/c441}}{{#c442}}442{{/c442}}{{#c443}}443{{/c443}}{{#c444}}444{{/c444}}{{#c445}}445{{/c445}}{{#c446}}446{{/c446}}{{#c447}}447{{/c447}}{{#c448}}448{{/c448}}{{#c449}}449{{/c449}}{{#c450}}450{{/c450}}{{#c451}}451{{/c451}}{{#c452}}452{{/c452}}{{#c453}}453{{/c453}}{{#c454}}454{{/c454}}{{#c455}}455{{/c455}}{{#c456}}456{{/c456}}{{#c457}}457{{/c457}}{{#c458}}458{{/c458}}{{#c459}}459{{/c459}}{{#c460}}460{{/c460}}{{#c461}}461{{/c461}}{{#c462}}462{{/c462}}{{#c463}}463{{/c463}}{{#c464}}464{{/c464}}{{#c465}}465{{/c465}}{{#c466}}466{{/c466}}{{#c467}}467{{/c467}}{{#c468}}468{{/c468}}{{#c469}}469{{/c469}}{{#c470}}470{{/c470}}{{#c471}}471{{/c471}}{{#c472}}472{{/c472}}{{#c473}}473{{/c473}}{{#c474}}474{{/c474}}{{#c475}}475{{/c475}}{{#c476}}476{{/c476}}{{#c477}}477{{/c477}}{{#c478}}478{{/c478}}{{#c479}}479{{/c479}}{{#c480}}480{{/c480}}{{#c481}}481{{/c481}}{{#c482}}482{{/c482}}{{#c483}}483{{/c483}}{{#c484}}484{{/c484}}{{#c485}}485{{/c485}}{{#c486}}486{{/c486}}{{#c487}}487{{/c487}}{{#c488}}488{{/c488}}{{#c489}}489{{/c489}}{{#c490}}490{{/c490}}{{#c491}}491{{/c491}}{{#c492}}492{{/c492}}{{#c493}}493{{/c493}}{{#c494}}494{{/c494}}{{#c495}}495{{/c495}}{{#c496}}496{{/c496}}{{#c497}}497{{/c497}}{{#c498}}498{{/c498}}{{#c499}}499{{/c499}}{{#c500}}500{{/c500}}"
-        fcz = {
-            content: document.getElementById("fcz-content").cloneNode(true),
-            front: document.getElementById('fcz-back') === null,
-            viewport: document.getElementById('fcz-scroll-area')
-        }
-        // Parse options
-        for (const sheet of document.styleSheets) {
-            if (sheet.href) continue // Access non-local stylesheets throws error
-            for (const rule of sheet.cssRules) {
-                if (rule.selectorText !== '.fcz-config') continue
-                let vals
-                fcz['element'] = rule.style.getPropertyValue("--cloze-element")?.trim() || "div"
-                fcz['prompt-active'] = rule.style.getPropertyValue("--active-prompt")?.trim() || ""
-                fcz['prompt-inactive'] = rule.style.getPropertyValue("--inactive-prompt")?.trim() || ""
-                vals = rule.style.getPropertyValue("--expose")?.trim().split(/\s+/) || []
-                fcz['expose-chars'] = vals.shift() || "!"
-                fcz['expose-pos'] = vals.find(el => { return ['pre', 'begin', 'end', 'post'].includes(el) }) || "begin"
-                fcz['expose-reverse'] = vals.includes('reverse')
-                vals = rule.style.getPropertyValue("--scroll")?.trim().split(/\s+/) || []
-                fcz['scroll-front'] = vals.find(el => ['front-none', 'front-min', 'front-center', 'front-context'].includes(el))?.substring(6) || "center"
-                fcz['scroll-back'] = vals.find(el => ['back-none', 'back-min', 'back-center', 'back-context'].includes(el))?.substring(5) || "min"
-                fcz['scroll-iter'] = vals.find(el => ['iterate-none', 'iterate-min', 'iterate-center'].includes(el))?.substring(8) || "min"
-                fcz['scroll-iter'] = vals.find(el => ['click-none', 'click-min', 'click-center'].includes(el))?.substring(6) || "min"
-                vals = rule.style.getPropertyValue("--iterate")?.trim().split(/\s+/) || []
-                fcz['iter-clozes'] = vals.find(el => ['active', 'inactive', 'all'].includes(el)) || "active"
-                fcz['iter-top'] = vals.includes('top')
-                fcz['iter-top'] = vals.includes('loop')
-                fcz['iter-top'] = vals.includes('hide')
-                fcz['shortcuts-next-key'] = rule.style.getPropertyValue("--key-next-cloze")?.trim() || ""
-                fcz['shortcuts-prev-key'] = rule.style.getPropertyValue("--key-previous-cloze")?.trim() || ""
-                fcz['shortcuts-all-key'] = rule.style.getPropertyValue("--key-toggle-all")?.trim() || ""
-                vals = rule.style.getPropertyValue("--show")?.trim().split(/\s+/) || []
-                fcz['show-inactive-front'] = vals.includes('inactive-front') || false
-                fcz['show-inactive-back'] = vals.includes('inactive-back') || false
-                fcz['show-additional-front'] = vals.includes('additional-front') || false
-                fcz['show-additional-back'] = vals.includes('additional-back') || false
-                fcz['show-info-front'] = vals.includes('info-front') || false
-                fcz['show-info-back'] = vals.includes('info-back') || false
-            }
-        }
+/* CONFIGURATION BEGIN ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ */
+var config = {
+    prompt: '',            // Prompt when no hint
+    hint: '%h',               // %h is replaced with hint text
+    expose: {
+        chars: '!',             // Char(s) to mark exposed cloze
+        pos: 'begin',           // Char pos: `pre`, `begin`, `end` or `post`
+        reverse: false          // If true exposed clozes are hidden, others shown
+    },
+    scroll: {                   // Valid values: `none`, `min`, `center` or `context`
+        initial: 'chapter-context',     // Scoll on initial show
+        click: 'min',           // Scroll on cloze click
+        iterate: 'min'          // Scroll on iteration
+    },
+    iteration: {
+        top: false,             // Always start iteration from top
+        loop: true,             // Restart from top/bottom from end
+        hide: true              // Hide cloze iterated away from
+    },
+    shortcuts: {
+        next: 'j',              // Iterate to next cloze
+        previous: 'h',          // Iterate to previous cloze
+        toggle_all: 'k'         // Toggle all clozes and fields
+    },
+    show: {                     // `false` means initially collapsed/hidden
+        inactive: false,        // Inactive clozes
+        additional: false,      // Additional fields (Note, Mnemonics etc.)
+        info: false             // Information field
+    }
+}
+/* CONFIGURATION END ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ */
 
-        // Set up HTML for front or back
-        if (!fcz['front']) fcz['content'].classList.replace("fcz-front", "fcz-back")
-        // Set up correct pattern depending on expose position conf
-        const popen = fcz['expose-pos'] === 'pre'
-            ? `(?<expose>${fcz['expose-chars']})?[{]{2}c(?<cloze>\\d+)[:]{2}`
-            : `[{]{2}c(?<cloze>\\d+)[:]{2}(?<expose>${fcz['expose-chars']})?`
-        const pclose = '(?:[:]{2}(?<hint>.*?))?[}]{2}'
-        const opat = new RegExp(popen, 'gms')
-        const cpat = new RegExp(pclose, 'gms')
-        let id = 0 // Numerical part of FCZ ID of a specific cloze
-        fcz['content'].innerHTML = document.getElementById("fcz-field").innerHTML
-        .replace(opat, (match, p1, p2, offset, string, groups) => {
-            const cloze = groups.cloze
-            const expose = groups.expose
-            const active = (cloze === card_ord)
-            const id_str = "fcz-id-" + (++id).toString()
+</script>
+<!-- FUNCTIONALITY BEGIN -->
+<script type="application/javascript">
+var fcz
+if (!fcz) fcz = {}
+/////////////////////////////////////////////////////////////////
+// Generic init done on front and back
+fcz.init = () => {
+    fcz.content = document.getElementById('fcz-content')
+    fcz.viewport = document.getElementById('fcz-scroll-area')
+    if (!fcz.ordinal)
+        fcz.ordinal = parseInt(document.querySelector('span.cloze').dataset.ordinal)
+    fcz.exposed = fcz.generate_exposed()
 
-            // Exposed clozes will be fixed in show-state when not active (and not navigable)
-            if (!active && expose == !fcz['expose-reverse'])
-                return `<${fcz['element']} id="${id_str}" class="fcz-expose" cloze="${cloze}">`
+    // Generic: setup inactive clozes
+    fcz.content.querySelectorAll('span.cloze-inactive').forEach(span => {
+        if (fcz.exposed(span) || span.querySelector('span.cloze'))
+            span.classList.remove('cloze-inactive')
+        else if (!fcz.cfg.show.inactive) fcz.hide(span)
+    })
 
-            let state = ''
-            if (!active) {
-                if (fcz['front']) state = fcz['show-inactive-front'] ? 'show' : 'hide'
-                else state = fcz['show-inactive-back'] ? 'show' : 'hide'
-            }
+    // Generic: show additional fields per default depending on config
+    if (fcz.cfg.show.additional)
+        fcz.viewport.querySelectorAll(':not(#info).additional-content')
+        .forEach(nd => { nd.style.display = 'block' })
 
-            return `<${fcz['element']} id="${id_str}" class="${active ? 'fcz-active': 'fcz-inactive'}" state="${state}" cloze="${cloze}" onclick="toggle(this);event.stopPropagation()">`
-                + `<${fcz['element']} class="fcz-cloze-prompt">${active ? fcz['prompt-active'] : fcz['prompt-inactive']}</${fcz['element']}>`
-                + `<${fcz['element']} class="fcz-cloze-content">`
+    // Generic: show info field per default depending on config
+    if (fcz.cfg.show.info)
+        document.querySelector('div#info.additional-content')
+        .style.display = 'block'
+
+    // Generic: reveal finished content, hide placeholder and scroll to first active cloze
+    fcz.content.style.display = 'block'
+    document.getElementById('fcz-content-placeholder').style.display = 'none'
+    fcz.current = null
+
+    // Setup event handlers if not already done
+    if (!fcz.init_done) {
+        fcz.init_done = true
+        document.addEventListener("click", (evt) => {
+            // Cloze click handling
+            if (evt.target.classList.contains('cloze')
+                || evt.target.classList.contains('cloze-inactive')) {
+                    evt.stopPropagation() // To avoid toggling parents
+                    if (!fcz.cfg.iteration.top) fcz.current = evt.target
+                    fcz.toggle(evt.target)
+                    fcz.scroll_to(fcz.cfg.scroll.click, evt.target)
+            // Additional content (header and actual content)
+            } else if (evt.target.classList.contains('additional-header'))
+                fcz.toggle_field(evt.target.firstElementChild)
+            else if (evt.target.classList.contains('additional-content'))
+                fcz.toggle_field(evt.target)
+            // Toggle all button
+            else if (evt.target.id === 'fcz-show-all-btn') fcz.toggle_all()
+            // Nav bars
+            else if (evt.target.id === 'nav-toggle-all') fcz.toggle_all()
+            else if (evt.target.id === 'nav-prev-cloze') fcz.iter(false)
+            else if (evt.target.id === 'nav-next-cloze') fcz.iter(true)
         })
-        .replace(cpat, (match, p1, offset, string, groups) => {
-            return `</${fcz['element']}><${fcz['element']} class="fcz-cloze-hint">${groups.hint || ''}</${fcz['element']}>`
-                + `</${fcz['element']}>`
-        })
 
-        fcz['content'].querySelectorAll('.fcz-active').forEach((nd) => {
-            if(!fcz['front']) toggle(nd, 'show')
-            else toggle(nd, nd.querySelector('.fcz-cloze-hint').innerHTML ? 'hint' : 'hide')
-        })
-
-        // Show additional fields per default depending on config
-        if ((fcz['front'] && fcz['show-additional-front'])
-            || (!fcz['front'] && fcz['show-additional-back']))
-                document.querySelectorAll('.additional-content').forEach(nd => {
-                    nd.classList.replace('fcz-field-hide', 'fcz-field-show')
-                })
-        // Show info field per default depending on config
-        if ((fcz['front'] && fcz['show-info-front'])
-            || (!fcz['front'] && fcz['show-info-back']))
-                document.querySelector('div#info.additional-content').classList.replace('fcz-field-hide', 'fcz-field-show')
-
-        // Convoluted DOM insertion of result to try to ensure all images loaded and resized before scrolling
-        Promise.all(Array.from(document.images).filter(img => !img.complete).map(img => new Promise(resolve => { img.onload = img.onerror = resolve }))).then(() => {
-            const resize_obs = new ResizeObserver(ents => {
-                resize_obs.disconnect()
-                //scroll_init(fcz.findex, fcz.lindex, fcz.front ? 'front' : 'back')
-            })
-            resize_obs.observe(fcz.content)
-        })
-        document.getElementById('fcz-scroll-area').replaceChild(fcz.content, document.getElementById('fcz-content'))
-
-        // Add keyboard shortcuts
-        document.addEventListener("keydown", function (evt) {
-            if (evt.key === fcz['shortcuts-next-key'] && evt.shiftKey === fcz['shortcuts-next-shift']
-                && evt.ctrlKey === fcz['shortcuts-next-ctrl'] && evt.altKey === fcz['shortcuts-next-alt']
-                && evt.getModifierState('AltGraph') === fcz['shortcuts-next-altgr']
-                && evt.getModifierState('Meta') === ['shortcuts-next-meta'])  {
-                    fcz_iterate(true)
-                    evt.preventDefault()
-            } else if (evt.key === fcz['shortcuts-prev-key'] && evt.shiftKey === fcz['shortcuts-prev-shift']
-                && evt.ctrlKey === fcz['shortcuts-prev-ctrl'] && evt.altKey === fcz['shortcuts-prev-alt']
-                && evt.getModifierState('AltGraph') === fcz['shortcuts-prev-altgr']
-                && evt.getModifierState('Meta') === ['shortcuts-prev-meta'])  {
-                    fcz_iterate(false)
-                    evt.preventDefault()
-            } else if (evt.key === fcz['shortcuts-all-key'] && evt.shiftKey === fcz['shortcuts-all-shift']
-                && evt.ctrlKey === fcz['shortcuts-all-ctrl'] && evt.altKey === fcz['shortcuts-all-alt']
-                && evt.getModifierState('AltGraph') === fcz['shortcuts-all-altgr']
-                && evt.getModifierState('Meta') === ['shortcuts-all-meta'])  {
-                    fcz_toggle_all()
-                    evt.preventDefault()
+        document.addEventListener("keydown", (evt) => {
+            if (evt.key === fcz.cfg.shortcuts.next) {
+                fcz.iter(true)
+                evt.preventDefault()
+            } else if (evt.key === fcz.cfg.shortcuts.previous) {
+                fcz.iter(false)
+                evt.preventDefault()
+            } else if (evt.key === fcz.cfg.shortcuts.toggle_all) {
+                fcz.toggle_all()
+                evt.preventDefault()
             }
         })
-        // Init done
-        fcz.content.setAttribute("fcz-init", "true")
     }
 
-    /*******************************************************
-    * Cloze toggler
-    *******************************************************/
-    function toggle(self, nstate = null) {
-        const cstate = self.getAttribute('state')
-        if (!nstate) {
-            const hint_el = self.querySelector('.fcz-cloze-hint')
-            const hint = hint_el.innerHTML
-            const active = self.classList.contains('fcz-active')
-            if (cstate === 'hide') nstate = hint ? 'hint' : 'show'
-            else if (cstate === 'hint') nstate = 'show'
-            else nstate = active && hint ? 'hint' : 'hide'
-        }
+    fcz.scroll_to(fcz.cfg.scroll.initial)
+}
 
-        if (cstate === nstate) return
-        self.setAttribute('state', nstate)
-        let nd = self
-        while ((nd = nd.parentElement).id !== 'fcz-content') {
-            if (nd.classList.contains('fcz-active') || nd.classList.contains('fcz-inactive'))
-                nd.setAttribute('state', 'show')
-        }
-        if (nstate !== 'show')
-            self.querySelectorAll('.fcz-active, .fcz-inactive')
-            .forEach((el) => { el.setAttribute('state', 'hide')})
+/////////////////////////////////////////////////////////////////
+// Create exposed function from config
+fcz.generate_exposed = () => {
+    let exposed_
+    if (fcz.cfg.expose.pos === 'pre')
+        exposed_ = (el) => {return el.previousSibling.wholeText?.endsWith(fcz.cfg.expose.chars)}
+    else if (fcz.cfg.expose.pos === 'end')
+        exposed_ = (el) => {return el.innerHTML.endsWith(fcz.cfg.expose.chars)}
+    else if (fcz.cfg.expose.pos === 'post')
+        exposed_ = (el) => {return el.nextSibling.wholeText?.startsWith(fcz.cfg.expose.chars)}
+    else // fcz.cfg.expose.pos === 'begin'
+        exposed_ = (el) => {return el.innerHTML.startsWith(fcz.cfg.expose.chars)}
+    return fcz.cfg.expose.reverse ? (el) => {return !exposed_(el)} : exposed_
+}
+
+/////////////////////////////////////////////////////////////////
+// Hide cloze (and save cloze content as needed)
+fcz.hide = (self) => {
+    if (self.dataset.cloze === undefined) self.dataset.cloze = self.innerHTML
+    self.classList.add('hide')
+    self.innerHTML = fcz.get_hint(self)
+}
+
+/////////////////////////////////////////////////////////////////
+// Show cloze (and save cloze hint as needed)
+fcz.show = (self) => {
+    if (self.dataset.hint === undefined) self.dataset.hint = fcz.get_hint(self)
+    self.classList.remove('hide')
+    self.innerHTML = self.dataset.cloze
+}
+
+/////////////////////////////////////////////////////////////////
+// Get cloze hint (and save to dataset as needed)
+fcz.get_hint = (self) => {
+    if (self.dataset.hint === undefined) {
+        if (fcz.cfg.hasOwnProperty('prompt')
+            && (self.innerHTML === '[...]' || self.classList.contains('cloze-inactive')))
+                self.dataset.hint = fcz.cfg.prompt
+        else if (fcz.cfg.hasOwnProperty('hint') && self.innerHTML !== '[...]')
+            self.dataset.hint = fcz.cfg.hint.replace('%h', self.innerHTML.slice(1, -1))
+        else
+            self.dataset.hint = '[...]'
+    }
+    return self.dataset.hint
+}
+
+/////////////////////////////////////////////////////////////////
+// Toggle cloze state
+fcz.toggle_cloze = (self) => {
+    if (span.classList.contains('hide')) fcz.show(self)
+    else fcz.hide(self)
+}
+
+/////////////////////////////////////////////////////////////////
+// Toggle additional field state
+fcz.toggle_field = (self) => {
+    self.style.display = self.style.display === 'none' ? 'block' : 'none'
+}
+
+/////////////////////////////////////////////////////////////////
+// Toggle all clozes and fields, sync towards show
+fcz.toggle_all = () => {
+    if (fcz.content.querySelector('span.cloze.hide, span.cloze-inactive.hide'))
+        fcz.content.querySelectorAll('span.cloze.hide, span.cloze-inactive.hide')
+        .forEach(el => { fcz.show(el) })
+    else
+        fcz.content.querySelectorAll('span.cloze:not(.hide), span.cloze-inactive:not(.hide)')
+        .forEach(el => { fcz.hide(el) })
+}
+
+/////////////////////////////////////////////////////////////////
+// Iterate forward or backward
+fcz.iter = (fwd) => {
+    const els = fcz.content.querySelectorAll('span.cloze');
+    let nxt
+    const end = fwd ? els.slice(-1) : els[0]
+    if (fcz.current === (fwd ? els.slice(-1) : els[0]))
+        if (!fcz.cfg.iteration.loop) return
+        else nxt = fwd ? els[0] : els.slice(-1)
+    for (let i = 1; !nxt && i < els.length; i++)
+        if (els[i] === fcz.current) nxt = els[i + fwd ? 1 : -1]
+    if (fcz.cfg.iteration.hide) fcz.hide(fcz.current)
+    fcz.show(fcz.current = nxt)
+    scroll_to(fcz.cfg.scroll.iterate, fcz.current)
+}
+
+/////////////////////////////////////////////////////////////////
+// Scroll to active clozes or specific cloze
+fcz.scroll_to = (scroll, self = null) => {
+    if (scroll === 'none') return
+    let first, last
+    if (self) first = last = self
+    else {
+        const active = fcz.content.querySelectorAll('span.cloze')
+        first = active[0]
+        last = active[active.length - 1]
     }
 
+    const top = first.getBoundingClientRect().top + fcz.viewport.scrollTop -  fcz.viewport.offsetTop
+    const bottom = last.getBoundingClientRect().bottom + fcz.viewport.scrollTop - fcz.viewport.offsetTop
+    const middle = (fcz.viewport.offsetHeight - (bottom - top)) / 2
+    const center = top - middle
+    let y = 0
 
-    /*******************************************************
-    * Calculate line height
-    *******************************************************/
+    // Context scroll, either from preceeding or HR/HX
+    if (scroll.slice(-7) === 'context') {
+        const all = fcz.content.querySelectorAll('span.cloze, span.cloze-inactive')
+        for (let i = 1; i < all.length; i++)
+            if (all[i] === first) {
+                y = Math.min(prev.getBoundingClientRect().bottom + fcz.viewport.scrollTop - fcz.viewport.offsetTop, center)
+                break
+            }
+        if (scroll === 'chapter-context') {
+            let sep
+            for (nd of fcz.content.querySelectorAll('hr, h1, h2, h3, h4, h5, h6, span.cloze')) {
+                if (nd.tagName === 'SPAN') break
+                sep = nd
+            }
+            if (sep) {
+                const border = sep.tagName === 'HR'
+                    ? sep.getBoundingClientRect().bottom
+                    : sep.getBoundingClientRect().top + 5
+                y = Math.min(y, border + fcz.viewport.scrollTop - fcz.viewport.offsetTop)
+            } else if (fcz.content.querySelector('hr, h1, h2, h3, h4, h5, h6'))
+                y = fcz.viewport.scrollTop - fcz.viewport.offsetTop
+            // else y is already set to prev.bottom or center
+        }
+    }
+    else if (bottom - top >= fcz.viewport.offsetHeight)
+        // All clozes will not fit - scroll to first at top regardless
+        y = top - line_height(window.getComputedStyle(first.previousElementSibling ? first.previousElementSibling : first, ':before'))
+    else if (scroll === 'center') y = center
+    // scroll === 'min'
+    else y = bottom - fcz.viewport.offsetHeight + line_height(window.getComputedStyle(last.nextElementSibling
+            ? last.nextElementSibling
+            : last,
+        ':after'))
+    fcz.viewport.scrollTo(0, y)
+
     function line_height(style) {
         let lh
         if (style.lineHeight.toLowerCase() === "normal") {
-            var nd = document.createElement(fcz.element)
+            var nd = document.createElement('span')
             nd.innerHTML = '&nbsp;'
             nd.style = style
             nd.style.border = '0px'
@@ -244,129 +323,21 @@
             fcz.content.removeChild(nd)
         }
         if (!lh) lh = parseInt(style.lineHeight) || 20
-        return lh 
+        return lh
     }
- 
-    /*******************************************************
-    * Initial scroll on show/flip
-    *******************************************************/
-    function scroll_init(findex, lindex = -1, side) {
-        const scroll =  side === "front" ? fcz.scroll.front : fcz.scroll.back        
-        if (scroll === 'none') return
+}
 
-        const first = fcz.clozes[findex]
-        const last = fcz.clozes[lindex === - 1 ? findex : lindex]
-        const top = first.node.getBoundingClientRect().top + fcz.viewport.scrollTop -  fcz.viewport.offsetTop
-        const bottom = last.node.getBoundingClientRect().bottom + fcz.viewport.scrollTop - fcz.viewport.offsetTop
-        const middle = (fcz.viewport.offsetHeight - (bottom - top)) / 2
-        const center = top - middle
-        const prev = findex
-            ? fcz.clozes[findex - 1].node.getBoundingClientRect().bottom + fcz.viewport.scrollTop - fcz.viewport.offsetTop
-            : 0
-        let y = 0
+// Side specific initializations
+fcz.cfg = config
+// Change active prompt if needed
+var custom_prompt = fcz.cfg.prompt !== '[...]' || fcz.cfg.hint !== '[%h]'
+document.body.querySelectorAll('span.cloze').forEach(span => {
+    span.classList.add('hide') // starts as hidden
+    if (custom_prompt) span.innerHTML = fcz.get_hint(span)
+})
 
-        if (scroll === 'context') y = Math.min(prev, center)
-        else if (bottom - top >= fcz.viewport.offsetHeight)
-            // All clozes will not fit - scroll to first at top regardless
-            y = top - line_height(window.getComputedStyle(first.node.previousElementSibling ? first.node.previousElementSibling : first.node, ':before'))
-        else if (scroll === 'center') y = center
-        else { // Scrolling as little as possible
-            y = bottom - fcz.viewport.offsetHeight + line_height(window.getComputedStyle(last.node.nextElementSibling ? last.node.nextElementSibling : last.node, ':after'))
-            if (side === 'back') {
-                if (fcz.scroll.front === "context") y = Math.max(Math.min(prev, center), y)
-                else if (fcz.scroll.front === "center") y = Math.max(center, y)
-            }
-        }
-        fcz.viewport.scrollTo(0, y)
-    }
-
-    /*******************************************************
-    * Navigation scroll (iter/click)
-    *******************************************************/
-    function scroll_to_cloze(index, scroll) {        
-        if (scroll === 'none') return
-        const cloze = fcz.clozes[index]
-        const top = cloze.node.getBoundingClientRect().top + fcz.viewport.scrollTop -  fcz.viewport.offsetTop
-        const bottom = cloze.node.getBoundingClientRect().bottom + fcz.viewport.scrollTop - fcz.viewport.offsetTop
-        const middle = (fcz.viewport.offsetHeight - (bottom - top)) / 2
-        const center = top - middle
-
-        if ((scroll === 'min' && top < fcz.viewport.scrollTop)
-            || bottom - top >= fcz.viewport.offsetHeight)
-                fcz.viewport.scrollTo(0, top - line_height(window.getComputedStyle(cloze.node.previousElementSibling ? cloze.node.previousElementSibling : cloze.node, ':before')))
-        else if (scroll === 'center') fcz.viewport.scrollTo(0, center)
-        else if (bottom > (fcz.viewport.scrollTop + fcz.viewport.offsetHeight))
-            fcz.viewport.scrollTo(0, bottom - fcz.viewport.offsetHeight + line_height(window.getComputedStyle(cloze.node.nextElementSibling ? cloze.node.nextElementSibling : cloze.node, ':after')))
-    }
-    
-    /*******************************************************
-    * "Toggles" all clozes (not really all, just syncing all of them) or optionally set to specific state
-    * If all clozes (active and inactive) in show state: hide all
-    * If at least one cloze (active or inactive) in non-show state: show all
-    *******************************************************/
-    function fcz_toggle_all(state = "") {
-        // No state requested, find out whether to show or hide
-        if (!state) {
-            for (let el of fcz.clozes) {
-                if (!state) { state = el.state === "show" ? "hide" : "show" }
-                else if (state === el.state) {
-                    state = "show"
-                    break
-                }
-            }            
-        }
-
-        fcz.clozes.forEach(el => { state === "show" ? el.do_show() : el.do_hide() })
-        fcz.cindex = fcz.findex
-    }
-
-    /*******************************************************
-    * Iterate forward or backward
-    *******************************************************/
-    function fcz_iterate(fwd) {
-        // If we have clicked a cloze closed it should be next
-        if (fcz.cindex > -1 && fcz.clozes[fcz.cindex].state !== 'show') {
-            fcz.clozes[fcz.cindex].do_show()
-            return
-        }
-
-        // If we are at loop start index and trying to go back - stop
-        if (!fcz.iter.loop && !fwd && fcz.cindex === fcz.iindex) return
-
-        // Find next index
-        let pindex = fcz.cindex // Previous index
-        let nindex = pindex // Next index
-        do {
-            nindex += fwd ? 1 : -1
-            if (nindex === -1) nindex = fcz.clozes.length - 1
-            else if (nindex === fcz.clozes.length) nindex = 0
-        } while (!(fcz.clozes[nindex].active || fcz.iter.cloze === "all"
-            || fcz.iter.cloze === "inactive"))
-
-        // If we are at loop end and trying to go forward - stop
-        if (!fcz.iter.loop && fwd && nindex === fcz.iindex) return
-
-        fcz.cindex = nindex
-
-        // If this is initial cycle, store cycle start
-        if (fcz.iindex === null) fcz.iindex = fcz.cindex
-
-        // Hide previous index per config
-        if (fcz.iter.hide && pindex > -1 && fcz.clozes[pindex].state === "show")
-            fcz.clozes[pindex].do_hide()
-        // Show and scroll current index
-        fcz.clozes[fcz.cindex].do_show()
-        scroll_to_cloze(fcz.cindex, fcz.scroll.iter)
-    }
-
-    /*******************************************************
-    * Toggle field container
-    *******************************************************/
-    function fcz_toggle_field(caller, id, show = false) {
-        let el = document.getElementById(id)
-        if (!show && el.classList.contains("fcz-field-show")) el.classList.replace("fcz-field-show", "fcz-field-hide")
-        else el.classList.replace("fcz-field-hide", "fcz-field-show")
-    }
+// Run generic initialization
+fcz.init()
 </script>
 <!-- FUNCTIONALITY END -->
-<!-- FCZ 1632356464 END -->
+<!-- FCZ2 END -->

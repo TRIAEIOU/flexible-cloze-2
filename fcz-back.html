@@ -1,6 +1,106 @@
-<!-- FCZ 1632356464 BEGIN [1.12] -->
+<!-- Title field at top of page -->
+<div id="fcz-title" class="{{Tags}} title back">{{Title}}</div>
+
+<!-- Main scrollable area of the screen -->
+<div id="fcz-scroll-area" class="fcz-scroll-area back">
+
+    <!-- Main content field, has to be present but can be styled/layouted differently -->
+    <div id="fcz-content">{{cloze:Text}}</div>
+    <div id="fcz-content-placeholder"></div>
+
+    <!-- Additional fields, delete the divs to remove from the card -->
+    <div id="fcz-additional">
+        {{#Note}}
+            <div id="note-header" class="additional-header">Note</div>
+            <div id="note" class="additional-content">{{Note}}</div>
+        {{/Note}}
+        {{#Mnemonics}}
+            <div id="mnemonics-header" class="additional-header">Mnemonics</div>
+            <div id="mnemonics" class="additional-content">{{Mnemonics}}</div>
+        {{/Mnemonics}}
+        {{#Extra}}
+            <div id="extra-header" class="additional-header">Extra</div>
+            <div id="extra" class="additional-content">{{Extra}}</div>
+        {{/Extra}}
+        <div id="info-header" class="additional-header"> Information</div>
+        <div id="info" class="additional-content">
+            <div id="deck"><b>Deck</b>: {{Deck}}</div>
+            {{#Tags}}<div id="tags"><b>Tags</b>: {{Tags}}</div>{{/Tags}}
+        </div>
+    </div>
+    <!-- Optional "show all button" -->
+    <div id="fcz-show-all-btn">Show all</div>
+</div>
+
+<!-- Footer at the bottom of the screen, delete to remove or modify/add to change -->
+<div id="fcz-footer" class="back">
+    <!-- Symbol legend, delete divs to remove or modify number and content of child divs -->
+    <div id="fcz-legend-footer">
+        <div class="fcz-legend-entry">&#8594; Becomes</div>
+        <div class="fcz-legend-entry">&#8658; Leads to</div>
+        <div class="fcz-legend-entry">&#10521; Excite/activate</div>
+        <div class="fcz-legend-entry">&#10979; Inhibit/deactivate</div>
+    </div>
+    <!-- Flag legend, delete divs to remove, text and color can be set on "Styles" page -->
+    <div id="fcz-flag-footer">
+        <div id="fcz-flag-red" class="fcz-flag"></div>
+        <div id="fcz-flag-orange" class="fcz-flag"></div>
+        <div id="fcz-flag-green" class="fcz-flag"></div>
+        <div id="fcz-flag-blue" class="fcz-flag"></div>
+        <div id="fcz-flag-pink" class="fcz-flag"></div>
+        <div id="fcz-flag-turquoise" class="fcz-flag"></div>
+        <div id="fcz-flag-purple" class="fcz-flag"></div>
+    </div>
+</div>
+
+<!-- Screen edge navigation controls, delete the divs to remove -->
+<div id="nav-toggle-all" class="nav-area-top"></div>
+<div id="nav-prev-cloze" class="nav-area-side"></div>
+<div id="nav-next-cloze" class="nav-area-side"></div>
+
+<!-- FCZ2 BEGIN [2.0] -->
+<script type="application/javascript">
+
+/* CONFIGURATION BEGIN ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ */
+var config = {
+    prompt: '[...]',            // Prompt when no hint
+    hint: '[%h]',               // %h is replaced with hint text
+    expose: {
+        chars: '!',             // Char(s) to mark exposed cloze
+        pos: 'begin',           // Char pos: `pre`, `begin`, `end` or `post`
+        reverse: false          // If true exposed clozes are hidden, others shown
+    },
+    scroll: {                   // Valid values: `none`, `min`, `center` or `context`
+        initial: 'center',     // Scoll on initial show
+        click: 'min',           // Scroll on cloze click
+        iterate: 'min'          // Scroll on iteration
+    },
+    iteration: {
+        top: false,             // Always start iteration from top
+        loop: true,             // Restart from top/bottom from end
+        hide: false             // Hide cloze iterated away from
+    },
+    shortcuts: {
+        next: 'j',              // Iterate to next cloze
+        previous: 'h',          // Iterate to previous cloze
+        toggle_all: 'k'         // Toggle all clozes and fields
+    },
+    show: {                     // `false` means initially collapsed/hidden
+        inactive: false,        // Inactive clozes
+        additional: true,       // Additional fields (Note, Mnemonics etc.)
+        info: true              // Information field
+    }
+}
+/* CONFIGURATION END ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ */
+
+</script>
 <!-- FUNCTIONALITY BEGIN -->
-<span id="fcz-back" style="display:none">{{cloze:Text}}</span>
-{{FrontSide}}
+<script type="application/javascript">
+var fcz
+// Side specific initializations
+fcz.cfg = config
+// Run generic initialization
+fcz.init()
+</script>
 <!-- FUNCTIONALITY END -->
-<!-- FCZ 1632356464 END -->
+<!-- FCZ2 END -->

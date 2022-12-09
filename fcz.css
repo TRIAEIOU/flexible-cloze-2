@@ -1,6 +1,5 @@
-/*-- FCZ 1632356464 BEGIN [1.10] --*/
+/*-- FCZ2 BEGIN [2.0] --*/
 /*-- FUNCTIONALITY BEGIN --*/
-/* Content between FCZ begin and end will be overwritten on add-on update. As updates will not update the styling and layout for existing users the latest default version of layout and complete styling can be found in the addon directory */
 .card
 {  position: fixed !important; top: 0; bottom: 0; left: 0; right: 0; display: flex; }
 
@@ -9,8 +8,9 @@
 
 #fcz-title, #title { flex: 0 0; }
 #fcz-scroll-area { flex: 1 1; display: flex; flex-flow: column nowrap; overflow: auto; }
-    #fcz-content { flex: 1 1; }
-    #fcz-additional { flex: 0 0; z-index: 2; }
+    #fcz-content { flex: 1 1; display: none; }
+    #fcz-content-placeholder { flex: 1 1; }
+    #fcz-additional { flex: 0 0; z-index: 2; display: none; }
         .additional-header { cursor: pointer; }
 #fcz-show-all { flex: 0 0; cursor: pointer; }
 
@@ -23,56 +23,11 @@
 #nav-toggle-all { position: fixed; top: 0; left: 0; right: 0;  z-index: 1; }
 #nav-prev-cloze { position: fixed;  top: 0; left: 0; bottom: 0;  z-index: 1; }
 #nav-next-cloze { position: fixed;  top: 0; right: 0; bottom: 0;  z-index: 1; }
-	
-.fcz-field-hide   { display: none; }
-.fcz-field-show   { display: block; }
-[state="hide"] > .fcz-cloze-prompt {display:inline}
-[state="hint"] > .fcz-cloze-prompt {display:none}
-[state="show"] > .fcz-cloze-prompt {display:none}
-[state="hide"] > .fcz-cloze-hint {display:none}
-[state="hint"] > .fcz-cloze-hint {display:inline}
-[state="show"] > .fcz-cloze-hint {display:none}
-[state="hide"] > .fcz-cloze-content {display:none}
-[state="hint"] > .fcz-cloze-content {display:none}
-[state="show"] > .fcz-cloze-content {display:inline}
 /*-- FUNCTIONALITY END --*/
 /*-- STYLE BEGIN --*/
 /* =======================================================
-Below are configurations for the look and feel, changing/deleting these values will not break the functionality (although incoherrent styling will make things strange).
+Look and feel configurations, changing/deleting will not break functionality (although incoherrent styling will make things look strange).
 ========================================================= */
-
-/* FLEXIBLE CLOZE CONFIGURATION=======================================
---cloze-element: Type of HTML element (div or span) to enclose clozes in
---inactive-prompt: Optional string to show on hidden inactive clozes
---active-prompt: Optional string to show on hidden active clozes
---expose: Character(s) and position to mark exposed clozes (always display) e.g. '--expose: ! begin;' means {{c1::!This will always be shown when inactive}}. First character(s) must be the character(s) to mark expose clozes, position options are pre, begin, end, post (correspoding to pre{{c1::begin xxx end}}post
---scroll: Scroll behaviour, min will scroll as little as possible to display cloze
-  Scroll on initial card show/flip: center, min, none or context
-  Scroll on iteration (next/previous): iterate-center, iterate-min, iterate-none or iterate-context
-  Scroll on click: click-center, click-min, click-none or click-context
---iterate: Iteration behaviour
-  Which clozes to iterate over: active, inactive or all
-  Always start from top (not from last clicked): top
-  Loop iteration (restart on last cloze): loop
---key-next-cloze/previous-cloze/toggle-all: Keyboard shortcuts
---show: When to automatically show inactive and non-cloze fields
-  Inactive clozes: inactive-front, inactive-back
-  Additional fields: additional-front, additional-back
-  Information field: info-front, info-back
-*/
-.fcz-config {
-    --cloze-element: div;
-    --inactive-prompt: ;
-    --active-prompt: ;
-    --expose: ! begin;
-    --scroll: front-context back-min iterate-min click-min;
-    --iterate: active hide loop top;
-    --key-next-cloze: j;
-    --key-previous-cloze: h;
-    --key-toggle-all: k;
-    --show: additional-back info-front info-back;
-}
-
 
 /* NAVIGATION AREA CONFIGURATION ======================================
 Top bar navigation area configuration, increase size by increasing height */
@@ -90,7 +45,7 @@ Top bar navigation area configuration, increase size by increasing height */
 
 
 /* TITLE FIELD STYLING ============================================= */
-#fcz-title, .title
+#fcz-title
 { border-bottom: solid black 3px; text-transform: uppercase; font-weight: bold; margin: 10px 10px 0px 10px; }
 
 
@@ -100,67 +55,31 @@ Top bar navigation area configuration, increase size by increasing height */
 
 
 /* CLOZE STYLING =============================================== */
-/* Active clozes base look and feel, valid on front and back and all states */
-.fcz-active
-{ margin: 1px; padding : 5px; vertical-align: middle; min-width: 100px; min-height: 0.5em;
-border-color: black; border-width: 2px; border-style: solid; }
+/* Clozes base look and feel, valid on front and back */
+span.cloze, span.cloze-inactive
+{ margin: 1px; padding : 5px; vertical-align: middle; min-width: 100px; min-height: 0.5em; border-color: black; border-width: 2px; border-style: solid; display: block; }
+
+/* Display form and style of hide-state clozes (front and back), change to "inline" for a continuous line */
+span.cloze.hide, span.cloze-inactive.hide
+{ display: inline-block; }
 
 /* Display form and style of active clozes on front */
-.fcz-front .fcz-active
+.front span.cloze
 { background-color: #FA8072; }
 
 /* Display form and style of active clozes on back */
-.fcz-back .fcz-active
+.back span.cloze
 { background-color: #D0F0C0; }
 
-/* Display form and style of hint-state active clozes (front and back), change to "inline" for a continuous line */
-.fcz-active[state=hide]
-{ display: inline-block; }
-
-/* Display form and style of hint-state active clozes (front and back), change to "inline" for a continuous line */
-.fcz-active[state=hint]
-{ display: inline-block; }
-
-/* Display form and style of show-state active clozes (front and back), change to "inline" for a continuous line */
-.fcz-active[state=show]
-{ display: block; }
-
-/* Inactive clozes base look and feel, valid on front and back and all states  */
-.fcz-inactive
-{ margin: 1px; padding : 5px; vertical-align: middle; min-width: 100px; min-height: 0.5em;
-border-color: black; border-width: 1px; border-style: solid; }
-
-/* Display form and style of inactive clozes on front */
-.fcz-front .fcz-inactive
+/* Display form and style of inactive clozes on front and back */
+.front span.cloze-inactive, .back span.cloze-inactive
 { background-color: #F0F0F0; }
 
-/* Display form and style of inactive clozes on back */
-.fcz-back .fcz-inactive
-{ background-color: #F0F0F0; }
-
-/* Display form of hide-state inactive clozes (front and back), change to "inline" for a continuous line */
-.fcz-inactive[state=hide]
-{ display: inline-block; }
-
-/* Display form of hint-state inactive clozes (front and back), change to "inline" for a continuous line */
-.fcz-inactive[state=hint]
-{ display: inline-block; }
-
-/* Display form of show-state inactive clozes (front and back), change to "inline" for a continuous line */
-.fcz-inactive[state=show]
-{ display: block; }
-
-/* Exposed clozes base look and feel */
-.fcz-expose
-{ display: inline; }
-
-
-/* ANSWER SIDE STYLING ============================================== */
+/* SHOW ALL BUTTON ============================================== */
 /* Show all button/bar styling (and if visible or not) */
-#fcz-show-all, .fcz-show-all-btn
+#fcz-show-all-btn
 { display: none;  background-color: #465A65; color: white; text-align: center; text-transform: uppercase;
 font-size: 15px; font-weight: bold; padding: 5px; border-bottom: 1px solid white; }
-
 
 /* ADDITIONAL FIELD STYLING ========================================= */
 /* Look and field of the additional field area */
@@ -223,18 +142,14 @@ font-size: 15px; font-weight: bold; padding: 5px; border-bottom: 1px solid white
 #fcz-flag-purple, #fcz-flag-purple::before
 { background-color: #A64CA6; content: "Mark"; }
 /*-- STYLE END --*/
-/*-- FCZ 1632356464 END --*/
+/*-- FCZ2 END --*/
 
 
-/* ====================================================== */
-/* Miscellaneous sensible styling of various elements, remove/change as needed ======= */
+/* MISCELLANEOUS STYLING, HAS NOTHING TO DO WITH FLEXIBLE CLOZE ============== */
+/* Highlight other text runs */
 code, kbd, var, samp, tt
 { background-color: #F0F0F0; }
-/*code { background-color: #294958; color: #FFFFFF; }*/
 
-
-/* ======================================================= */
-/* Sensible compression of output - reduce white space generally - remove/change as needed  */
 /* reduce whitespace and indents for lists */
 li
 { margin: 0; }
@@ -242,8 +157,10 @@ ul, ol
 { padding: 0em 0em 0em 2em; margin-top: 0.5em; margin-bottom: 0.5em; }
 
 /* Reduce first list indent and spacing when a cloze begins with a list */
-div[id^="fcz-id-"] > ul:first-child, div[id^="fcz-id-"] > ol:first-child,
-div[id^="fcz-id-"] > br:first-child + ul, div[id^="fcz-id-"] > br:first-child + ol
+span.cloze > ul:first-child, span.cloze-inactive > ul:first-child
+span.cloze > ol:first-child, span.cloze-inactive > ol:first-child
+span.cloze > br:first-child + ul, span.cloze-inactive > br:first-child + ul,
+span.cloze > br:first-child + ol, span.cloze-inactive > br:first-child + ol
 { padding: 0em 0em 0em 1em; margin-top: 0em; margin-bottom: 0em; }
 
 /* Reduce list indents and spacing when in a table */
@@ -265,6 +182,7 @@ h4 { text-decoration: underline; }
 h5 { font-style: italic; text-decoration: underline; }
 h6 { font-style: italic }
 
+/* Stronger bold weight */
 b { font-weight: bolder; }
 
 /* Definition lists formating */

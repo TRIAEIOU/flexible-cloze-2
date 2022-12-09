@@ -7,8 +7,8 @@ from anki.models import NotetypeDict
 from anki.hooks import addHook
 
 FCZ_NAME = "Flexible Cloze"
-FCZ_BTAG = "FCZ 1632356464 BEGIN"
-FCZ_ETAG = "FCZ 1632356464 END"
+FCZ_BTAG = "FCZ2 BEGIN"
+FCZ_ETAG = "FCZ2 END"
 FUNC_BTAG = "FUNCTIONALITY BEGIN"
 FUNC_ETAG = "FUNCTIONALITY END"
 STYLE_BTAG = "STYLE BEGIN"
@@ -23,8 +23,8 @@ def load_file() -> Tuple:
     with open(os.path.join(ADDON_PATH, FNAME_FRONT)) as fh:
         front = fh.read()
     with open(os.path.join(ADDON_PATH, FNAME_BACK)) as fh:
-        back = fh.read() 
-    with open(os.path.join(ADDON_PATH, FNAME_CSS)) as fh: 
+        back = fh.read()
+    with open(os.path.join(ADDON_PATH, FNAME_CSS)) as fh:
         css = fh.read()
     return (front, back, css)
 
@@ -34,7 +34,7 @@ def backup_file(front:str, back:str, css:str):
         fh.write(front)
     with open(os.path.join(ADDON_PATH, f"{FNAME_BACK}.bak"), "w") as fh:
         fh.write(back)
-    with open(os.path.join(ADDON_PATH, f"{FNAME_CSS}.bak"), "w") as fh: 
+    with open(os.path.join(ADDON_PATH, f"{FNAME_CSS}.bak"), "w") as fh:
         fh.write(css)
 
 
@@ -47,7 +47,7 @@ def parse_tag(text:str, btag:str, etag:str) -> Dict:
     match = re.match(pattern, text, flags = re.S)
     if not match:
         return None
-    return {"pre": match.group(1), "tag": match.group(2), "post": match.group(12), 
+    return {"pre": match.group(1), "tag": match.group(2), "post": match.group(12),
         "btag": match.group(3), "ver": match.group(6), "content": match.group(8), "etag": match.group(9)}
 
 
@@ -95,7 +95,7 @@ def update():
 
     ###################################################################
     # Existing install - upgrade
-    else: 
+    else:
         # Parse existing install
         cfront = model["tmpls"][0]["qfmt"]
         cback = model["tmpls"][0]["afmt"]
@@ -120,7 +120,7 @@ def update():
                 clear_update()
             elif ans == QMessageBox.No:
                 clear_update()
-        
+
         # Existing install valid
         else:
             nfront_parts = parse_tag(nfront, FCZ_BTAG, FCZ_ETAG)
@@ -133,7 +133,7 @@ def update():
             <li>Select "Functionality only" to only install functionality updates, overwriting any personal changes inside "FUNCTIONALITY BEGIN/END" tags but leaving content inside "STYLE BEGIN/END" tags intact (temporary backups created in add-on folder).</li>
             <li>Select "None" to manually implement updates from the source files in the add-on directory (fcz-front.html, fcz-back.html, fcz.css).</li>
             <li>Select "Cancel" to delay update until next Anki start (for instance, to copy a personalized template to another name).</li></ul>"""
-            
+
             #####################################################################
             # Version specific updates
             ver_msg = "" # Version specific message(s) as <li>'s
@@ -142,21 +142,6 @@ def update():
             if float(cback_parts['ver']) < 1.7:
                 cback_parts['pre'] = cback_parts['pre'].replace('{{FrontSide}}', '')
                 cback_parts['post'] = cback_parts['post'].replace('{{FrontSide}}', '')
-
-            # Inform of configuration option changes in 1.10
-            if float(cback_parts['ver']) < 1.11:
-                cfront_parts['pre'] = cfront_parts['pre'].replace('fcz_toggle_field(', 'fcz().toggle_field(')
-                cfront_parts['pre'] = cfront_parts['pre'].replace('fcz_toggle_all(', 'fcz().toggle_all(')
-                cfront_parts['pre'] = cfront_parts['pre'].replace('fcz_iterate(', 'fcz().iterate(')
-                ver_msg += '<li>Code refactoring: FCZ code has been refactored and some function calls used in the HTML part of the front side has been change. The addon will automatically update these unless you discard the update.</li>'
-
-            # Inform of configuration option changes in 1.10
-            if float(cback_parts['ver']) < 1.10:
-                ver_msg += '<li>Configuration migration: Configuration options have been refactored for clarity, the current version will need to be migrated. Chose "Functionality and styling" to overwrite current version (but not personal styling) or migrate configuration changes manually (.fcz-config rule) from fcz.css in addon source directory.</li>'
-            
-            # Inform of front HTML change in 1.8
-            if float(cback_parts['ver']) < 1.8:
-                ver_msg += '<li>Version migration: Front side HTML has been refactored to be compatible with other addons, the current version will need to be migrated. Chose "All" to completely overwrite current version (including personal styling) or migrate front changes manually (HTML before the FCZ BEGIN tag) from fcz-front.html in addon source directory.</li>'
 
             if ver_msg:
                 update_msg = f'''{update_msg}<br><b>IMPORTANT - VERSION SPECIFIC UPDATES</b><ul>{ver_msg}</ul>'''
