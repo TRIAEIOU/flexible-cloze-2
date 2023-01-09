@@ -63,7 +63,7 @@
 
 /* CONFIGURATION BEGIN ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ */
 var config = {
-    prompt: '[...]',            // Prompt when no hint
+    prompt: '',                 // Prompt when no hint
     hint: '[%h]',               // %h is replaced with hint text
     expose: {
         chars: '!',             // Char(s) to mark exposed cloze
@@ -97,10 +97,8 @@ var config = {
 <!-- FUNCTIONALITY BEGIN -->
 <script type="application/javascript">
 var fcz
-// Side specific initializations
-fcz.cfg = config
-// Run generic initialization
-fcz.init()
+// Run card setup
+fcz.init(config, null)
 </script>
 <!-- FUNCTIONALITY END -->
 <!-- FCZ2 END -->
