@@ -1,15 +1,15 @@
 <!-- Title field at top of page -->
-<div id="fcz-title" class="{{Tags}} title front">{{Title}}</div>
+<div id="fc2-title" class="{{Tags}} title front">{{Title}}</div>
 
 <!-- Main scrollable area of the screen -->
-<div id="fcz-scroll-area" class="fcz-scroll-area front">
+<div id="fc2-scroll-area" class="fc2-scroll-area front">
 
     <!-- Main content field, has to be present but can be styled/layouted differently -->
-    <div id="fcz-content">{{cloze:Text}}</div>
-    <div id="fcz-content-placeholder"></div>
+    <div id="fc2-content">{{cloze:Text}}</div>
+    <div id="fc2-content-placeholder"></div>
 
     <!-- Additional fields, delete the divs to remove from the card -->
-    <div id="fcz-additional">
+    <div id="fc2-additional">
         {{#Note}}
             <div id="note-header" class="additional-header">Note</div>
             <div id="note" class="additional-content">{{Note}}</div>
@@ -29,27 +29,27 @@
         </div>
     </div>
     <!-- Optional "show all button" -->
-    <div id="fcz-show-all-btn">Show all</div>
+    <div id="fc2-show-all-btn">Show all</div>
 </div>
 
 <!-- Footer at the bottom of the screen, delete to remove or modify/add to change -->
-<div id="fcz-footer" class="front">
+<div id="fc2-footer" class="front">
     <!-- Symbol legend, delete divs to remove or modify number and content of child divs -->
-    <div id="fcz-legend-footer">
-        <div class="fcz-legend-entry">&#8594; Becomes</div>
-        <div class="fcz-legend-entry">&#8658; Leads to</div>
-        <div class="fcz-legend-entry">&#10521; Excite/activate</div>
-        <div class="fcz-legend-entry">&#10979; Inhibit/deactivate</div>
+    <div id="fc2-legend-footer">
+        <div class="fc2-legend-entry">&#8594; Becomes</div>
+        <div class="fc2-legend-entry">&#8658; Leads to</div>
+        <div class="fc2-legend-entry">&#10521; Excite/activate</div>
+        <div class="fc2-legend-entry">&#10979; Inhibit/deactivate</div>
     </div>
     <!-- Flag legend, delete divs to remove, text and color can be set on "Styles" page -->
-    <div id="fcz-flag-footer">
-        <div id="fcz-flag-red" class="fcz-flag"></div>
-        <div id="fcz-flag-orange" class="fcz-flag"></div>
-        <div id="fcz-flag-green" class="fcz-flag"></div>
-        <div id="fcz-flag-blue" class="fcz-flag"></div>
-        <div id="fcz-flag-pink" class="fcz-flag"></div>
-        <div id="fcz-flag-turquoise" class="fcz-flag"></div>
-        <div id="fcz-flag-purple" class="fcz-flag"></div>
+    <div id="fc2-flag-footer">
+        <div id="fc2-flag-red" class="fc2-flag"></div>
+        <div id="fc2-flag-orange" class="fc2-flag"></div>
+        <div id="fc2-flag-green" class="fc2-flag"></div>
+        <div id="fc2-flag-blue" class="fc2-flag"></div>
+        <div id="fc2-flag-pink" class="fc2-flag"></div>
+        <div id="fc2-flag-turquoise" class="fc2-flag"></div>
+        <div id="fc2-flag-purple" class="fc2-flag"></div>
     </div>
 </div>
 
@@ -58,11 +58,11 @@
 <div id="nav-prev-cloze" class="nav-area-side"></div>
 <div id="nav-next-cloze" class="nav-area-side"></div>
 
-<!-- FCZ2 BEGIN [2.0] -->
-<script type="application/javascript">
+<!-- FC2 BEGIN -->
 
-/* CONFIGURATION BEGIN ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ */
-var config = {
+<!-- CONFIGURATION BEGIN ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ -->
+<script type="application/javascript">
+    var config = {
     prompt: '',            // Prompt when no hint
     hint: '%h',               // %h is replaced with hint text
     expose: {
@@ -71,7 +71,7 @@ var config = {
         reverse: false          // If true exposed clozes are hidden, others shown
     },
     scroll: {                   // Valid values: `none`, `min`, `center` or `context`
-        initial: 'chapter-context',     // Scoll on initial show
+        initial: 'section-context',     // Scoll on initial show
         click: 'min',           // Scroll on cloze click
         iterate: 'min'          // Scroll on iteration
     },
@@ -91,24 +91,23 @@ var config = {
         info: false             // Information field
     }
 }
-/* CONFIGURATION END ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ */
-
 </script>
+<!-- CONFIGURATION END ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ -->
+
 <!-- FUNCTIONALITY BEGIN -->
 <script type="application/javascript">
-if (typeof FCZ !== 'function') window.FCZ = class {
+if (typeof window.FC2 !== 'function') window.FC2 = class {
     content = null // parent of card HTML
     viewport = null // scroll area
     ordinal = 0 // current cloze ordinal
     exposed = null // function to determine if cloze is exposed
     init_done = false // flag to avoid adding multiple event listeners
 
-    /////////////////////////////////////////////////////////////////
-    // Generic init done on front and back
+    /** Generic init done on front and back */
     init(config, specific) {
         this.cfg = config
-        this.content = document.getElementById('fcz-content')
-        this.viewport = document.getElementById('fcz-scroll-area')
+        this.content = document.getElementById('fc2-content')
+        this.viewport = document.getElementById('fc2-scroll-area')
         this.current = this.content.querySelector('.cloze')
 
         if (!this.ordinal)
@@ -134,7 +133,7 @@ if (typeof FCZ !== 'function') window.FCZ = class {
 
         // Generic: reveal finished content, hide placeholder and scroll to first active cloze
         this.content.style.display = 'block'
-        document.getElementById('fcz-content-placeholder').style.display = 'none'
+        document.getElementById('fc2-content-placeholder').style.display = 'none'
 
         // Setup event handlers if not already done
         if (!this.init_done) {
@@ -144,31 +143,31 @@ if (typeof FCZ !== 'function') window.FCZ = class {
                 if (evt.target.classList.contains('cloze')
                     || evt.target.classList.contains('cloze-inactive')) {
                         evt.stopPropagation() // To avoid toggling parents
-                        if (!fcz.cfg.iteration.top) fcz.current = evt.target
-                        fcz.toggle_cloze(evt.target)
-                        fcz.scroll_to(fcz.cfg.scroll.click, evt.target)
+                        if (!fc2.cfg.iteration.top) fc2.current = evt.target
+                        fc2.toggle_cloze(evt.target)
+                        fc2.scroll_to(fc2.cfg.scroll.click, evt.target)
                 // Additional content (header and actual content)
                 } else if (evt.target.classList.contains('additional-header'))
-                    fcz.toggle_field(evt.target.firstElementChild)
+                    fc2.toggle_field(evt.target.firstElementChild)
                 else if (evt.target.classList.contains('additional-content'))
-                    fcz.toggle_field(evt.target)
+                    fc2.toggle_field(evt.target)
                 // Toggle all button
-                else if (evt.target.id === 'fcz-show-all-btn') fcz.toggle_all()
+                else if (evt.target.id === 'fc2-show-all-btn') fc2.toggle_all()
                 // Nav bars
-                else if (evt.target.id === 'nav-toggle-all') fcz.toggle_all()
-                else if (evt.target.id === 'nav-prev-cloze') fcz.iter(false)
-                else if (evt.target.id === 'nav-next-cloze') fcz.iter(true)
+                else if (evt.target.id === 'nav-toggle-all') fc2.toggle_all()
+                else if (evt.target.id === 'nav-prev-cloze') fc2.iter(false)
+                else if (evt.target.id === 'nav-next-cloze') fc2.iter(true)
             })
 
             document.addEventListener("keydown", (evt) => {
-                if (evt.key === fcz.cfg.shortcuts.next) {
-                    fcz.iter(true)
+                if (evt.key === fc2.cfg.shortcuts.next) {
+                    fc2.iter(true)
                     evt.preventDefault()
-                } else if (evt.key === fcz.cfg.shortcuts.previous) {
-                    fcz.iter(false)
+                } else if (evt.key === fc2.cfg.shortcuts.previous) {
+                    fc2.iter(false)
                     evt.preventDefault()
-                } else if (evt.key === fcz.cfg.shortcuts.toggle_all) {
-                    fcz.toggle_all()
+                } else if (evt.key === fc2.cfg.shortcuts.toggle_all) {
+                    fc2.toggle_all()
                     evt.preventDefault()
                 }
             })
@@ -178,8 +177,7 @@ if (typeof FCZ !== 'function') window.FCZ = class {
         this.scroll_to(this.cfg.scroll.initial)
     }
 
-    /////////////////////////////////////////////////////////////////
-    // Create exposed function from config
+    /** Create exposed function from config */
     generate_exposed() {
         let exposed_
         if (this.cfg.expose.pos === 'pre')
@@ -193,8 +191,7 @@ if (typeof FCZ !== 'function') window.FCZ = class {
         return this.cfg.expose.reverse ? (el) => {return !exposed_(el)} : exposed_
     }
 
-    /////////////////////////////////////////////////////////////////
-    // Hide cloze (and save cloze content as needed)
+    /** Hide cloze (and save cloze content as needed) */
     hide(cloze) {
         if (!cloze || cloze.classList.contains('hide')) return
         if (cloze.dataset.cloze === undefined) cloze.dataset.cloze = cloze.innerHTML
@@ -204,8 +201,7 @@ if (typeof FCZ !== 'function') window.FCZ = class {
         cloze.innerHTML = cloze.dataset.hint
     }
 
-    /////////////////////////////////////////////////////////////////
-    // Show cloze (and save cloze hint as needed)
+    /** Show cloze (and save cloze hint as needed) */
     show(cloze) {
         if (!cloze || !cloze.classList.contains('hide')) return
         if (cloze.dataset.hint === undefined) {
@@ -220,22 +216,19 @@ if (typeof FCZ !== 'function') window.FCZ = class {
             this.hide(child)
     }
 
-    /////////////////////////////////////////////////////////////////
-    // Toggle cloze visibility state
+    /** Toggle cloze visibility state */
     toggle_cloze(cloze) {
         cloze.classList.contains('hide') ? this.show(cloze) : this.hide(cloze)
     }
 
-    /////////////////////////////////////////////////////////////////
-    // Toggle field visibility state
+    /** Toggle field visibility state */
     toggle_field(field) {
         field.classList.contains('hide')
             ? field.classList.remove('hide')
             : field.classList.add('hide')
     }
 
-    /////////////////////////////////////////////////////////////////
-    // Toggle all clozes and fields, sync towards show
+    /** Toggle all clozes and fields, sync towards show */
     toggle_all() {
         if (this.content.querySelector('.cloze.hide, .cloze-inactive.hide'))
             this.content.querySelectorAll('.cloze.hide, .cloze-inactive.hide')
@@ -245,8 +238,7 @@ if (typeof FCZ !== 'function') window.FCZ = class {
             .forEach(el => { this.hide(el) })
     }
 
-    /////////////////////////////////////////////////////////////////
-    // Iterate forward or backward, start by showing current if hidden
+    /** Iterate forward or backward, start by showing current if hidden */
     iter(fwd) {
         const els = this.content.querySelectorAll('.cloze');
         let nxt
@@ -265,8 +257,7 @@ if (typeof FCZ !== 'function') window.FCZ = class {
         this.scroll_to(this.cfg.scroll.iterate, this.current)
     }
 
-    /////////////////////////////////////////////////////////////////
-    // Scroll to active clozes or specific cloze
+    /** Scroll to active clozes or specific cloze */
     scroll_to(scroll, cloze = null) {
         if (scroll === 'none') return
         let first, last
@@ -291,7 +282,7 @@ if (typeof FCZ !== 'function') window.FCZ = class {
                     y = Math.min(first.getBoundingClientRect().bottom + this.viewport.scrollTop - this.viewport.offsetTop, center)
                     break
                 }
-            if (scroll === 'chapter-context') {
+            if (scroll === 'section-context') {
                 let sep
                 for (const nd of this.content.querySelectorAll('hr, h1, h2, h3, h4, h5, h6, .cloze')) {
                     if (nd.tagName === 'SPAN') break
@@ -337,10 +328,10 @@ if (typeof FCZ !== 'function') window.FCZ = class {
     }
 }
 
-var fcz
-if(!fcz) fcz = new window.FCZ()
+var fc2
+if(!fc2) fc2 = new window.FC2()
 // Run initialization
-fcz.init(config, function() {
+fc2.init(config, function() {
     // Side specific: hide active clozes
     this.content.querySelectorAll('.cloze').forEach(cloze => {
         this.hide(cloze)
@@ -348,4 +339,5 @@ fcz.init(config, function() {
 })
 </script>
 <!-- FUNCTIONALITY END -->
-<!-- FCZ2 END -->
+
+<!-- FC2 END -->

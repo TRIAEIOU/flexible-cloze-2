@@ -1,15 +1,15 @@
 <!-- Title field at top of page -->
-<div id="fcz-title" class="{{Tags}} title back">{{Title}}</div>
+<div id="fc2-title" class="{{Tags}} title back">{{Title}}</div>
 
 <!-- Main scrollable area of the screen -->
-<div id="fcz-scroll-area" class="fcz-scroll-area back">
+<div id="fc2-scroll-area" class="fc2-scroll-area back">
 
     <!-- Main content field, has to be present but can be styled/layouted differently -->
-    <div id="fcz-content">{{cloze:Text}}</div>
-    <div id="fcz-content-placeholder"></div>
+    <div id="fc2-content">{{cloze:Text}}</div>
+    <div id="fc2-content-placeholder"></div>
 
     <!-- Additional fields, delete the divs to remove from the card -->
-    <div id="fcz-additional">
+    <div id="fc2-additional">
         {{#Note}}
             <div id="note-header" class="additional-header">Note</div>
             <div id="note" class="additional-content">{{Note}}</div>
@@ -29,27 +29,27 @@
         </div>
     </div>
     <!-- Optional "show all button" -->
-    <div id="fcz-show-all-btn">Show all</div>
+    <div id="fc2-show-all-btn">Show all</div>
 </div>
 
 <!-- Footer at the bottom of the screen, delete to remove or modify/add to change -->
-<div id="fcz-footer" class="back">
+<div id="fc2-footer" class="back">
     <!-- Symbol legend, delete divs to remove or modify number and content of child divs -->
-    <div id="fcz-legend-footer">
-        <div class="fcz-legend-entry">&#8594; Becomes</div>
-        <div class="fcz-legend-entry">&#8658; Leads to</div>
-        <div class="fcz-legend-entry">&#10521; Excite/activate</div>
-        <div class="fcz-legend-entry">&#10979; Inhibit/deactivate</div>
+    <div id="fc2-legend-footer">
+        <div class="fc2-legend-entry">&#8594; Becomes</div>
+        <div class="fc2-legend-entry">&#8658; Leads to</div>
+        <div class="fc2-legend-entry">&#10521; Excite/activate</div>
+        <div class="fc2-legend-entry">&#10979; Inhibit/deactivate</div>
     </div>
     <!-- Flag legend, delete divs to remove, text and color can be set on "Styles" page -->
-    <div id="fcz-flag-footer">
-        <div id="fcz-flag-red" class="fcz-flag"></div>
-        <div id="fcz-flag-orange" class="fcz-flag"></div>
-        <div id="fcz-flag-green" class="fcz-flag"></div>
-        <div id="fcz-flag-blue" class="fcz-flag"></div>
-        <div id="fcz-flag-pink" class="fcz-flag"></div>
-        <div id="fcz-flag-turquoise" class="fcz-flag"></div>
-        <div id="fcz-flag-purple" class="fcz-flag"></div>
+    <div id="fc2-flag-footer">
+        <div id="fc2-flag-red" class="fc2-flag"></div>
+        <div id="fc2-flag-orange" class="fc2-flag"></div>
+        <div id="fc2-flag-green" class="fc2-flag"></div>
+        <div id="fc2-flag-blue" class="fc2-flag"></div>
+        <div id="fc2-flag-pink" class="fc2-flag"></div>
+        <div id="fc2-flag-turquoise" class="fc2-flag"></div>
+        <div id="fc2-flag-purple" class="fc2-flag"></div>
     </div>
 </div>
 
@@ -58,10 +58,10 @@
 <div id="nav-prev-cloze" class="nav-area-side"></div>
 <div id="nav-next-cloze" class="nav-area-side"></div>
 
-<!-- FCZ2 BEGIN [2.0] -->
-<script type="application/javascript">
+<!-- FC2 BEGIN -->
 
-/* CONFIGURATION BEGIN ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ */
+<!-- CONFIGURATION BEGIN ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ -->
+<script type="application/javascript">
 var config = {
     prompt: '',                 // Prompt when no hint
     hint: '[%h]',               // %h is replaced with hint text
@@ -91,14 +91,15 @@ var config = {
         info: true              // Information field
     }
 }
-/* CONFIGURATION END ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ */
-
 </script>
+<!-- CONFIGURATION END ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ -->
+
 <!-- FUNCTIONALITY BEGIN -->
 <script type="application/javascript">
-var fcz
+var fc2
 // Run card setup
-fcz.init(config, null)
+fc2.init(config, null)
 </script>
 <!-- FUNCTIONALITY END -->
-<!-- FCZ2 END -->
+
+<!-- FC2 END -->

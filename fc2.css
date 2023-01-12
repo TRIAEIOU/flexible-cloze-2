@@ -1,4 +1,5 @@
-/*-- FCZ2 BEGIN [2.0] --*/
+/*-- FC2 BEGIN --*/
+
 /*-- FUNCTIONALITY BEGIN --*/
 .card
 {  position: fixed !important; top: 0; bottom: 0; left: 0; right: 0; display: flex; }
@@ -6,24 +7,25 @@
 #qa, #content
 { flex: 1 1; display: flex; flex-flow: column nowrap; overflow: auto; margin: 0px; }
 
-#fcz-title, #title { flex: 0 0; }
-#fcz-scroll-area { flex: 1 1; display: flex; flex-flow: column nowrap; overflow: auto; }
-    #fcz-content { flex: 1 1; display: none; }
-    #fcz-content-placeholder { flex: 1 1; }
-    #fcz-additional { flex: 0 0; z-index: 2; display: none; }
+#fc2-title, #title { flex: 0 0; }
+#fc2-scroll-area { flex: 1 1; display: flex; flex-flow: column nowrap; overflow: auto; }
+    #fc2-content { flex: 1 1; display: none; }
+    #fc2-content-placeholder { flex: 1 1; }
+    #fc2-additional { flex: 0 0; z-index: 2; display: none; }
         .additional-header { cursor: pointer; }
-#fcz-show-all { flex: 0 0; cursor: pointer; }
+#fc2-show-all { flex: 0 0; cursor: pointer; }
 
-#fcz-footer { flex: 0 0; z-index: 2; }
-	#fcz-legend-footer { display: flex; flex-flow: row nowrap; }
-		.fcz-legend-entry, #fcz-legent-entry {flex: 1 1;}
-	#fcz-flag-footer { display: flex; flex-flow: row nowrap }
-		.fcz-flag { flex: 1 1 100%; }
+#fc2-footer { flex: 0 0; z-index: 2; }
+	#fc2-legend-footer { display: flex; flex-flow: row nowrap; }
+		.fc2-legend-entry, #fc2-legent-entry {flex: 1 1;}
+	#fc2-flag-footer { display: flex; flex-flow: row nowrap }
+		.fc2-flag { flex: 1 1 100%; }
 
 #nav-toggle-all { position: fixed; top: 0; left: 0; right: 0;  z-index: 1; }
 #nav-prev-cloze { position: fixed;  top: 0; left: 0; bottom: 0;  z-index: 1; }
 #nav-next-cloze { position: fixed;  top: 0; right: 0; bottom: 0;  z-index: 1; }
 /*-- FUNCTIONALITY END --*/
+
 /*-- STYLE BEGIN --*/
 /* =======================================================
 Look and feel configurations, changing/deleting will not break functionality (although incoherrent styling will make things look strange).
@@ -45,12 +47,12 @@ Top bar navigation area configuration, increase size by increasing height */
 
 
 /* TITLE FIELD STYLING ============================================= */
-#fcz-title
+#fc2-title
 { border-bottom: solid black 3px; text-transform: uppercase; font-weight: bold; margin: 10px 10px 0px 10px; }
 
 
 /* TEXT FIELD STYLING ============================================= */
-#fcz-content
+#fc2-content
 { margin: 10px; }
 
 
@@ -77,13 +79,13 @@ span.cloze.hide, span.cloze-inactive.hide
 
 /* SHOW ALL BUTTON ============================================== */
 /* Show all button/bar styling (and if visible or not) */
-#fcz-show-all-btn
+#fc2-show-all-btn
 { display: none;  background-color: #465A65; color: white; text-align: center; text-transform: uppercase;
 font-size: 15px; font-weight: bold; padding: 5px; border-bottom: 1px solid white; }
 
 /* ADDITIONAL FIELD STYLING ========================================= */
 /* Look and field of the additional field area */
-#fcz-additional
+#fc2-additional
 { border-top: 3px solid black; margin: 0px 10px 0px 10px; }
 
 /* Additional field title look and feel */
@@ -97,52 +99,53 @@ font-size: 15px; font-weight: bold; padding: 5px; border-bottom: 1px solid white
 
 /* SYMBOL LEGEND FOOTER STYLING ===================================== */
 /* Base symbol legend look and feel */
-.fcz-legend-entry
+.fc2-legend-entry
 {text-align: center; text-transform: uppercase; font-size: 10px; font-weight: bold; vertical-align: center; background-color: #465A65; color: white; border-left: 1px solid white;}
 
 /* Specific styling of first entry/div (to avaid a white border on left in default styling) */
-.fcz-legend-entry:first-child
+.fc2-legend-entry:first-child
 { border-left: unset; }
 
 /* Specific styling of first letter in each entry (make symbol bigger) */
-.fcz-legend-entry:first-letter
+.fc2-legend-entry:first-letter
 { font-size: 150%; }
 
 
 /* FLAG LEGEND FOOTER STYLING ======================================= */
 /* Flag legend general look and feel */
-#fcz-flag-footer
+#fc2-flag-footer
 {text-align: center; text-transform: uppercase; font-size: 10px; font-weight: bold; }
 
 /* Red flag legend look and feel, set content to whatever value that should be displayed */
-#fcz-flag-red, #fcz-flag-red::before
+#fc2-flag-red, #fc2-flag-red::before
 { background-color: #FD7C6E; content: "Incorrect"; }
 
 /* Orange flag legend look and feel, set content to whatever value that should be displayed */
-#fcz-flag-orange, #fcz-flag-orange::before
+#fc2-flag-orange, #fc2-flag-orange::before
 { background-color: #FAA76C; content: "Duplicate"; }
 
 /* Green flag legend look and feel, set content to whatever value that should be displayed */
-#fcz-flag-green, #fcz-flag-green::before
+#fc2-flag-green, #fc2-flag-green::before
 {background-color: #81A984; content: "Formating"; }
 
 /* Blue flag legend look and feel, set content to whatever value that should be displayed */
-#fcz-flag-blue, #fcz-flag-blue::before
+#fc2-flag-blue, #fc2-flag-blue::before
 { background-color: #ADB9CA; content: "Rephrase"; }
 
 /* Pink flag legend look and feel, set content to whatever value that should be displayed */
-#fcz-flag-pink, #fcz-flag-pink::before
+#fc2-flag-pink, #fc2-flag-pink::before
 { background-color: #D89B9B; content: "Discard"; }
 
 /* Turquoise flag legend look and feel, set content to whatever value that should be displayed */
-#fcz-flag-turquoise, #fcz-flag-turquoise::before
+#fc2-flag-turquoise, #fc2-flag-turquoise::before
 { background-color: #33B3A6; content: "Consolidate"; }
 
 /* Purple flag legend look and feel, set content to whatever value that should be displayed */
-#fcz-flag-purple, #fcz-flag-purple::before
+#fc2-flag-purple, #fc2-flag-purple::before
 { background-color: #A64CA6; content: "Mark"; }
 /*-- STYLE END --*/
-/*-- FCZ2 END --*/
+
+/*-- FC2 END --*/
 
 
 /* MISCELLANEOUS STYLING, HAS NOTHING TO DO WITH FLEXIBLE CLOZE ============== */
