@@ -1,8 +1,8 @@
-# Flexible cloze 2.0
+# Flexible cloze 2
 
-Reimplementation of [Flexible cloze](https://ankiweb.net/shared/info/1632356464) Anki addon to handle nested clozes avalable from Anki 2.15.56 as well as remove lesser used features for easier maintenance. FC2 is a configurable cloze note type for keeping related information (and cards) on the same note.
+Reimplementation of [Flexible cloze](https://ankiweb.net/shared/info/1632356464) Anki addon to handle nested clozes avalable from Anki 2.15.56 as well as remove lesser used features for easier maintenance. FC2 ([GitHub](https://github.com/TRIAEIOU/flexible-cloze-2)) is a configurable cloze note type for keeping related information (and cards) on the same note.
 
-**Ideas for the functionality of this cloze variant blatantly stolen from trgkanki's Cloze (Hide all) [https://ankiweb.net/shared/info/1709973686] and RisingOrange's Enhanced Cloze (for Anki 2.1) [https://ankiweb.net/shared/info/1990296174] - both of which are excellent addons. However all code written from scratch (ok, I peeked at some other code).**
+**Ideas for the functionality of Flexible cloze (1 and 2) was blatantly stolen from trgkanki's Cloze (Hide all) [https://ankiweb.net/shared/info/1709973686] and RisingOrange's Enhanced Cloze (for Anki 2.1) [https://ankiweb.net/shared/info/1990296174] - both of which are excellent addons.**
 
 **ALL CREDIT FOR INNOVATION GOES TO TRGANKI AND RISINGORANGE**
 
@@ -10,11 +10,14 @@ Reimplementation of [Flexible cloze](https://ankiweb.net/shared/info/1632356464)
 
 ## General
 
-Configuration is made in the note template, functionality configuration is made between `CONFIGURATION BEGIN`/`END` on the `Front`/`Back Template` respectively. Styling is made between `STYLE BEGIN`/`END` of the `Styling` page. JS/CSS between `FUNCTIONALITY BEGIN`/`END` tags is the actual FC2 code, not for configuration (will be overwritten on next update).
+Configuration is made in the note template, configuration is made between `<!-- CONFIGURATION BEGIN`/`END -->` on the `Front`/`Back Template` respectively. Styling is made between `/*-- STYLE BEGIN`/`END --*/` of the `Styling` page. JS/CSS between `<!-- FUNCTIONALITY BEGIN`/`END -->` tags is the actual FC2 code, not for configuration (will be overwritten on next update). The update logic is dependent on the user keeping the `<!-- FC2/CONFIGURATION/FUNCTIONALITY BEGIN/END -->` (and equivalent in the `Styling` page) intact.
 
 - Clicking an active cloze on the front side will cycle it between hint (if there is one) and show.
 - Clicking an inactive cloze on the front side will cycle it between hide and show (no hint).
-- A suggestion is using deck options `Insertion order: sequential (oldest cards first)`, `Bury new siblings: off` and `Bury review siblings: off` when writing notes that are "sequential" in nature. I.e. when the later clozes in the note requires knowing the earlier clozes. This makes the clozes be presented in ascending order on new cards (which is when it needs to be ordered). Once learned they will not be ordered (or even on the same day depending on how well/fast you learn the different clozes) but then you already "know the preceding clozes".
+- For notes that are "sequential" in nature (e.g. cloze 2 builds on the answer of cloze 1) try using the the v3 scheduler and `Deck options` as follows:
+  - `New card gather order`: `Deck`
+  - `New card sort order`: `Order gathered`
+  - `Bury new siblings`, `Bury review siblings` and `Bury interday learning siblings`: `off`
 - There is an optional "show all" button (styleable in class .fcz-show-all-btn). Note that he button is set to `display: none` in default configuration, you have to set it to `display: inline` on the Styling page of the cards dialog to get it to show:
 
 ``` CSS
@@ -45,7 +48,7 @@ font-size: 15px; font-weight: bold; padding: 5px; border-bottom: 1px solid white
   - `min`: scrolls as little as possible to get active cloze(s) into view
   - `center`: centers the active clozes in the window.
   - `context`: scrolls to just below the preceeding inactive cloze (or centers if all context fits).
-  . `section-context`: as context but will scroll to just below preceeding inactive cloze or `<hr>` tag or just above preceeding `<h1>`-`<h6>` tag (or centers if all context fits).
+  . `section-context`: as `context` but will scroll to just below preceeding inactive cloze or `<hr>` tag or just above preceeding `<h1>`-`<h6>` tag (or centers if all context fits).
   - Scroll on initial display (of front or back): `inital`.
   - Scroll on click: `click`.
   - Scroll on iterate (pressing next key etc.): `iterate`.
@@ -59,7 +62,6 @@ font-size: 15px; font-weight: bold; padding: 5px; border-bottom: 1px solid white
   - `information`: Information field (regardless of `additional`).
 - Styling of different elements (e.g. "I want the answer to be displayed inline rather than in a block") can easily be configured in the `Styling` section of the card template.
 - Changes will mainly be made inside `FC2 BEGIN`/`END` tags, which in turn is divided into functionality and configuration allowing the user to avoid overwriting their modification part on update.
-
 
 ## Regarding styling
 
