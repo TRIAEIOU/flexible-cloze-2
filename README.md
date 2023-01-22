@@ -2,11 +2,11 @@
 
 Reimplementation of [Flexible cloze](https://ankiweb.net/shared/info/1632356464) Anki addon to handle nested clozes avalable from Anki 2.15.56 as well as remove lesser used features for easier maintenance. FC2 ([GitHub](https://github.com/TRIAEIOU/flexible-cloze-2)) is a configurable cloze note type for keeping related information (and cards) on the same note.
 
-**Ideas for the functionality of Flexible cloze (1 and 2) was blatantly stolen from trgkanki's Cloze (Hide all) [https://ankiweb.net/shared/info/1709973686] and RisingOrange's Enhanced Cloze (for Anki 2.1) [https://ankiweb.net/shared/info/1990296174] - both of which are excellent addons.**
+**Ideas for the functionality of Flexible cloze (1 and 2) was blatantly stolen from trgkanki's [Cloze (Hide all)](https://ankiweb.net/shared/info/1709973686) and RisingOrange's [Enhanced Cloze (for Anki 2.1)](https://ankiweb.net/shared/info/1990296174) - both of which are excellent addons.**
 
 **ALL CREDIT FOR INNOVATION GOES TO TRGANKI AND RISINGORANGE**
 
-<img src="https://github.com/TRIAEIOU/flexible-cloze-2/blob/main/Screenshots/front-and-back.png" height="500">
+![](https://github.com/TRIAEIOU/flexible-cloze-2/blob/main/Screenshots/front-and-back.png){height=500px}
 
 ## General
 
@@ -31,7 +31,7 @@ font-size: 15px; font-weight: bold; padding: 5px; border-bottom: 1px solid white
 ## Configuration
 
 - Active cloze: Cloze(s) with the current ordinal, i.e. the cloze(s) that should be answered. To change styling of these change or override `.cloze` class in `Styling` of the card template.
-- Inactive cloze: Cloze(s) that are not the current ordinal, i.e. the cloze(s) that should not be answered.To change styling of these change or override `.cloze-inactive` class in `Styling` of the card template.
+- Inactive cloze: Cloze(s) that are not the current ordinal, i.e. the cloze(s) that should not be answered. To change styling of these change or override `.cloze-inactive` class in `Styling` of the card template.
 - Exposed cloze: Cloze(s) that when inactive (see above) will always be in "shown" state. Mark a cloze as exposed in the editor by making the first character an exclamation mark (e.g. `{{c1::!This will always be displayed when the cloze ordinal is not 1}}`).
   - Configurable expose character(s), default is `!`
   - Configurable position of the expose position to allow use with {{type:cloze:Text}}:
@@ -40,23 +40,23 @@ font-size: 15px; font-weight: bold; padding: 5px; border-bottom: 1px solid white
     - end: {{c1::content **!**}}
     - post: {{c1::content}}**!**
   - Configurable to reverse the expose status, i.e. all inactive clozes are exposed and those marked as `expose` will be hidden.
-- Cloze prompts can be congigured:
+- Cloze prompts can be configured:
   - `prompt`: Prompt format/text for clozes without hint. Example: `[...]`
   - `hint`: Prompt format/text for clozes with hint where `%h` will be replaced by the hint text. Example: `[%h]`
-- `scroll`: Configurable scrolling behaviour on card show/flip, when clicking a hidden cloze and when cycling to next/previous with edge taps or keyboard shortcuts:
+- `scroll`: Configurable scrolling behavior on card show/flip, when clicking a hidden cloze and when cycling to next/previous with edge taps or keyboard shortcuts:
   - `none`: no scroll
   - `min`: scrolls as little as possible to get active cloze(s) into view
   - `center`: centers the active clozes in the window.
-  - `context`: scrolls to just below the preceeding inactive cloze (or centers if all context fits).
-  . `section-context`: as `context` but will scroll to just below preceeding inactive cloze or `<hr>` tag or just above preceeding `<h1>`-`<h6>` tag (or centers if all context fits).
-  - Scroll on initial display (of front or back): `inital`.
+  - `context`: scrolls to just below the preceding inactive cloze (or centers if all context fits).
+  . `section-context`: as `context` but will scroll to just below preceding inactive cloze or `<hr>` tag or just above preceding `<h1>`-`<h6>` tag (or centers if all context fits).
+  - Scroll on initial display (of front or back): `initial`.
   - Scroll on click: `click`.
   - Scroll on iterate (pressing next key etc.): `iterate`.
-- `iteration` - cycling active clozes with keyboard shortcut or edge tap. Iteration behaviour can be configured as follows:
+- `iteration` - cycling active clozes with keyboard shortcut or edge tap. Iteration behavior can be configured as follows:
   - Hide the cloze "you are leaving" when iterating: `hide`
   - Loop iteration once you reach the first/last (otherwise you will stop): `loop`
   - Always start iteration from the top (otherwise iteration will "continue" from the last clicked item): `top`
-- `show` cloze initial display behaviour:
+- `show` cloze initial display behavior:
   - `inactive`: inactive clozes (setting to `true`will make FC2 behave similar to core Anki clozes).
   - `addtional`: Additional fields (including Information field).
   - `information`: Information field (regardless of `additional`).
@@ -81,7 +81,7 @@ var config = {
         reverse: false          // If true exposed clozes are hidden, others shown
     },
     scroll: {                   // Valid values: `none`, `min`, `center` or `context`
-        initial: 'none',        // Scoll on initial show
+        initial: 'none',        // Scroll on initial show
         click: 'min',           // Scroll on cloze click
         iterate: 'min'          // Scroll on iteration
     },
