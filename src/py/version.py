@@ -24,7 +24,7 @@ def get_version() -> str:
     try:
         with open(PATH) as fh:
             ver = fh.read()
-            if m := re.match(r"^\s*((?:\d+\.){0,2}\d+\s*[a-z1-9]+)", ver):
+            if m := re.match(r"^\s*((?:\d+\.){0,2}\d+\s*[a-z1-9]*)", ver):
                 ver = m.group(1)
             else:
                 ver = "0.0.0"

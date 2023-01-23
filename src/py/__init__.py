@@ -25,7 +25,7 @@ TAGS = {
 }
 
 CVER = get_version()
-NVER = "1.0.0"
+NVER = "1.0.1"
 
 def read_files(files: tuple[str, ...]):
     out = []
@@ -45,7 +45,7 @@ def parse_template(text: str, type: Literal['htm', 'css']) \
     """`return`: dict['pre': str, 'cfg': str, 'func': str, 'post': str]"""
 
     def parse_tag(txt: str, tag: tuple):
-        p = re.split(rf"\s*(?:{tag[0]}|{tag[1]})\s*", txt)
+        p = re.split(rf"\s*(?:{re.escape(tag[0])}|{re.escape(tag[1])})\s*", txt)
         return p if len(p) == 3 else None
 
     fc2 = parse_tag(text, TAGS[type]['fc2'])
@@ -125,11 +125,11 @@ def update():
         else:
             msgs.append('Failed to parse back template, manually insert template from addon directory.')
 
-        old = parse_template(model["css"], 'css')
+        old = parse_template(model['css'], 'css')
         new =  parse_template(ncss, 'css')
         if old and new:
             old['func'] = new['func']
-            model["css"] = render_template(old, 'css', ('func', 'cfg'))
+            model['css'] = render_template(old, 'css', ('func', 'cfg'))
         else:
             msgs.append('Failed to parse styling template, manually insert template from addon directory.')
 
