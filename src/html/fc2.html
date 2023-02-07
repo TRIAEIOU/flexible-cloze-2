@@ -1,0 +1,332 @@
+<!-- Title field at top of page -->
+<div id="fc2-title" class="{{Tags}} title">{{Title}}</div>
+
+<!-- Main scrollable area of the screen -->
+<div id="fc2-scroll-area" class="fc2-scroll-area">
+
+    <!-- Main content field, has to be present but can be styled/layouted differently -->
+    <div id="fc2-content">{{cloze:Text}}</div>
+    <div id="fc2-content-placeholder">This note type requires <code>nested cloze support</code> and <code>increased meta data</code> features from the Anki 2.1.56+ backend. It seems this reviewing software has not yet implemented these features.</div>
+
+    <!-- Additional fields, delete the divs to remove from the card -->
+    <div id="fc2-additional">
+        {{#Note}}
+            <div id="note-header" class="additional-header">Note</div>
+            <div id="note" class="additional-content">{{Note}}</div>
+        {{/Note}}
+        {{#Mnemonics}}
+            <div id="mnemonics-header" class="additional-header">Mnemonics</div>
+            <div id="mnemonics" class="additional-content">{{Mnemonics}}</div>
+        {{/Mnemonics}}
+        {{#Extra}}
+            <div id="extra-header" class="additional-header">Extra</div>
+            <div id="extra" class="additional-content">{{Extra}}</div>
+        {{/Extra}}
+        <div id="info-header" class="additional-header"> Information</div>
+        <div id="info" class="additional-content">
+            <div id="deck"><b>Deck</b>: {{Deck}}</div>
+            {{#Tags}}<div id="tags"><b>Tags</b>: {{Tags}}</div>{{/Tags}}
+        </div>
+    </div>
+    <!-- Optional "show all button" -->
+    <div id="fc2-show-all-btn">Show all</div>
+</div>
+
+<!-- Footer at the bottom of the screen, delete to remove or modify/add to change -->
+<div id="fc2-footer">
+    <!-- Symbol legend, delete divs to remove or modify number and content of child divs -->
+    <div id="fc2-legend-footer">
+        <div class="fc2-legend-entry">&#8594; Becomes</div>
+        <div class="fc2-legend-entry">&#8658; Leads to</div>
+        <div class="fc2-legend-entry">&#10521; Excite/activate</div>
+        <div class="fc2-legend-entry">&#10979; Inhibit/deactivate</div>
+    </div>
+    <!-- Flag legend, delete divs to remove, text and color can be set on "Styles" page -->
+    <div id="fc2-flag-footer">
+        <div id="fc2-flag-red" class="fc2-flag"></div>
+        <div id="fc2-flag-orange" class="fc2-flag"></div>
+        <div id="fc2-flag-green" class="fc2-flag"></div>
+        <div id="fc2-flag-blue" class="fc2-flag"></div>
+        <div id="fc2-flag-pink" class="fc2-flag"></div>
+        <div id="fc2-flag-turquoise" class="fc2-flag"></div>
+        <div id="fc2-flag-purple" class="fc2-flag"></div>
+    </div>
+</div>
+
+<!-- Screen edge navigation controls, delete the divs to remove -->
+<div id="nav-toggle-all" class="nav-area-top"></div>
+<div id="nav-prev-cloze" class="nav-area-side"></div>
+<div id="nav-next-cloze" class="nav-area-side"></div>
+
+<script type="application/javascript">
+/*-- CONFIGURATION BEGIN --*/
+/*--###CFG###--*/
+
+if (typeof window.FC2 !== 'function') window.FC2 = class {
+    content = null // parent of card HTML
+    viewport = null // scroll area
+    ordinal = 0 // current cloze ordinal
+    expose = null // function to expose cloze as needed
+    init_done = false // flag to avoid adding multiple event listeners
+
+    /** Generic init done on front and back */
+    init(config) {
+        this.cfg = config
+        this.content = document.getElementById('fc2-content')
+        this.viewport = document.getElementById('fc2-scroll-area')
+        this.current = this.content.querySelector('.cloze')
+
+        // Check for backend version
+        if (this.current.dataset.ordinal === undefined) return
+
+        if (!this.ordinal)
+            this.ordinal = parseInt(this.current.dataset.ordinal)
+        this.expose = this.generate_expose()
+
+        // Strip expose char from active clozes
+        this.content.querySelectorAll('.cloze').forEach(this.expose)
+
+        // Expose inactive clozes from expose char or containing active cloze
+        this.content.querySelectorAll('.cloze-inactive').forEach(cloze => {
+            if (this.expose(cloze) || cloze.querySelector('.cloze'))
+                cloze.classList.remove('cloze-inactive')
+            else if (!this.cfg.show.inactive) this.hide(cloze)
+        })
+
+        // Generic: show additional fields per default depending on config
+        if (this.cfg.show.additional)
+            this.viewport.querySelectorAll(':not(#info).additional-content')
+            .forEach(nd => { nd.style.display = 'block' })
+
+        // Generic: show info field per default depending on config
+        if (this.cfg.show.info)
+            document.querySelector('div#info.additional-content')
+            .style.display = 'block'
+
+        // Generic: reveal finished content, hide placeholder and scroll to first active cloze
+        this.content.style.display = 'block'
+        document.getElementById('fc2-content-placeholder').style.display = 'none'
+
+        // Setup event handlers if not already done
+        if (!this.init_done) {
+            this.init_done = true
+            document.addEventListener("click", (evt) => {
+                // Cloze click handling
+                if (evt.target.classList.contains('cloze')
+                    || evt.target.classList.contains('cloze-inactive')) {
+                        evt.stopPropagation() // To avoid toggling parents
+                        if (!fc2.cfg.iteration.top) fc2.current = evt.target
+                        fc2.toggle_cloze(evt.target)
+                        fc2.scroll_to(fc2.cfg.scroll.click, evt.target)
+                // Additional content (header and actual content)
+                } else if (evt.target.classList.contains('additional-header'))
+                    fc2.toggle_field(evt.target.firstElementChild)
+                else if (evt.target.classList.contains('additional-content'))
+                    fc2.toggle_field(evt.target)
+                // Toggle all button
+                else if (evt.target.id === 'fc2-show-all-btn') fc2.toggle_all()
+                // Nav bars
+                else if (evt.target.id === 'nav-toggle-all') fc2.toggle_all()
+                else if (evt.target.id === 'nav-prev-cloze') fc2.iter(false)
+                else if (evt.target.id === 'nav-next-cloze') fc2.iter(true)
+            })
+
+            document.addEventListener("keydown", (evt) => {
+                if (evt.key === fc2.cfg.shortcuts.next) {
+                    fc2.iter(true)
+                    evt.preventDefault()
+                } else if (evt.key === fc2.cfg.shortcuts.previous) {
+                    fc2.iter(false)
+                    evt.preventDefault()
+                } else if (evt.key === fc2.cfg.shortcuts.toggle_all) {
+                    fc2.toggle_all()
+                    evt.preventDefault()
+                }
+            })
+        }
+
+        if (config.specific) config.specific.call(this)
+        this.scroll_to(this.cfg.scroll.initial)
+    }
+
+    /** Create expose function from config */
+    generate_expose() {
+        let expose_
+        if (this.cfg.expose.pos === 'pre') {
+            expose_ = (el) => {
+                if (el.previousSibling?.data?.endsWith(this.cfg.expose.char))
+                    el.previousSibling.data = el.previousSibling.data.slice(0, -1)
+                else return false
+                return true
+            }
+        } else if (this.cfg.expose.pos === 'post') {
+            expose_ = (el) => {
+                if (el.nextSibling?.data?.startsWith(this.cfg.expose.char))
+                    el.nextSibling.data = el.nextSibling.data.substring(1)
+                else return false
+                return true
+            }
+        } else if (this.cfg.expose.pos === 'end') {
+            expose_ = (el) => {
+                if (el.dataset.cloze?.endsWith(this.cfg.expose.char))
+                    el.dataset.cloze = el.dataset.cloze.slice(0, -1)
+                else if (el.lastChild?.data?.endsWith(this.cfg.expose.char))
+                    el.lastChild.data = el.lastChild.data.slice(0, -1)
+                else return false
+                return true
+            }
+        } else {
+            expose_ = (el) => { // begin
+                if (el.dataset.cloze?.startsWith(this.cfg.expose.char))
+                    el.dataset.cloze = el.dataset.cloze.substring(1)
+                else if (el.firstChild?.data?.startsWith(this.cfg.expose.char))
+                    el.firstChild.data = el.firstChild.data.substring(1)
+                else return false
+                return true
+            }
+        }
+        return this.cfg.expose.reverse ? (el) => {return !expose_(el)} : expose_
+    }
+
+    /** Hide cloze (and save cloze content as needed) */
+    hide(cloze) {
+        if (!cloze || cloze.classList.contains('hide')) return
+        if (cloze.dataset.cloze === undefined) cloze.dataset.cloze = cloze.innerHTML
+        cloze.classList.add('hide')
+        // Never knew the hint
+        if (cloze.dataset.hint === undefined) cloze.dataset.hint = this.cfg.prompt
+        cloze.innerHTML = cloze.dataset.hint
+    }
+
+    /** Show cloze (and save cloze hint as needed) */
+    show(cloze) {
+        if (!cloze || !cloze.classList.contains('hide')) return
+        if (cloze.dataset.hint === undefined) {
+            if (cloze.innerHTML === '[...]' || cloze.classList.contains('cloze-inactive'))
+                cloze.dataset.hint = this.cfg.prompt
+            else
+                cloze.dataset.hint = this.cfg.hint.replace('%h', cloze.innerHTML.substring(1, -1))
+        }
+        cloze.classList.remove('hide')
+        cloze.innerHTML = cloze.dataset.cloze
+        for (const child of cloze.querySelectorAll(':scope .cloze, :scope .cloze-inactive'))
+            this.hide(child)
+    }
+
+    /** Toggle cloze visibility state */
+    toggle_cloze(cloze) {
+        cloze.classList.contains('hide') ? this.show(cloze) : this.hide(cloze)
+    }
+
+    /** Toggle field visibility state */
+    toggle_field(field) {
+        field.classList.contains('hide')
+            ? field.classList.remove('hide')
+            : field.classList.add('hide')
+    }
+
+    /** Toggle all clozes and fields, sync towards show */
+    toggle_all() {
+        if (this.content.querySelector('.cloze.hide, .cloze-inactive.hide'))
+            this.content.querySelectorAll('.cloze.hide, .cloze-inactive.hide')
+            .forEach(el => { this.show(el) })
+        else
+            this.content.querySelectorAll('.cloze:not(.hide), .cloze-inactive:not(.hide)')
+            .forEach(el => { this.hide(el) })
+    }
+
+    /** Iterate forward or backward, start by showing current if hidden */
+    iter(fwd) {
+        const els = this.content.querySelectorAll('.cloze');
+        let nxt
+        if (this.current?.classList.contains('hide'))
+            nxt = this.current
+        if (fwd && this.current === els[els.length - 1])
+            nxt = this.cfg.iteration.loop ? els[0] : this.current
+        else if (!fwd && this.current === els[0])
+            nxt = this.cfg.iteration.loop ? els[els.length - 1] : this.current
+        for (let i = 0; !nxt && i < els.length; i++) {
+            if (els[i] === this.current) nxt = els[i + (fwd ? 1 : -1)]
+        }
+        if (nxt !== this.current && this.cfg.iteration.hide)
+            this.hide(this.current)
+        this.show(this.current = nxt)
+        this.scroll_to(this.cfg.scroll.iterate, this.current)
+    }
+
+    /** Scroll to active clozes or specific cloze */
+    scroll_to(scroll, cloze = null) {
+        if (scroll === 'none') return
+        let first, last
+        if (cloze) first = last = cloze
+        else {
+            const active = this.content.querySelectorAll('.cloze')
+            first = active[0]
+            last = active[active.length - 1]
+        }
+
+        const top = first.getBoundingClientRect().top + this.viewport.scrollTop -  this.viewport.offsetTop
+        const bottom = last.getBoundingClientRect().bottom + this.viewport.scrollTop - this.viewport.offsetTop
+        const middle = (this.viewport.offsetHeight - (bottom - top)) / 2
+        const center = top - middle
+        let y = 0
+
+        // Context scroll, either from preceeding or HR/HX
+        if (scroll.slice(-7) === 'context') {
+            const all = this.content.querySelectorAll('.cloze, .cloze-inactive')
+            for (let i = 1; i < all.length; i++)
+                if (all[i] === first) {
+                    y = Math.min(first.getBoundingClientRect().bottom + this.viewport.scrollTop - this.viewport.offsetTop, center)
+                    break
+                }
+            if (scroll === 'section-context') {
+                let sep
+                for (const nd of this.content.querySelectorAll('hr, h1, h2, h3, h4, h5, h6, .cloze')) {
+                    if (nd.tagName === 'SPAN') break
+                    sep = nd
+                }
+                if (sep) {
+                    const border = sep.tagName === 'HR'
+                        ? sep.getBoundingClientRect().bottom
+                        : sep.getBoundingClientRect().top + 5
+                    y = Math.min(y, border + this.viewport.scrollTop - this.viewport.offsetTop)
+                } else if (this.content.querySelector('hr, h1, h2, h3, h4, h5, h6'))
+                    y = this.viewport.scrollTop - this.viewport.offsetTop
+                // else y is already set to prev.bottom or center
+            }
+        }
+        else if (bottom - top >= this.viewport.offsetHeight)
+            // All clozes will not fit - scroll to first at top regardless
+            y = top - line_height.call(this, window.getComputedStyle(first.previousElementSibling ? first.previousElementSibling : first, ':before'))
+        else if (scroll === 'center') y = center
+        // scroll === 'min'
+        else y = bottom - this.viewport.offsetHeight + line_height.call(this, window.getComputedStyle(last.nextElementSibling
+                ? last.nextElementSibling
+                : last,
+            ':after'))
+        this.viewport.scrollTo(0, y)
+
+        function line_height(style) {
+            let lh
+            if (style.lineHeight.toLowerCase() === "normal") {
+                var nd = document.createElement('span')
+                nd.innerHTML = '&nbsp;'
+                nd.style = style
+                nd.style.border = '0px'
+                nd.style.margin = '0px'
+                nd.style.padding = '0px'
+                this.content.appendChild(nd)
+                lh = nd.offsetHeight
+                this.content.removeChild(nd)
+            }
+            if (!lh) lh = parseInt(style.lineHeight) || 20
+            return lh
+        }
+    }
+}
+
+var fc2
+if(!fc2) fc2 = new window.FC2()
+fc2.init(config)
+/*-- FUNCTIONALITY END --*/
+</script>

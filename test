@@ -1,8 +1,8 @@
 <!-- Title field at top of page -->
-<div id="fc2-title" class="{{Tags}} title front">{{Title}}</div>
+<div id="fc2-title" class="{{Tags}} title">{{Title}}</div>
 
 <!-- Main scrollable area of the screen -->
-<div id="fc2-scroll-area" class="fc2-scroll-area front">
+<div id="fc2-scroll-area" class="fc2-scroll-area">
 
     <!-- Main content field, has to be present but can be styled/layouted differently -->
     <div id="fc2-content">{{cloze:Text}}</div>
@@ -33,7 +33,7 @@
 </div>
 
 <!-- Footer at the bottom of the screen, delete to remove or modify/add to change -->
-<div id="fc2-footer" class="front">
+<div id="fc2-footer">
     <!-- Symbol legend, delete divs to remove or modify number and content of child divs -->
     <div id="fc2-legend-footer">
         <div class="fc2-legend-entry">&#8594; Becomes</div>
@@ -59,10 +59,10 @@
 <div id="nav-next-cloze" class="nav-area-side"></div>
 
 <!-- FC2 BEGIN -->
-
-<!-- CONFIGURATION BEGIN -->
 <script type="application/javascript">
-    var config = {
+
+/*-- CONFIGURATION BEGIN --*/
+var config = {
     prompt: '',            // Prompt when no hint
     hint: '%h',               // %h is replaced with hint text
     expose: {
@@ -91,11 +91,16 @@
         info: false             // Information field
     }
 }
-</script>
-<!-- CONFIGURATION END -->
+/*-- CONFIGURATION END --*/
 
-<!-- FUNCTIONALITY BEGIN -->
-<script type="application/javascript">
+/*-- FUNCTIONALITY BEGIN --*/
+config.specific = function() {
+    // Side specific: hide active clozes
+    this.content.querySelectorAll('.cloze').forEach(cloze => {
+        this.hide(cloze)
+    })
+}
+
 if (typeof window.FC2 !== 'function') window.FC2 = class {
     content = null // parent of card HTML
     viewport = null // scroll area
@@ -104,7 +109,7 @@ if (typeof window.FC2 !== 'function') window.FC2 = class {
     init_done = false // flag to avoid adding multiple event listeners
 
     /** Generic init done on front and back */
-    init(config, specific) {
+    init(config) {
         this.cfg = config
         this.content = document.getElementById('fc2-content')
         this.viewport = document.getElementById('fc2-scroll-area')
@@ -176,7 +181,7 @@ if (typeof window.FC2 !== 'function') window.FC2 = class {
             })
         }
 
-        if (specific) specific.call(this)
+        if (config.specific) config.specific.call(this)
         this.scroll_to(this.cfg.scroll.initial)
     }
 
@@ -332,16 +337,9 @@ if (typeof window.FC2 !== 'function') window.FC2 = class {
 }
 
 var fc2
-
 if(!fc2) fc2 = new window.FC2()
-// Run initialization
-fc2.init(config, function() {
-    // Side specific: hide active clozes
-    this.content.querySelectorAll('.cloze').forEach(cloze => {
-        this.hide(cloze)
-    })
-})
-</script>
-<!-- FUNCTIONALITY END -->
+fc2.init(config)
+/*-- FUNCTIONALITY END --*/
 
+</script>
 <!-- FC2 END -->

@@ -55,7 +55,7 @@
         {
             "label": "Build templates",
             "type": "shell",
-            "command": "Write-host Building templates... ; cp ./src/html/* ./bin | Out-Null",
+            "command": "Write-host Building templates... ; cp ./src/html/*.css ./bin | Out-Null; Get-Content -Raw ./src/html/fc2.html | %{$_.Replace('/*--###CFG###--*/', $(Get-Content -Raw ./src/html/cfg_front.js))} | Out-File ./bin/fc2-front.html; Get-Content -Raw ./src/html/fc2.html | %{$_.Replace('/*--###CFG###--*/', $(Get-Content -Raw ./src/html/cfg_back.js))} | Out-File ./bin/fc2-back.html;",
             "options": {
                 "cwd": "${workspaceFolder}"
             },
@@ -74,7 +74,7 @@
         {
             "label": "Build update",
             "type": "shell",
-            "command": "Write-host Building update... ; rm -R -Force ./dist/*; rm -R -Force ./bin/__pycache__; Get-ChildItem -Path ./bin/*, ./README.md, ./LICENSE | Compress-Archive -Force -DestinationPath ./dist/update.zip; pandoc -t ${env:CODEPATH}/pandoc/anki-addon.lua --abbreviations=${env:CODEPATH}/pandoc/empty ./README.md -o ./dist/update.txt | Out-Null",
+            "command": "Write-host Building update... ; rm -R -Force ./dist/*; rm -R -Force ./bin/__pycache__; Get-ChildItem -Path ./bin/*.html, ./bin/*.py, ./bin/*.css, ./README.md, ./LICENSE | Compress-Archive -Force -DestinationPath ./dist/update.zip; pandoc -t ${env:CODEPATH}/pandoc/anki-addon.lua --abbreviations=${env:CODEPATH}/pandoc/empty ./README.md -o ./dist/update.txt | Out-Null",
             "options": {
                 "cwd": "${workspaceFolder}"
             },

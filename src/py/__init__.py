@@ -11,21 +11,11 @@ FNAME_FRONT = "fc2-front.html"
 FNAME_BACK = "fc2-back.html"
 FNAME_CSS = "fc2.css"
 ADDON_PATH = os.path.dirname(__file__)
-TAGS = {
-    'htm': {
-        'fc2': ('<!-- FC2 BEGIN -->', '<!-- FC2 END -->'),
-        'cfg': ('<!-- CONFIGURATION BEGIN -->', '<!-- CONFIGURATION END -->'),
-        'func': ('<!-- FUNCTIONALITY BEGIN -->', '<!-- FUNCTIONALITY END -->')
-    },
-    'css': {
-        'fc2': ('/*-- FC2 BEGIN --*/', '/*-- FC2 END --*/'),
-        'cfg': ('/*-- CONFIGURATION BEGIN --*/', '/*-- CONFIGURATION END --*/'),
-        'func': ('/*-- FUNCTIONALITY BEGIN --*/', '/*-- FUNCTIONALITY END --*/')
-    }
-}
+TAG_CFG = ('/*-- CONFIGURATION BEGIN --*/', '/*-- CONFIGURATION END --*/')
+TAG_FUNC = ('/*-- FUNCTIONALITY BEGIN --*/', '/*-- FUNCTIONALITY END --*/')
 
 CVER = get_version()
-NVER = "1.0.1"
+NVER = "1.1.0"
 
 def read_files(files: tuple[str, ...]):
     out = []
@@ -40,36 +30,36 @@ def write_files(files: tuple[str, ...]):
         with open(os.path.join(ADDON_PATH, file[0]), "w") as fh:
             fh.write(file[1])
 
-def parse_template(text: str, type: Literal['htm', 'css']) \
--> dict['pre': str, 'cfg': str, 'func': str, 'post': str]:
-    """`return`: dict['pre': str, 'cfg': str, 'func': str, 'post': str]"""
+def parse_template(text: str) -> dict:
+    """`return`: dict[pre: str, mid: str, post: str, cfg: str, func: str]"""
 
-    def parse_tag(txt: str, tag: tuple):
-        p = re.split(rf"\s*(?:{re.escape(tag[0])}|{re.escape(tag[1])})\s*", txt)
-        return p if len(p) == 3 else None
-
-    fc2 = parse_tag(text, TAGS[type]['fc2'])
-    if fc2:
-        cfg = parse_tag(fc2[1], TAGS[type]['cfg'])
-        func = parse_tag(fc2[1], TAGS[type]['func'])
-        return {'pre': fc2[0], 'cfg': cfg[1], 'func': func[1], 'post': fc2[2]} if cfg and func else None
+    if m := re.match(rf'^(.*?)\s*({re.escape(TAG_CFG[0])}|{re.escape(TAG_FUNC[0])})\s*(.*?)\s*({re.escape(TAG_CFG[1])}|{re.escape(TAG_FUNC[1])})\s*(.*?)\s*({re.escape(TAG_CFG[0])}|{re.escape(TAG_FUNC[0])})\s*(.*?)\s*({re.escape(TAG_CFG[1])}|{re.escape(TAG_FUNC[1])})\s*(.*)$', text, flags=re.DOTALL):
+        return {
+            'pre': m.group(1),
+            'mid': m.group(5),
+            'post': m.group (9),
+            'cfg': m.group(3) if m.group(2) == TAG_CFG[0] else m.group(7),
+            'func': m.group(3) if m.group(2) == TAG_FUNC[0] else m.group(7)
+        }
     return None
 
-def render_template(template: dict['pre': str, 'cfg': str, 'func': str, 'post': str],
-type: Literal['htm', 'css'], order: tuple[Literal['cfg', 'func'], ...]):
-    """`template`: dict['pre': str, 'cfg': str, 'func': str, 'post': str]"""
 
-    if len(template['pre']):
+def render_template(template: dict, first: Literal['cfg', 'func']):
+    """`template`: dict['pre': str, 'mid': str, 'post': str, 'cfg': str, 'func': str]"""
+    if template['pre']:
         template['pre'] += '\n\n'
-    if len(template['post']):
-        template['post'] = '\n\n' + template['post']
+    template['mid'] = f'\n\n{template["mid"]}\n\n' if template['mid'] else '\n\n'
+    if template['post']:
+        template['post'] = f'\n\n{template["post"]}'
 
-    return template['pre'] + \
-        f"{TAGS[type]['fc2'][0]}\n\n"\
-        f"{TAGS[type][order[0]][0]}\n{template[order[0]]}\n{TAGS[type][order[0]][1]}\n\n"\
-        f"{TAGS[type][order[1]][0]}\n{template[order[1]]}\n{TAGS[type][order[1]][1]}\n\n"\
-        f"{TAGS[type]['fc2'][1]}" + \
-        template['post']
+    if first == 'cfg':
+        ONE = f'{TAG_CFG[0]}\n{template["cfg"]}\n{TAG_CFG[1]}'
+        TWO = f'{TAG_FUNC[0]}\n{template["func"]}\n{TAG_FUNC[1]}'
+    else:
+        ONE = f'{TAG_FUNC[0]}\n{template["func"]}\n{TAG_FUNC[1]}'
+        TWO = f'{TAG_CFG[0]}\n{template["cfg"]}\n{TAG_CFG[1]}'
+
+    return template['pre'] + ONE + template['mid'] + TWO + template['post']
 
 
 def update():
@@ -109,27 +99,48 @@ def update():
             (FNAME_CSS + ".bak", model["css"])
         ))
 
-        old = parse_template(model["tmpls"][0]["qfmt"], 'htm')
-        new =  parse_template(nfront, 'htm')
+        ofront = model["tmpls"][0]["qfmt"]
+        oback = model["tmpls"][0]["afmt"]
+        ocss = model['css']
+
+        if strvercmp(CVER, '1.1.0') < 0:
+            msgs.append('Configuration parameter <code>expose.chars</code> renamed <code>expose.char</code> as it now accepts only single char.')
+
+            # Fix document structure change
+            RE1 = re.compile(r'\s*<!-- FC2 BEGIN -->\s*<!-- CONFIGURATION BEGIN -->\s*<script type="application/javascript">\s*')
+            RE2 = re.compile(r'\s*</script>\s*<!-- CONFIGURATION END -->\s*<!-- FUNCTIONALITY BEGIN -->\s*<script type="application/javascript">\s*')
+            RE3 = re.compile(r'\s*</script>\s*<!-- FUNCTIONALITY END -->\s*<!-- FC2 END -->\s*')
+            def strip_htm(txt):
+                txt = RE1.sub(f'\n\n<script type="application/javascript">\n{TAG_CFG[0]}\n', txt)
+                txt = RE2.sub(f'\n{TAG_CFG[1]}\n\n{TAG_FUNC[0]}\n', txt)
+                txt = RE3.sub(f'\n{TAG_FUNC[1]}\n</script>', txt)
+                return txt.replace('chars:', 'char:')
+
+            ofront = strip_htm(ofront)
+            oback = strip_htm(oback)
+            ocss = re.sub(r'\s*\/\*-- FC2 (?:BEGIN|END) --\*\/\s*', '\n\n', ocss)
+
+        old = parse_template(ofront)
+        new =  parse_template(nfront)
         if old and new:
             old['func'] = new['func']
-            model["tmpls"][0]["qfmt"] = render_template(old, 'htm', ('cfg', 'func'))
+            model["tmpls"][0]["qfmt"] = render_template(old, 'cfg')
         else:
             msgs.append('Failed to parse front template, manually insert template from addon directory.')
 
-        old = parse_template(model["tmpls"][0]["afmt"], 'htm')
-        new =  parse_template(nback, 'htm')
+        old = parse_template(oback)
+        new =  parse_template(nback)
         if old and new:
             old['func'] = new['func']
-            model["tmpls"][0]["afmt"] = render_template(old, 'htm', ('cfg', 'func'))
+            model["tmpls"][0]["afmt"] = render_template(old, 'cfg')
         else:
             msgs.append('Failed to parse back template, manually insert template from addon directory.')
 
-        old = parse_template(model['css'], 'css')
-        new =  parse_template(ncss, 'css')
+        old = parse_template(ocss)
+        new =  parse_template(ncss)
         if old and new:
             old['func'] = new['func']
-            model['css'] = render_template(old, 'css', ('func', 'cfg'))
+            model['css'] = render_template(old, 'func')
         else:
             msgs.append('Failed to parse styling template, manually insert template from addon directory.')
 

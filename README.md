@@ -6,11 +6,11 @@ Reimplementation of [Flexible cloze](https://ankiweb.net/shared/info/1632356464)
 
 **ALL CREDIT FOR INNOVATION GOES TO TRGANKI AND RISINGORANGE**
 
-![](https://github.com/TRIAEIOU/flexible-cloze-2/blob/main/Screenshots/front-and-back.png){height=500px}
+![](https://raw.githubusercontent.com/TRIAEIOU/flexible-cloze-2/main/Screenshots/front-and-back.png){height=500px}
 
 ## General
 
-Configuration is made in the note template, configuration is made between `<!-- CONFIGURATION BEGIN`/`END -->` on the `Front`/`Back Template` respectively. Styling is made between `/*-- STYLE BEGIN`/`END --*/` of the `Styling` page. JS/CSS between `<!-- FUNCTIONALITY BEGIN`/`END -->` tags is the actual FC2 code, not for configuration (will be overwritten on next update). The update logic is dependent on the user keeping the `<!-- FC2/CONFIGURATION/FUNCTIONALITY BEGIN/END -->` (and equivalent in the `Styling` page) intact.
+Configuration is made in the note template, configuration is made between `/*-- CONFIGURATION BEGIN`/`END --*/` on the `Front`/`Back`/`Styling` template respectively. JS/CSS between `/*-- FUNCTIONALITY BEGIN`/`END --*/` tags is the actual FC2 code, not for configuration (will be overwritten on next update). The update logic is dependent on the user keeping the `/*-- CONFIGURATION/FUNCTIONALITY BEGIN/END --*/` intact.
 
 - Clicking an active cloze on the front side will cycle it between hint (if there is one) and show.
 - Clicking an inactive cloze on the front side will cycle it between hide and show (no hint).
@@ -33,7 +33,7 @@ font-size: 15px; font-weight: bold; padding: 5px; border-bottom: 1px solid white
 - Active cloze: Cloze(s) with the current ordinal, i.e. the cloze(s) that should be answered. To change styling of these change or override `.cloze` class in `Styling` of the card template.
 - Inactive cloze: Cloze(s) that are not the current ordinal, i.e. the cloze(s) that should not be answered. To change styling of these change or override `.cloze-inactive` class in `Styling` of the card template.
 - Exposed cloze: Cloze(s) that when inactive (see above) will always be in "shown" state. Mark a cloze as exposed in the editor by making the first character an exclamation mark (e.g. `{{c1::!This will always be displayed when the cloze ordinal is not 1}}`).
-  - Configurable expose character(s), default is `!`
+  - Configurable expose character, default is `!`
   - Configurable position of the expose position to allow use with {{type:cloze:Text}}:
     - pre: **!**{{c1::content}}
     - begin (default): {{c1::**!**content}}
@@ -76,7 +76,7 @@ var config = {
     prompt: '[...]'             // Prompt when no hint
     hint: '[%h]',               // %h is replaced with hint text
     expose: {
-        chars: '!',             // Char(s) to mark exposed cloze
+        char: '!',              // Char to mark exposed cloze
         pos: 'begin',           // Char pos: `pre`, `begin`, `end` or `post`
         reverse: false          // If true exposed clozes are hidden, others shown
     },
@@ -111,7 +111,7 @@ span.cloze {color: blue; font-weight: bold;}
 
 ## Main difference from the earlier mentioned add-ons
 
-There is effectively no add-on, it's all JavaScript (and HTML/CSS) and runs 100% "client side" (the only python is the update logic). The logic requires an Anki version based on the 2.15.56 back end (i.e. Anki desktop 2.15.56, AnkiDroid 2.XYZ or AnkiMobile 2.XYZ).
+There is effectively no add-on, it's all JavaScript (and HTML/CSS) and runs 100% "client side" (the only python is the update logic). The logic requires an Anki version based on the 2.15.56 back end (i.e. Anki desktop 2.15.56, AnkiDroid 2.16alpha93 with `Use new backend` enabled or AnkiMobile 2.XYZ).
 
 - Included is my note styling and configuration (the way it functions and which fields are present are more or less a complete rip-off from RisingOrange). However, you can edit the note type however you want if you know a little HTML and CSS.
 - This allows for keeping related content on the same note facilitating note creation (no need to search through the deck to see if you already added a card with similar content). It can also help when reviewing as you can look at the other related clozes if you need to check something (e.g. "Well if it wasn't that, what was it?"). This is how I design my notes, hence the layout.
@@ -129,3 +129,4 @@ There is effectively no add-on, it's all JavaScript (and HTML/CSS) and runs 100%
 ## Changelog
 
 - 2023-01-23: Fix update logic bugs.
+- 2023-02-07: Adapt JS to AnkiDroid behaviour, fix [expose bug](https://github.com/TRIAEIOU/flexible-cloze-2/issues/4).
