@@ -1,6 +1,5 @@
 import os, re
-
-PATH = os.path.join(os.path.dirname(__file__), "version")
+from aqt import mw
 
 def strvercmp(left: str, right: str) -> int:
     """Compares semantic version strings.\n
@@ -20,19 +19,12 @@ def strvercmp(left: str, right: str) -> int:
     return 0
 
 def get_version() -> str:
-    """Get current version string (from file)."""
-    try:
-        with open(PATH) as fh:
-            ver = fh.read()
-            if m := re.match(r"^\s*((?:\d+\.){0,2}\d+\s*[a-z1-9]*)", ver):
-                ver = m.group(1)
-            else:
-                ver = "0.0.0"
-    except OSError:
-        ver = "0.0.0"
-    return ver
+    """Get current version string (from meta.json)."""
+    meta = mw.addonManager.addon_meta(os.path.dirname(__file__))
+    return meta.human_version if meta.human_version else '0.0.0'
 
 def set_version(version: str):
-    """Set version (and write to file)."""
-    with open(PATH, "w") as fh:
-        fh.write(version)
+    """Set version (to meta.json)."""
+    meta = mw.addonManager.addon_meta(os.path.dirname(__file__))
+    meta.human_version = version
+    mw.addonManager.write_addon_meta(meta)
