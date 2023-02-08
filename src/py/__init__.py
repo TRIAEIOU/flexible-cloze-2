@@ -15,7 +15,7 @@ TAG_CFG = ('/*-- CONFIGURATION BEGIN --*/', '/*-- CONFIGURATION END --*/')
 TAG_FUNC = ('/*-- FUNCTIONALITY BEGIN --*/', '/*-- FUNCTIONALITY END --*/')
 
 CVER = get_version()
-NVER = "1.1.0"
+NVER = "1.1.1"
 
 def read_files(files: tuple[str, ...]):
     out = []
