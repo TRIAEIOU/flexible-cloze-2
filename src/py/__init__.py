@@ -64,9 +64,6 @@ def render_template(template: dict, first: Literal['cfg', 'func']):
 
 def update():
     msgs = []
-    if strvercmp(CVER, '1.0.0') < 0:
-        msgs.append('<b>!!! IMPORTANT !!!</b> At the time of writing the functionality required for this note type to work is not available in neither AnkiMobile, nor AnkiDroid.')
-
     (nfront, nback, ncss) = read_files((FNAME_FRONT, FNAME_BACK, FNAME_CSS))
     model = mw.col.models.by_name(FC2_NAME)
 

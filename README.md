@@ -6,7 +6,7 @@ Reimplementation of [Flexible cloze](https://ankiweb.net/shared/info/1632356464)
 
 **ALL CREDIT FOR INNOVATION GOES TO TRGANKI AND RISINGORANGE**
 
-![](https://raw.githubusercontent.com/TRIAEIOU/flexible-cloze-2/main/Screenshots/front-and-back.png){height=500px}
+!Flexible cloze 2](https://raw.githubusercontent.com/TRIAEIOU/flexible-cloze-2/main/Screenshots/front-and-back.png){height=500px}
 
 ## General
 
@@ -111,7 +111,7 @@ span.cloze {color: blue; font-weight: bold;}
 
 ## Main difference from the earlier mentioned add-ons
 
-There is effectively no add-on, it's all JavaScript (and HTML/CSS) and runs 100% "client side" (the only python is the update logic). The logic requires an Anki version based on the 2.15.56 back end (i.e. Anki desktop 2.15.56, AnkiDroid 2.16alpha93 with `Use new backend` enabled or AnkiMobile 2.XYZ).
+There is effectively no add-on, it's all JavaScript (and HTML/CSS) and runs 100% "client side" (the only python is the update logic). The logic requires an Anki version based on the 2.15.56+ back end (i.e. Anki desktop 2.15.56+, AnkiDroid 2.16alpha93+ with `Use new backend` enabled or AnkiMobile 2.0.88+).
 
 - Included is my note styling and configuration (the way it functions and which fields are present are more or less a complete rip-off from RisingOrange). However, you can edit the note type however you want if you know a little HTML and CSS.
 - This allows for keeping related content on the same note facilitating note creation (no need to search through the deck to see if you already added a card with similar content). It can also help when reviewing as you can look at the other related clozes if you need to check something (e.g. "Well if it wasn't that, what was it?"). This is how I design my notes, hence the layout.
