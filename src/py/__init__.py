@@ -100,8 +100,10 @@ def update():
         oback = model["tmpls"][0]["afmt"]
         ocss = model['css']
 
-        if strvercmp(CVER, '1.1.0') < 0:
+        if strvercmp(CVER, '1.1.1') < 0:
             msgs.append('The Anki 2.15.56+ back end is now supported on AnkiDroid 2.16alpha93+ with `Use new backend` enabled and AnkiMobile 2.0.88+.')
+
+        if strvercmp(CVER, '1.1.0') < 0:
             msgs.append('Configuration parameter <code>expose.chars</code> renamed <code>expose.char</code> as it now accepts only single char.')
 
             # Fix document structure change
@@ -148,7 +150,7 @@ def update():
     if len(msgs) > 0:
         msg_box = QMessageBox(mw)
         msg_box.setWindowTitle('Addon "Flexible cloze 2" updated')
-        msg_box.setText("""<div style="text-align: left;">"Flexible cloze 2" addon has been updated:<ul><li>""" + '</li><li>'.join(msgs) + """</li></ul>Please see the addon page (https://ankiweb.net/shared/info/) for more details.</div>""")
+        msg_box.setText("""<div style="text-align: left;">"Flexible cloze 2" addon has been updated:<ul><li>""" + '</li><li>'.join(msgs) + """</li></ul>Please see the addon page (https://ankiweb.net/shared/info/1889069832) for more details.</div>""")
         msg_box.addButton(QPushButton('Ok'), QMessageBox.ButtonRole.YesRole)
         msg_box.exec()
 
