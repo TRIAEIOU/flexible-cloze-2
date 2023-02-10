@@ -101,6 +101,7 @@ def update():
         ocss = model['css']
 
         if strvercmp(CVER, '1.1.0') < 0:
+            msgs.append('The Anki 2.15.56+ back end is now supported on AnkiDroid 2.16alpha93+ with `Use new backend` enabled and AnkiMobile 2.0.88+.')
             msgs.append('Configuration parameter <code>expose.chars</code> renamed <code>expose.char</code> as it now accepts only single char.')
 
             # Fix document structure change
