@@ -20,7 +20,7 @@ Configuration is made in the note template, configuration is made between `/*-- 
   - `Bury new siblings`, `Bury review siblings` and `Bury interday learning siblings`: `off`
 - There is an optional "show all" button (styleable in class .fcz-show-all-btn). Note that he button is set to `display: none` in default configuration, you have to set it to `display: inline` on the Styling page of the cards dialog to get it to show:
 
-``` CSS
+```CSS
 /* SHOW ALL BUTTON ============================================== */
 /* Show all button/bar styling (and if visible or not) */
 #fcz-show-all-btn
@@ -48,7 +48,7 @@ font-size: 15px; font-weight: bold; padding: 5px; border-bottom: 1px solid white
   - `min`: scrolls as little as possible to get active cloze(s) into view
   - `center`: centers the active clozes in the window.
   - `context`: scrolls to just below the preceding inactive cloze (or centers if all context fits).
-  . `section-context`: as `context` but will scroll to just below preceding inactive cloze or `<hr>` tag or just above preceding `<h1>`-`<h6>` tag (or centers if all context fits).
+    . `section-context`: as `context` but will scroll to just below preceding inactive cloze or `<hr>` tag or just above preceding `<h1>`-`<h6>` tag (or centers if all context fits).
   - Scroll on initial display (of front or back): `initial`.
   - Scroll on click: `click`.
   - Scroll on iterate (pressing next key etc.): `iterate`.
@@ -71,7 +71,7 @@ The default styling of the template does not look like "regular Anki clozes". Yo
 
 On both `Front Template` and `Back Template` under `CONFIGURATION BEGIN` set:
 
-``` javascript
+```javascript
 var config = {
     prompt: '[...]'             // Prompt when no hint
     hint: '[%h]',               // %h is replaced with hint text
@@ -105,7 +105,7 @@ var config = {
 
 In the `CLOZE STYLING` section of the `Styling` page replace all the content with:
 
-``` CSS
+```CSS
 span.cloze {color: blue; font-weight: bold;}
 ```
 
@@ -130,3 +130,5 @@ There is effectively no add-on, it's all JavaScript (and HTML/CSS) and runs 100%
 
 - 2023-01-23: Fix update logic bugs.
 - 2023-02-07: Adapt JS to AnkiDroid behaviour, fix [expose bug](https://github.com/TRIAEIOU/flexible-cloze-2/issues/4).
+- 2023-02-10: Fix hint bug.
+- 2023-02-18: Fix scroll and hint bugs.

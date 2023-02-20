@@ -6,7 +6,7 @@
 
     <!-- Main content field, has to be present but can be styled/layouted differently -->
     <div id="fc2-content">{{cloze:Text}}</div>
-    <div id="fc2-content-placeholder">This note type requires <code>nested cloze support</code> and <code>increased meta data</code> features from the Anki 2.1.56+ backend. It seems this reviewing software has not yet implemented these features.</div>
+    <div id="fc2-content-placeholder">This note type requires <code>nested cloze support</code> and <code>increased meta data</code> features from the Anki 2.1.56+ backend (Anki desktop 2.1.56+, AnkiDroid 2.16alpha93+ with `Use new backend` enabled and AnkiMobile 2.0.88+).</div>
 
     <!-- Additional fields, delete the divs to remove from the card -->
     <div id="fc2-additional">
@@ -146,7 +146,8 @@ if (typeof window.FC2 !== 'function') window.FC2 = class {
         }
 
         if (config.specific) config.specific.call(this)
-        this.scroll_to(this.cfg.scroll.initial)
+        window.requestAnimationFrame(() => this.scroll_to(this.cfg.scroll.initial))
+
     }
 
     /** Create expose function from config */
@@ -194,19 +195,19 @@ if (typeof window.FC2 !== 'function') window.FC2 = class {
         if (cloze.dataset.cloze === undefined) cloze.dataset.cloze = cloze.innerHTML
         cloze.classList.add('hide')
         // Never knew the hint
-        if (cloze.dataset.hint === undefined) cloze.dataset.hint = this.cfg.prompt
+        if (cloze.dataset.hint === undefined) {
+            if (cloze.innerHTML === '[...]' || cloze.classList.contains('cloze-inactive'))
+                cloze.dataset.hint = this.cfg.prompt
+            else
+                cloze.dataset.hint = ""
+                //cloze.dataset.hint = this.cfg.hint.replace('%h', cloze.innerHTML.slice(1, -1))
+        }
         cloze.innerHTML = cloze.dataset.hint
     }
 
     /** Show cloze (and save cloze hint as needed) */
     show(cloze) {
         if (!cloze || !cloze.classList.contains('hide')) return
-        if (cloze.dataset.hint === undefined) {
-            if (cloze.innerHTML === '[...]' || cloze.classList.contains('cloze-inactive'))
-                cloze.dataset.hint = this.cfg.prompt
-            else
-                cloze.dataset.hint = this.cfg.hint.replace('%h', cloze.innerHTML.substring(1, -1))
-        }
         cloze.classList.remove('hide')
         cloze.innerHTML = cloze.dataset.cloze
         for (const child of cloze.querySelectorAll(':scope .cloze, :scope .cloze-inactive'))
@@ -265,46 +266,46 @@ if (typeof window.FC2 !== 'function') window.FC2 = class {
             last = active[active.length - 1]
         }
 
-        const top = first.getBoundingClientRect().top + this.viewport.scrollTop -  this.viewport.offsetTop
-        const bottom = last.getBoundingClientRect().bottom + this.viewport.scrollTop - this.viewport.offsetTop
-        const middle = (this.viewport.offsetHeight - (bottom - top)) / 2
-        const center = top - middle
-        let y = 0
+        const offset = this.viewport.offsetTop
+        const vp_top = this.viewport.scrollTop + offset
+        const vp_height = this.viewport.clientHeight
+        let top = first.offsetTop
+        let bottom = last.offsetTop + last.offsetHeight
 
-        // Context scroll, either from preceeding or HR/HX
-        if (scroll.slice(-7) === 'context') {
-            const all = this.content.querySelectorAll('.cloze, .cloze-inactive')
-            for (let i = 1; i < all.length; i++)
-                if (all[i] === first) {
-                    y = Math.min(first.getBoundingClientRect().bottom + this.viewport.scrollTop - this.viewport.offsetTop, center)
-                    break
-                }
-            if (scroll === 'section-context') {
-                let sep
-                for (const nd of this.content.querySelectorAll('hr, h1, h2, h3, h4, h5, h6, .cloze')) {
-                    if (nd.tagName === 'SPAN') break
-                    sep = nd
-                }
-                if (sep) {
-                    const border = sep.tagName === 'HR'
-                        ? sep.getBoundingClientRect().bottom
-                        : sep.getBoundingClientRect().top + 5
-                    y = Math.min(y, border + this.viewport.scrollTop - this.viewport.offsetTop)
-                } else if (this.content.querySelector('hr, h1, h2, h3, h4, h5, h6'))
-                    y = this.viewport.scrollTop - this.viewport.offsetTop
-                // else y is already set to prev.bottom or center
+        // Context scroll, either from preceding or HR/HX
+        if (scroll === 'context') {
+            // Find section
+            let section
+            for (const nd of this.content.querySelectorAll('hr, h1, h2, h3, h4, h5, h6, .cloze')) {
+                if (nd.tagName === 'SPAN') break
+                section = nd
             }
+            if (section) {
+                top = section.tagName === 'HR'
+                    ? section.offsetTop + section.offsetHeight
+                    : section.offsetTop - 5
+            } else {
+                // No preceding section found, use preceding inactive.
+                const all = this.content.querySelectorAll('.cloze, .cloze-inactive')
+                for (let i = 1; i < all.length && !y; i++) {
+                    if (all[i] === first)
+                        top = all[i - 1].offsetTop + all[i - 1].offsetHeight
+                }
+            }
+        } else { // Not context, add one line margins
+            top -= line_height.call(this, window.getComputedStyle(first?.previousElementSibling || first, ':before')) + 3
+            bottom += line_height.call(this, window.getComputedStyle(last?.nextElementSibling || last, ':after')) + 3
         }
-        else if (bottom - top >= this.viewport.offsetHeight)
-            // All clozes will not fit - scroll to first at top regardless
-            y = top - line_height.call(this, window.getComputedStyle(first.previousElementSibling ? first.previousElementSibling : first, ':before'))
-        else if (scroll === 'center') y = center
-        // scroll === 'min'
-        else y = bottom - this.viewport.offsetHeight + line_height.call(this, window.getComputedStyle(last.nextElementSibling
-                ? last.nextElementSibling
-                : last,
-            ':after'))
-        this.viewport.scrollTo(0, y)
+        let y = 0
+        if (bottom - top > vp_height) y = top // doesn't fit, always top
+        else {
+            if (scroll === 'min') {
+                if (top < vp_top) y = top
+                else if (bottom > vp_top + vp_height) y = bottom - vp_height
+                else return // No need to scroll
+            } else y = top + (bottom - top) / 2 - vp_height / 2 // center
+        }
+        this.viewport.scrollTo(0, y - offset)
 
         function line_height(style) {
             let lh
