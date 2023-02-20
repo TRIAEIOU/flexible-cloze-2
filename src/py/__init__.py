@@ -100,6 +100,9 @@ def update():
         oback = model["tmpls"][0]["afmt"]
         ocss = model['css']
 
+        if strvercmp(CVER, '1.1.2') < 0:
+            msgs.append('The default `scroll` configuration shipped in earlier versions was errounously set to `section-context` in certain cases, that is an invalid setting, manually set to `context` instead.')
+
         if strvercmp(CVER, '1.1.1') < 0:
             msgs.append('The Anki 2.15.56+ back end is now supported on AnkiDroid 2.16alpha93+ with `Use new backend` enabled and AnkiMobile 2.0.88+.')
 
