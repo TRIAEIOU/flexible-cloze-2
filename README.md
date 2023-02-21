@@ -60,9 +60,6 @@ If using this template it may be worth using some scheduling adjustment addons (
 - `New card sort order`: `Order gathered`
 - `Bury new siblings`, `Bury review siblings` and `Bury interday learning siblings`: `off`
 
-
-See below regarding the presentation order of new cards.
-
 ## Configuration
 
 Configuration is made in the note template, configuration is made between `/*-- CONFIGURATION BEGIN`/`END --*/` on the `Front`/`Back`/`Styling` template respectively. JS/CSS between `/*-- FUNCTIONALITY BEGIN`/`END --*/` tags is the actual FC2 code, not for configuration (will be overwritten on next update). The update logic is dependent on the user keeping the `/*-- CONFIGURATION/FUNCTIONALITY BEGIN/END --*/` intact.
