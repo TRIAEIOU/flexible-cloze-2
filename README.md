@@ -8,27 +8,64 @@ Reimplementation of [Flexible cloze](https://ankiweb.net/shared/info/1632356464)
 
 ![Flexible cloze 2](https://raw.githubusercontent.com/TRIAEIOU/flexible-cloze-2/main/Screenshots/front-and-back.png){height=500px}
 
-## General
+## Use case
 
-Configuration is made in the note template, configuration is made between `/*-- CONFIGURATION BEGIN`/`END --*/` on the `Front`/`Back`/`Styling` template respectively. JS/CSS between `/*-- FUNCTIONALITY BEGIN`/`END --*/` tags is the actual FC2 code, not for configuration (will be overwritten on next update). The update logic is dependent on the user keeping the `/*-- CONFIGURATION/FUNCTIONALITY BEGIN/END --*/` intact.
+One note generation strategy is keeping one cloze note per "subject", rather than lots of small notes. This allows using Anki as the primary "note keeping location" rather than having the actual notes somewhere else (in OneNote, markdown files etc.) and have to create Anki notes for quizzing as a separate step. It also greatly improves maintainability (at lecture: "hmm, I seem to remember it was X, not Y, now where is that Anki note so I can amend it?"). During reviewing it adds the posibility to easily look up related info ("so if it wasn't ABX X for Y, for what was ABX X used?"). This while following the general **card** principles of making individual cards "atomic" and brief.
+
+```text
+# ACLS
+
+## Terminology
+
+Bla: {{c1::bla}}
+Bla: {{c2::bla}}
+
+## Drugs
+
+Epi: {{c3::bla}}
+Amiodarone: {{c4::bla}}
+
+## Process
+
+Unwitnessed arrest: {{c5::
+1. Bla
+2. Bla
+}}
+```
+
+You can of course also use FC2 if you just want some more configurability/functionality for "regular clozes".
+
+## Use
 
 - Clicking an active cloze on the front side will cycle it between hint (if there is one) and show.
 - Clicking an inactive cloze on the front side will cycle it between hide and show (no hint).
-- For notes that are "sequential" in nature (e.g. cloze 2 builds on the answer of cloze 1) try using the the v3 scheduler and `Deck options` as follows:
-  - `New card gather order`: `Deck`
-  - `New card sort order`: `Order gathered`
-  - `Bury new siblings`, `Bury review siblings` and `Bury interday learning siblings`: `off`
-- There is an optional "show all" button (styleable in class .fcz-show-all-btn). Note that he button is set to `display: none` in default configuration, you have to set it to `display: inline` on the Styling page of the cards dialog to get it to show:
+- There is an optional "show all" button (styleable in class .fcz-show-all-btn). Note that he button is set to `display: none` in default configuration, you have to set it to `display: inline` on the Styling page of the cards dialog to get it to show.
 
-```CSS
-/* SHOW ALL BUTTON ============================================== */
-/* Show all button/bar styling (and if visible or not) */
-#fcz-show-all-btn
-{ display: inline;  background-color: #465A65; color: white; text-align: center; text-transform: uppercase;
-font-size: 15px; font-weight: bold; padding: 5px; border-bottom: 1px solid white; }
+### Lists
+
+Using same ordinal clozes with `iteration.loop = true` and `iteration.hide = true` you can easily review lists by using `next`/`previous` keyboard shortcuts or edge taps to cycle through the clozes. Example:
+
+```text
+Step 1: {{c1:someting}}
+Step 2: {{c1:someting else}}
+Step 3: {{c1:someting completely different}}
+
 ```
 
+### Reviewing
+
+If using this template it may be worth using some scheduling adjustment addons ([Asdcending cloze reviews](https://ankiweb.net/shared/info/545968093), [AutoReorder](https://ankiweb.net/shared/info/757527607) or similar) to **review** the cards from a note in ascending cloze ordinal order as later clozes may use the answers from earlier clozes. For cloze order presentation of **new** cards use the the v3 scheduler and `Deck options` as follows:
+
+- `New card gather order`: `Deck`
+- `New card sort order`: `Order gathered`
+- `Bury new siblings`, `Bury review siblings` and `Bury interday learning siblings`: `off`
+
+
+See below regarding the presentation order of new cards.
+
 ## Configuration
+
+Configuration is made in the note template, configuration is made between `/*-- CONFIGURATION BEGIN`/`END --*/` on the `Front`/`Back`/`Styling` template respectively. JS/CSS between `/*-- FUNCTIONALITY BEGIN`/`END --*/` tags is the actual FC2 code, not for configuration (will be overwritten on next update). The update logic is dependent on the user keeping the `/*-- CONFIGURATION/FUNCTIONALITY BEGIN/END --*/` intact.
 
 - Active cloze: Cloze(s) with the current ordinal, i.e. the cloze(s) that should be answered. To change styling of these change or override `.cloze` class in `Styling` of the card template.
 - Inactive cloze: Cloze(s) that are not the current ordinal, i.e. the cloze(s) that should not be answered. To change styling of these change or override `.cloze-inactive` class in `Styling` of the card template.
