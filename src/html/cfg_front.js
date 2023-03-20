@@ -25,7 +25,8 @@ var config = {
         inactive: false,        // Inactive clozes
         additional: false,      // Additional fields (Note, Mnemonics etc.)
         info: false             // Information field
-    }
+    },
+    debug: false                // Show debug information
 }
 /*-- CONFIGURATION END --*/
 

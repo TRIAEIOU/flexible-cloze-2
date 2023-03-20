@@ -22,6 +22,9 @@
 #nav-toggle-all { position: fixed; top: 0; left: 0; right: 0;  z-index: 1; }
 #nav-prev-cloze { position: fixed;  top: 0; left: 0; bottom: 0;  z-index: 1; }
 #nav-next-cloze { position: fixed;  top: 0; right: 0; bottom: 0;  z-index: 1; }
+#fc2-log
+{ height: 50px; background-color: #ff8886; color: #000000; overflow: auto;
+  word-wrap: break-word; white-space: pre-wrap; font-size: 10px;}
 /*-- FUNCTIONALITY END --*/
 
 /*-- CONFIGURATION BEGIN --*/
