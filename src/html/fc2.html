@@ -121,8 +121,9 @@ if (typeof window.FC2 !== 'function') window.FC2 = class {
                         if (!fc2.cfg.iteration.top) fc2.current = evt.target
                         fc2.toggle_cloze(evt.target)
                         fc2.scroll_to(fc2.cfg.scroll.click, evt.target)
-                // Additional content (header and actual content)
-                } else if (evt.target.classList.contains('additional-header'))
+
+                } // Additional content (header and actual content)
+                else if (evt.target.classList.contains('additional-header'))
                     fc2.toggle_field(evt.target.nextElementSibling)
                 else if (evt.target.classList.contains('additional-content'))
                     fc2.toggle_field(evt.target)
@@ -318,8 +319,8 @@ if (typeof window.FC2 !== 'function') window.FC2 = class {
         const offset = this.viewport.offsetTop
         const vp_top = this.viewport.scrollTop + offset
         const vp_height = this.viewport.clientHeight
-        let top = first.offsetTop
-        let bottom = last.offsetTop + last.offsetHeight
+        let top, bottom = last.offsetTop + last.offsetHeight
+        let y = 0
 
         fc2_dbg('  offset', offset)
         fc2_dbg('  vp_top', vp_top)
@@ -331,40 +332,44 @@ if (typeof window.FC2 !== 'function') window.FC2 = class {
         if (scroll === 'context') {
             // Find section
             let section
-            for (const nd of this.content.querySelectorAll('hr, h1, h2, h3, h4, h5, h6, .cloze')) {
-                if (nd.tagName === 'SPAN') break
-                section = nd
-            }
-            if (section) {
-                fc2_dbg(' section found')
-                top = section.tagName === 'HR'
-                    ? section.offsetTop + section.offsetHeight
-                    : section.offsetTop - 5
-            } else {
-                // No preceding section found, use preceding inactive.
-                const all = this.content.querySelectorAll('.cloze, .cloze-inactive')
-                let i = 0
-                while(++i < all.length) {
-                    if (all[i] === first) {
-                        top = all[i - 1].offsetTop + all[i - 1].offsetHeight
-                        break
-                    }
+            if (this.content.querySelectorAll('hr, h1, h2, h3, h4, h5, h6').length) {
+                fc2_dbg(' sections found')
+                top = 0
+                for (const nd of this.content.querySelectorAll(
+                    'hr, h1, h2, h3, h4, h5, h6, .cloze'
+                )) {
+                    if (nd.tagName === 'SPAN') break
+                    section = nd
                 }
+                if (section) {
+                    fc2_dbg(' pre-section found')
+                    top = section.tagName === 'HR'
+                        ? section.offsetTop + section.offsetHeight
+                        : section.offsetTop - 5
+                }
+            } else {
+                fc2_dbg(' no section found')
+                // No sections found, use preceding inactive
+                const all = this.content.querySelectorAll('.cloze, .cloze-inactive')
+                for (let i = 1; i < all.length && !top; i++)
+                    if (all[i] === first)
+                        top = all[i - 1].offsetTop + all[i - 1].offsetHeight
             }
-        } else { // Not context, add one line margins
-            top -= line_height.call(this, window.getComputedStyle(first?.previousElementSibling || first, ':before')) + 3
+            y = this.cfg.front || bottom < top + vp_height
+                ? top
+                : bottom - vp_height // back side & doesn't fit, scroll min
+        } else { // Not context, use one line margins
+            top = first.offsetTop - line_height.call(this, window.getComputedStyle(first?.previousElementSibling || first, ':before')) + 3
             bottom += line_height.call(this, window.getComputedStyle(last?.nextElementSibling || last, ':after')) + 3
-        }
-        fc2_dbg('  top2: ', top)
-        fc2_dbg('  bottom2: ', bottom)
-        let y = 0
-        if (bottom - top > vp_height) y = top // doesn't fit, always top
-        else {
             if (scroll === 'min') {
+                // above
                 if (top < vp_top) y = top
+                // below
                 else if (bottom > vp_top + vp_height) y = bottom - vp_height
-                else return // No need to scroll
-            } else y = top + (bottom - top) / 2 - vp_height / 2 // center
+                // No need to scroll
+                else return
+            }  // center
+            else y = top + (bottom - top) / 2 - vp_height / 2
         }
         fc2_dbg('  y: ', y)
         this.viewport.scrollTo(0, y - offset)

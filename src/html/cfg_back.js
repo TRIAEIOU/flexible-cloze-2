@@ -7,7 +7,7 @@ var config = {
         reverse: false          // If true exposed clozes are hidden, others shown
     },
     scroll: {                   // Valid values: `none`, `min`, `center` or `context`
-        initial: 'center',      // Scoll on initial show
+        initial: 'context',     // Scoll on initial show
         click: 'min',           // Scroll on cloze click
         iterate: 'min'          // Scroll on iteration
     },
@@ -32,6 +32,7 @@ var config = {
 
 /*-- FUNCTIONALITY BEGIN --*/
 config.specific = null
+config.front = false
 var container
 if (!container) container = document.querySelector('#fc2-title').parentElement
 container.classList.remove('front')

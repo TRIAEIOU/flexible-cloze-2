@@ -37,6 +37,7 @@ config.specific = function() {
         this.hide(cloze)
     })
 }
+config.front = true
 var container
 if (!container) container = document.querySelector('#fc2-title').parentElement
 container.classList.remove('back')
