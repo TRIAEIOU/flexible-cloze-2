@@ -7,7 +7,7 @@ var config = {
         reverse: false          // If true exposed clozes are hidden, others shown
     },
     scroll: {                   // Valid values: `none`, `min`, `center` or `context`
-        initial: 'center',     // Scoll on initial show
+        initial: 'center',      // Scoll on initial show
         click: 'min',           // Scroll on cloze click
         iterate: 'min'          // Scroll on iteration
     },
@@ -26,7 +26,7 @@ var config = {
         additional: true,       // Additional fields (Note, Mnemonics etc.)
         info: true              // Information field
     },
-    debug: false                // Show debug information
+    debug: true              // Debug information level (`false`, `'error'` or `true`)
 }
 /*-- CONFIGURATION END --*/
 

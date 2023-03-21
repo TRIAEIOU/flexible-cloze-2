@@ -9,8 +9,13 @@
 #fc2-scroll-area { flex: 1 1; display: flex; flex-flow: column nowrap; overflow: auto; }
     #fc2-content { flex: 1 1; display: none; }
     #fc2-content-placeholder { flex: 1 1; margin: 10px; }
-    #fc2-additional { flex: 0 0; z-index: 2; display: none; }
-        .additional-header { cursor: pointer; }
+    #fc2-additional { flex: 0 0; z-index: 2; display: flex; flex-flow: column nowrap; }
+        .additional-header { cursor: pointer; display: block; }
+        .additional-content { display: block; }
+        .additional-content.hide { display: none; }
+#fc2-log { flex: initial; display: flex; flex-flow: column nowrap; height: 50px; font-size: 10px;
+background-color: #ff8886; color: #000000; word-wrap: break-word; white-space: pre-wrap;
+overflow: auto; margin: 0px;}
 #fc2-show-all { flex: 0 0; cursor: pointer; }
 
 #fc2-footer { flex: 0 0; z-index: 2; }
@@ -22,9 +27,6 @@
 #nav-toggle-all { position: fixed; top: 0; left: 0; right: 0;  z-index: 1; }
 #nav-prev-cloze { position: fixed;  top: 0; left: 0; bottom: 0;  z-index: 1; }
 #nav-next-cloze { position: fixed;  top: 0; right: 0; bottom: 0;  z-index: 1; }
-#fc2-log
-{ height: 50px; background-color: #ff8886; color: #000000; overflow: auto;
-  word-wrap: break-word; white-space: pre-wrap; font-size: 10px;}
 /*-- FUNCTIONALITY END --*/
 
 /*-- CONFIGURATION BEGIN --*/
@@ -60,7 +62,8 @@ Top bar navigation area configuration, increase size by increasing height */
 /* CLOZE STYLING =============================================== */
 /* Clozes base look and feel, valid on front and back */
 span.cloze, span.cloze-inactive
-{ margin: 1px; padding : 5px; vertical-align: middle; min-width: 100px; min-height: 0.5em; border-color: black; border-width: 2px; border-style: solid; display: block; }
+{ margin: 1px; padding : 5px; vertical-align: middle; min-width: 100px; min-height: 0.5em;
+border-color: black; border-width: 2px; border-style: solid; display: block; }
 
 /* Display form and style of hide-state clozes (front and back), change to "inline" for a continuous line */
 span.cloze.hide, span.cloze-inactive.hide

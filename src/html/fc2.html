@@ -62,12 +62,12 @@
 /*-- CONFIGURATION BEGIN --*/
 /*--###CFG###--*/
 
-var fc2_dbg = Function.prototype
+var fc2_dbg = () => {}
 if (typeof window.FC2 !== 'function') window.FC2 = class {
     content = null // parent of card HTML
     viewport = null // scroll area
     ordinal = 0 // current cloze ordinal
-    expose = null // function to expose cloze as needed
+    expose = null // function to expose cloze PRN
     init_done = false // flag to avoid adding multiple event listeners
 
     /** Generic init done on front and back */
@@ -77,24 +77,8 @@ if (typeof window.FC2 !== 'function') window.FC2 = class {
         this.viewport = document.getElementById('fc2-scroll-area')
         this.current = this.content.querySelector('.cloze')
 
-        // Setup debug
-        if (config.debug) {
-            const log = this.log = document.createElement('pre')
-            log.id = 'fc2-log'
-            log.onclick = (evt) => {
-                evt.target.select()
-                document.execCommand("copy")
-            }
-            const footer = document.getElementById('fc2-footer')
-            footer.parentElement.insertBefore(log, footer)
-            fc2_dbg = (str, args) => {log.innerText += `${str}(${JSON.stringify(args)})\n`}
-            // Capture errors
-            window.onerror = (emsg, src, ln, col, err) => {
-                log.innerText += `error [${src}:${ln}]: ${emsg}\n    ${err.stack.replace('\n', '\n    ')}\n`
-                return true
-            }
-        }
-
+        // Setup logging
+        if(this.cfg.debug) this.log_init()
 
         // Check for backend version
         if (this.current.dataset.ordinal === undefined) return
@@ -113,17 +97,16 @@ if (typeof window.FC2 !== 'function') window.FC2 = class {
             else if (!this.cfg.show.inactive) this.hide(cloze)
         })
 
-        // Generic: show additional fields per default depending on config
-        if (this.cfg.show.additional)
+        // Show additional fields per default depending on config
+        if (!this.cfg.show.additional)
             this.viewport.querySelectorAll(':not(#info).additional-content')
-            .forEach(nd => { nd.style.display = 'block' })
+            .forEach(nd => this.hide(nd))
 
-        // Generic: show info field per default depending on config
-        if (this.cfg.show.info)
-            document.querySelector('div#info.additional-content')
-            .style.display = 'block'
+        // Show info field per default depending on config
+        if (!this.cfg.show.info)
+            this.hide(document.querySelector('#info.additional-content'))
 
-        // Generic: reveal finished content, hide placeholder and scroll to first active cloze
+        // Reveal finished content, hide placeholder and scroll to first active cloze
         this.content.style.display = 'block'
         document.getElementById('fc2-content-placeholder').style.display = 'none'
 
@@ -140,7 +123,7 @@ if (typeof window.FC2 !== 'function') window.FC2 = class {
                         fc2.scroll_to(fc2.cfg.scroll.click, evt.target)
                 // Additional content (header and actual content)
                 } else if (evt.target.classList.contains('additional-header'))
-                    fc2.toggle_field(evt.target.firstElementChild)
+                    fc2.toggle_field(evt.target.nextElementSibling)
                 else if (evt.target.classList.contains('additional-content'))
                     fc2.toggle_field(evt.target)
                 // Toggle all button
@@ -168,6 +151,40 @@ if (typeof window.FC2 !== 'function') window.FC2 = class {
         if (config.specific) config.specific.call(this)
         window.requestAnimationFrame(() => this.scroll_to(this.cfg.scroll.initial))
 
+    }
+
+    /** Initialize log window */
+    log_init() {
+        function add_log_el(self) {
+            self.log = document.createElement('pre')
+            self.log.id = 'fc2-log'
+            self.viewport.parentElement.appendChild(self.log)
+        }
+
+        // Add debug messages
+        if (config.debug === true)
+            fc2_dbg = (str, args) => {
+                if (!this.log) add_log_el(this)
+                let msg = str
+                if (typeof(args) === typeof(arguments) || typeof(args) === typeof([])) {
+                    for (let i = 0; i < args.length; i++) {
+                        msg += i ? ', ' : ': '
+                        if (typeof(args[i]) == 'object') msg += JSON.stringify(args[i])
+                        else if (typeof(args[i]) == 'string') msg += `"${args[i]}"`
+                        else msg += args[i]
+                    }
+                } else if (args) msg += `: ${args}`
+                this.log.innerText += `${msg}\n`
+                this.log.scrollTo(0, this.log.scrollHeight)
+            }
+
+        // Capture errors
+        window.onerror = (emsg, src, ln, col, err) => {
+            if (!this.log) add_log_el(this)
+            this.log.innerText += `error ${emsg}:\n${err.stack}\n`
+            this.log.scrollTo(0, this.log.scrollHeight)
+            return true
+        }
     }
 
     /** Create expose function from config */
@@ -210,30 +227,34 @@ if (typeof window.FC2 !== 'function') window.FC2 = class {
         return this.cfg.expose.reverse ? (el) => {return !expose_(el)} : expose_
     }
 
-    /** Hide cloze (and save cloze content as needed) */
-    hide(cloze) {
+    /** Hide cloze/field (and save cloze content PRN) */
+    hide(el) {
         fc2_dbg('hide', arguments)
-        if (!cloze || cloze.classList.contains('hide')) return
-        if (cloze.dataset.cloze === undefined) cloze.dataset.cloze = cloze.innerHTML
-        cloze.classList.add('hide')
-        // Never knew the hint
-        if (cloze.dataset.hint === undefined) {
-            if (cloze.innerHTML === '[...]' || cloze.classList.contains('cloze-inactive'))
-                cloze.dataset.hint = this.cfg.prompt
+        if (!el || el.classList.contains('hide')) return
+        el.classList.add('hide')
+        // Done if additional field
+        if (el.classList.contains('additional-content')) return
+        // Store cloze content and hint PRN
+        if (el.dataset.cloze === undefined) el.dataset.cloze = el.innerHTML
+        // Store hint PRN and possible
+        if (el.dataset.hint === undefined) {
+            if (el.innerHTML === '[...]' || el.classList.contains('cloze-inactive'))
+                el.dataset.hint = this.cfg.prompt
             else
-                cloze.dataset.hint = ""
-                //cloze.dataset.hint = this.cfg.hint.replace('%h', cloze.innerHTML.slice(1, -1))
+                el.dataset.hint = "" // This should try to parse hint from content and format?
         }
-        cloze.innerHTML = cloze.dataset.hint
+        el.innerHTML = el.dataset.hint
     }
 
-    /** Show cloze (and save cloze hint as needed) */
-    show(cloze) {
+    /** Show cloze/field (and save cloze hint PRN) */
+    show(el) {
         fc2_dbg('show', arguments)
-        if (!cloze || !cloze.classList.contains('hide')) return
-        cloze.classList.remove('hide')
-        cloze.innerHTML = cloze.dataset.cloze
-        for (const child of cloze.querySelectorAll(':scope .cloze, :scope .cloze-inactive'))
+        if (!el || !el.classList.contains('hide')) return
+        el.classList.remove('hide')
+        // Done if additional field
+        if (el.classList.contains('additional-content')) return
+        el.innerHTML = el.dataset.cloze
+        for (const child of el.querySelectorAll(':scope .cloze, :scope .cloze-inactive'))
             this.hide(child)
     }
 
@@ -300,6 +321,12 @@ if (typeof window.FC2 !== 'function') window.FC2 = class {
         let top = first.offsetTop
         let bottom = last.offsetTop + last.offsetHeight
 
+        fc2_dbg('  offset', offset)
+        fc2_dbg('  vp_top', vp_top)
+        fc2_dbg('  vp_height', vp_height)
+        fc2_dbg('  top1', top)
+        fc2_dbg('  bottom1', bottom)
+
         // Context scroll, either from preceding or HR/HX
         if (scroll === 'context') {
             // Find section
@@ -309,21 +336,27 @@ if (typeof window.FC2 !== 'function') window.FC2 = class {
                 section = nd
             }
             if (section) {
+                fc2_dbg(' section found')
                 top = section.tagName === 'HR'
                     ? section.offsetTop + section.offsetHeight
                     : section.offsetTop - 5
             } else {
                 // No preceding section found, use preceding inactive.
                 const all = this.content.querySelectorAll('.cloze, .cloze-inactive')
-                for (let i = 1; i < all.length; i++) {
-                    if (all[i] === first)
+                let i = 0
+                while(++i < all.length) {
+                    if (all[i] === first) {
                         top = all[i - 1].offsetTop + all[i - 1].offsetHeight
+                        break
+                    }
                 }
             }
         } else { // Not context, add one line margins
             top -= line_height.call(this, window.getComputedStyle(first?.previousElementSibling || first, ':before')) + 3
             bottom += line_height.call(this, window.getComputedStyle(last?.nextElementSibling || last, ':after')) + 3
         }
+        fc2_dbg('  top2: ', top)
+        fc2_dbg('  bottom2: ', bottom)
         let y = 0
         if (bottom - top > vp_height) y = top // doesn't fit, always top
         else {
@@ -333,10 +366,11 @@ if (typeof window.FC2 !== 'function') window.FC2 = class {
                 else return // No need to scroll
             } else y = top + (bottom - top) / 2 - vp_height / 2 // center
         }
+        fc2_dbg('  y: ', y)
         this.viewport.scrollTo(0, y - offset)
 
         function line_height(style) {
-            fc2_dbg('line_height', arguments)
+            fc2_dbg('line_height', ['<truncated>'])
             let lh
             if (style.lineHeight.toLowerCase() === "normal") {
                 var nd = document.createElement('span')

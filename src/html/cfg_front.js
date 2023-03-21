@@ -26,7 +26,7 @@ var config = {
         additional: false,      // Additional fields (Note, Mnemonics etc.)
         info: false             // Information field
     },
-    debug: false                // Show debug information
+    debug: true              // Debug information level (`false`, `'error'` or `true`)
 }
 /*-- CONFIGURATION END --*/
 
