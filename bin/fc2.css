@@ -1,0 +1,195 @@
+/*-- FUNCTIONALITY BEGIN --*/
+.card
+{  position: fixed !important; top: 0; bottom: 0; left: 0; right: 0; display: flex; }
+
+#qa, #content
+{ flex: 1 1; display: flex; flex-flow: column nowrap; overflow: auto; margin: 0px; }
+
+#fc2-title, #title { flex: 0 0; }
+#fc2-scroll-area { flex: 1 1; display: flex; flex-flow: column nowrap; overflow: auto; }
+    #fc2-content { flex: 1 1; display: none; }
+    #fc2-content-placeholder { flex: 1 1; margin: 10px; }
+    #fc2-additional { flex: 0 0; z-index: 2; display: flex; flex-flow: column nowrap; }
+        .additional-header { cursor: pointer; display: block; }
+        .additional-content { display: block; }
+        .additional-content.hide { display: none; }
+#fc2-log { flex: initial; display: flex; flex-flow: column nowrap; height: 50px; font-size: 10px;
+background-color: #ff8886; color: #000000; word-wrap: break-word; white-space: pre-wrap;
+overflow: auto; margin: 0px;}
+#fc2-show-all { flex: 0 0; cursor: pointer; }
+
+#fc2-footer { flex: 0 0; z-index: 2; }
+	#fc2-legend-footer { display: flex; flex-flow: row nowrap; }
+		.fc2-legend-entry, #fc2-legent-entry {flex: 1 1;}
+	#fc2-flag-footer { display: flex; flex-flow: row nowrap }
+		.fc2-flag { flex: 1 1 100%; }
+
+#nav-toggle-all { position: fixed; top: 0; left: 0; right: 0;  z-index: 1; }
+#nav-prev-cloze { position: fixed;  top: 0; left: 0; bottom: 0;  z-index: 1; }
+#nav-next-cloze { position: fixed;  top: 0; right: 0; bottom: 0;  z-index: 1; }
+/*-- FUNCTIONALITY END --*/
+
+/*-- CONFIGURATION BEGIN --*/
+/* =======================================================
+Look and feel configurations, changing/deleting will not break functionality (although incoherrent styling will make things look strange).
+========================================================= */
+
+/* NAVIGATION AREA CONFIGURATION ======================================
+Top bar navigation area configuration, increase size by increasing height */
+.nav-area-top
+{ height: 30px; cursor: pointer; background-color: transparent; }
+
+/* Top bar navigation area configuration, increase size by increasing width */
+.nav-area-side
+{ width: 30px; cursor: pointer; background-color: transparent; }
+
+
+/* CARD GENERAL STYLING =========================================== */
+.card
+{ font-family: Arial; font-size: 20px;  color: black; background-color: white; margin: 0px; }
+
+
+/* TITLE FIELD STYLING ============================================= */
+#fc2-title
+{ border-bottom: solid black 3px; text-transform: uppercase; font-weight: bold; margin: 10px 10px 0px 10px; }
+
+
+/* TEXT FIELD STYLING ============================================= */
+#fc2-content
+{ margin: 10px; }
+
+
+/* CLOZE STYLING =============================================== */
+/* Clozes base look and feel, valid on front and back */
+span.cloze, span.cloze-inactive
+{ margin: 1px; padding : 5px; vertical-align: middle; min-width: 100px; min-height: 0.5em;
+border-color: black; border-width: 2px; border-style: solid; display: block; }
+
+/* Display form and style of hide-state clozes (front and back), change to "inline" for a continuous line */
+span.cloze.hide, span.cloze-inactive.hide
+{ display: inline-block; }
+
+/* Display form and style of active clozes on front */
+.front span.cloze
+{ background-color: #FA8072; }
+
+/* Display form and style of active clozes on back */
+.back span.cloze
+{ background-color: #D0F0C0; }
+
+/* Display form and style of inactive clozes on front and back */
+.front span.cloze-inactive, .back span.cloze-inactive
+{ background-color: #F0F0F0; }
+
+/* SHOW ALL BUTTON ============================================== */
+/* Show all button/bar styling (and if visible or not) */
+#fc2-show-all-btn
+{ display: none;  background-color: #465A65; color: white; text-align: center; text-transform: uppercase;
+font-size: 15px; font-weight: bold; padding: 5px; border-bottom: 1px solid white; }
+
+/* ADDITIONAL FIELD STYLING ========================================= */
+/* Look and field of the additional field area */
+#fc2-additional
+{ border-top: 3px solid black; margin: 0px 10px 0px 10px; }
+
+/* Additional field title look and feel */
+.additional-header
+{ padding-top: 5px; font-weight: bold; text-transform: uppercase; color: black; display: block; }
+
+/* Additional field content look and feel */
+.additional-content
+{ margin-bottom: 10px; border: 1px solid; background-color: #F0F0F0; padding: 5px; }
+
+
+/* SYMBOL LEGEND FOOTER STYLING ===================================== */
+/* Base symbol legend look and feel */
+.fc2-legend-entry
+{text-align: center; text-transform: uppercase; font-size: 10px; font-weight: bold; vertical-align: center; background-color: #465A65; color: white; border-left: 1px solid white;}
+
+/* Specific styling of first entry/div (to avaid a white border on left in default styling) */
+.fc2-legend-entry:first-child
+{ border-left: unset; }
+
+/* Specific styling of first letter in each entry (make symbol bigger) */
+.fc2-legend-entry:first-letter
+{ font-size: 150%; }
+
+
+/* FLAG LEGEND FOOTER STYLING ======================================= */
+/* Flag legend general look and feel */
+#fc2-flag-footer
+{text-align: center; text-transform: uppercase; font-size: 10px; font-weight: bold; }
+
+/* Red flag legend look and feel, set content to whatever value that should be displayed */
+#fc2-flag-red, #fc2-flag-red::before
+{ background-color: #FD7C6E; content: "Incorrect"; }
+
+/* Orange flag legend look and feel, set content to whatever value that should be displayed */
+#fc2-flag-orange, #fc2-flag-orange::before
+{ background-color: #FAA76C; content: "Duplicate"; }
+
+/* Green flag legend look and feel, set content to whatever value that should be displayed */
+#fc2-flag-green, #fc2-flag-green::before
+{background-color: #81A984; content: "Formating"; }
+
+/* Blue flag legend look and feel, set content to whatever value that should be displayed */
+#fc2-flag-blue, #fc2-flag-blue::before
+{ background-color: #ADB9CA; content: "Rephrase"; }
+
+/* Pink flag legend look and feel, set content to whatever value that should be displayed */
+#fc2-flag-pink, #fc2-flag-pink::before
+{ background-color: #D89B9B; content: "Discard"; }
+
+/* Turquoise flag legend look and feel, set content to whatever value that should be displayed */
+#fc2-flag-turquoise, #fc2-flag-turquoise::before
+{ background-color: #33B3A6; content: "Consolidate"; }
+
+/* Purple flag legend look and feel, set content to whatever value that should be displayed */
+#fc2-flag-purple, #fc2-flag-purple::before
+{ background-color: #A64CA6; content: "Mark"; }
+/*-- CONFIGURATION END --*/
+
+
+/* MISCELLANEOUS STYLING, HAS NOTHING TO DO WITH FLEXIBLE CLOZE ============== */
+/* Highlight other text runs */
+code, kbd, var, samp, tt
+{ background-color: #F0F0F0; }
+
+/* reduce whitespace and indents for lists */
+li
+{ margin: 0; }
+ul, ol
+{ padding: 0em 0em 0em 2em; margin-top: 0.5em; margin-bottom: 0.5em; }
+
+/* Reduce first list indent and spacing when a cloze begins with a list */
+span.cloze > ul:first-child, span.cloze-inactive > ul:first-child
+span.cloze > ol:first-child, span.cloze-inactive > ol:first-child
+span.cloze > br:first-child + ul, span.cloze-inactive > br:first-child + ul,
+span.cloze > br:first-child + ol, span.cloze-inactive > br:first-child + ol
+{ padding: 0em 0em 0em 1em; margin-top: 0em; margin-bottom: 0em; }
+
+/* Reduce list indents and spacing when in a table */
+td ul, td ol, td ul ul, td ol ol, td ul ul ul, td ol ol ol
+{ padding: 0em 0em 0em 1em; margin-top: 0em; margin-bottom: 0em; }
+
+/* Default table formating */
+table:not([class]) { border-collapse: collapse; width: 100%; margin-bottom: 20px; margin-top: 5px; }
+th:not([class]) { border: 1px solid black; font-weight: bold; text-transform: uppercase; background-color: lightgray; }
+td:not([class]) { border: 1px solid black; }
+
+/* Default header formating */
+h1, h2, h3, h4, h5, h6 { font-size: 20px; margin: 0px; }
+h1:not(:first-child), h2:not(:first-child), h3:not(:first-child), h4:not(:first-child), h5:not(:first-child), h6:not(:first-child) { margin-top: 20px; }
+h1 { font-weight: 900; text-transform: uppercase; }
+h2 { font-weight: 900; }
+h3 { font-weight: 900; font-style: italic; }
+h4 { text-decoration: underline; }
+h5 { font-style: italic; text-decoration: underline; }
+h6 { font-style: italic }
+
+/* Stronger bold weight */
+b { font-weight: bolder; }
+
+/* Definition lists formating */
+dt { font-weight: bold; }
+dd { margin-bottom: 10px; }
