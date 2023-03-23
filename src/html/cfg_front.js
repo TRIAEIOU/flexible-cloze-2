@@ -31,7 +31,7 @@ var config = {
 /*-- CONFIGURATION END --*/
 
 /*-- FUNCTIONALITY BEGIN --*/
-config.specific = function() {
+config.onload = function() {
     // Side specific: hide active clozes
     this.content.querySelectorAll('.cloze').forEach(cloze => {
         this.hide(cloze)

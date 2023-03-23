@@ -71,15 +71,15 @@ span.cloze.hide, span.cloze-inactive.hide
 
 /* Display form and style of active clozes on front */
 .front span.cloze
-{ background-color: #FA8072; }
+{ background-color: #FA8072; color: black; }
 
 /* Display form and style of active clozes on back */
 .back span.cloze
-{ background-color: #D0F0C0; }
+{ background-color: #D0F0C0; color: black; }
 
 /* Display form and style of inactive clozes on front and back */
 .front span.cloze-inactive, .back span.cloze-inactive
-{ background-color: #F0F0F0; }
+{ background-color: #F0F0F0; color: black;}
 
 /* SHOW ALL BUTTON ============================================== */
 /* Show all button/bar styling (and if visible or not) */
