@@ -236,10 +236,7 @@ if (typeof window.FC2 !== 'function') window.FC2 = class {
         else y = parseFloat(sessionStorage.getItem('fc2_vp_top')) || 0
 
         if (config.onload) config.onload.call(this)
-
-        const ch = new MessageChannel()
-        ch.port1.onmessage = () => this.scroll_to({scroll: this.cfg.scroll.initial, start_y: y})
-        ch.port2.postMessage(undefined)
+        window.requestAnimationFrame(() => window.requestAnimationFrame(() => this.scroll_to({scroll: this.cfg.scroll.initial, start_y: y})))
     }
 
     /** Create expose function from config */
@@ -362,69 +359,72 @@ if (typeof window.FC2 !== 'function') window.FC2 = class {
     scroll_to(opts) {
         this.dbg('scroll_to', arguments)
         if (opts.scroll === 'none') return
-        let first, last
-        if (opts.cloze) first = last = opts.cloze
-        else {
-            const active = this.content.querySelectorAll('.cloze')
-            first = active[0]
-            last = active[active.length - 1]
-        }
 
-        const offset = this.viewport.offsetTop // offset from closest positioned parent top
-        const vp_top = opts.start_y || 0
-        const vp_height = this.viewport.clientHeight
-        let top, bottom = (last.offsetTop - offset) + last.offsetHeight
-        let y = 0
-
-        // Context scroll, either from preceding or HR/HX
-        if (opts.scroll === 'context') {
-            // Find section
-            let section
-            if (this.content.querySelectorAll('hr, h1, h2, h3, h4, h5, h6').length) {
-                top = 0
-                for (const nd of this.content.querySelectorAll(
-                    'hr, h1, h2, h3, h4, h5, h6, .cloze'
-                )) {
-                    if (nd.tagName === 'SPAN') break
-                    section = nd
-                }
-                if (section) {
-                    top = section.tagName === 'HR'
-                        ? section.offsetTop - offset + section.offsetHeight
-                        : section.offsetTop - offset - 5
-                }
-            } else {
-                // No sections found, use preceding inactive
-                const all = this.content.querySelectorAll('.cloze, .cloze-inactive')
-                for (let i = 1; i < all.length && !top; i++)
-                    if (all[i] === first)
-                        top = all[i - 1].offsetTop - offset + all[i - 1].offsetHeight
+        window.requestAnimationFrame(() => {
+            let first, last
+            if (opts.cloze) first = last = opts.cloze
+            else {
+                const active = this.content.querySelectorAll('.cloze')
+                first = active[0]
+                last = active[active.length - 1]
             }
-            y = this.cfg.front || bottom < top + vp_height
-                ? top
-                : bottom - vp_height // back side & doesn't fit, scroll min
-        } else { // Not context, use one line margins
-            top = first.offsetTop - offset - line_height.call(
-                this,
-                window.getComputedStyle(first?.previousElementSibling || first, ':before')
-            ) + 3
-            bottom += line_height.call(this, window.getComputedStyle(last?.nextElementSibling
-                || last, ':after')) + 3
-            if (opts.scroll === 'min') {
-                // above
-                if (top < vp_top) y = top
-                // below
-                else if (bottom > vp_top + vp_height) y = bottom - vp_height
-                else y = vp_top // Scroll as on back we need to restore
 
-            }  // center
-            else y = top + (bottom - top) / 2 - vp_height / 2
-        }
+            const offset = this.viewport.offsetTop // offset from closest positioned parent top
+            const vp_top = opts.start_y || 0
+            const vp_height = this.viewport.clientHeight
+            let top, bottom = (last.offsetTop - offset) + last.offsetHeight
+            let y = 0
 
-        this.dbg('offset', offset)
-        this.dbg('vp_top', vp_top)
-        this.dbg('y', y)
-        this.viewport.scrollTo(0, y)
+            // Context scroll, either from preceding or HR/HX
+            if (opts.scroll === 'context') {
+                // Find section
+                let section
+                if (this.content.querySelectorAll('hr, h1, h2, h3, h4, h5, h6').length) {
+                    top = 0
+                    for (const nd of this.content.querySelectorAll(
+                        'hr, h1, h2, h3, h4, h5, h6, .cloze'
+                    )) {
+                        if (nd.tagName === 'SPAN') break
+                        section = nd
+                    }
+                    if (section) {
+                        top = section.tagName === 'HR'
+                            ? section.offsetTop - offset + section.offsetHeight
+                            : section.offsetTop - offset - 5
+                    }
+                } else {
+                    // No sections found, use preceding inactive
+                    const all = this.content.querySelectorAll('.cloze, .cloze-inactive')
+                    for (let i = 1; i < all.length && !top; i++)
+                        if (all[i] === first)
+                            top = all[i - 1].offsetTop - offset + all[i - 1].offsetHeight
+                }
+                y = this.cfg.front || bottom < top + vp_height
+                    ? top
+                    : bottom - vp_height // back side & doesn't fit, scroll min
+            } else { // Not context, use one line margins
+                top = first.offsetTop - offset - line_height.call(
+                    this,
+                    window.getComputedStyle(first?.previousElementSibling || first, ':before')
+                ) + 3
+                bottom += line_height.call(this, window.getComputedStyle(last?.nextElementSibling
+                    || last, ':after')) + 3
+                if (opts.scroll === 'min') {
+                    // above
+                    if (top < vp_top) y = top
+                    // below
+                    else if (bottom > vp_top + vp_height) y = bottom - vp_height
+                    else y = vp_top // Scroll as on back we need to restore
+
+                }  // center
+                else y = top + (bottom - top) / 2 - vp_height / 2
+            }
+
+            this.dbg('offset', offset)
+            this.dbg('vp_top', vp_top)
+            this.dbg('y', y)
+            this.viewport.scrollTo(0, y)
+        })
 
         function line_height(style) {
             this.dbg('line_height')
