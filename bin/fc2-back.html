@@ -181,19 +181,6 @@ if (typeof window.FC2 !== 'function') window.FC2 = class {
             }
         })
 
-        window.addEventListener('unload', (evt) => {
-            sessionStorage.setItem('window unload', "fired")
-        })
-        document.addEventListener('unload', (evt) => {
-            sessionStorage.setItem('document unload', "fired")
-        })
-        document.documentElement.addEventListener('unload', (evt) => {
-            sessionStorage.setItem('html unload', "fired")
-        })
-        document.body.addEventListener('unload', (evt) => {
-            sessionStorage.setItem('body unload', "fired")
-        })
-
         // Run side specifics
         this.load(config)
     }
@@ -205,15 +192,6 @@ if (typeof window.FC2 !== 'function') window.FC2 = class {
         this.viewport = document.getElementById('fc2-scroll-area')
         this.current = this.content.querySelector('.cloze')
         this.log = document.getElementById('fc2-log')
-
-        this.dbg("window unload", sessionStorage.getItem('window unload'))
-        this.dbg("document unload", sessionStorage.getItem('document unload'))
-        this.dbg("html unload", sessionStorage.getItem('html unload'))
-        this.dbg("body unload", sessionStorage.getItem('body unload'))
-        sessionStorage.setItem('window unload', '')
-        sessionStorage.setItem('document unload', '')
-        sessionStorage.setItem('html unload', '')
-        sessionStorage.setItem('body unload', '')
 
         this.ordinal ||= parseInt(this.current.dataset.ordinal)
         this.expose = this.generate_expose()
@@ -253,7 +231,10 @@ if (typeof window.FC2 !== 'function') window.FC2 = class {
         else y = parseFloat(sessionStorage.getItem('fc2_vp_top')) || 0
 
         if (config.onload) config.onload.call(this)
-        window.requestAnimationFrame(() => this.scroll_to({scroll: this.cfg.scroll.initial, start_y: y}))
+
+        const ch = new MessageChannel()
+        ch.port1.onmessage = () => this.scroll_to({scroll: this.cfg.scroll.initial, start_y: y})
+        ch.port2.postMessage(undefined)
     }
 
     /** Create expose function from config */
@@ -384,10 +365,10 @@ if (typeof window.FC2 !== 'function') window.FC2 = class {
             last = active[active.length - 1]
         }
 
-        const offset = this.viewport.offsetTop
+        const offset = this.viewport.offsetTop // offset from closest positioned parent top
         const vp_top = opts.start_y || 0
         const vp_height = this.viewport.clientHeight
-        let top, bottom = last.offsetTop - offset + last.offsetHeight
+        let top, bottom = (last.offsetTop - offset) + last.offsetHeight
         let y = 0
 
         // Context scroll, either from preceding or HR/HX

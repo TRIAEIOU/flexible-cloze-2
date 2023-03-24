@@ -193,7 +193,10 @@ if (typeof window.FC2 !== 'function') window.FC2 = class {
         else y = parseFloat(sessionStorage.getItem('fc2_vp_top')) || 0
 
         if (config.onload) config.onload.call(this)
-        window.requestAnimationFrame(() => this.scroll_to({scroll: this.cfg.scroll.initial, start_y: y}))
+
+        const ch = new MessageChannel()
+        ch.port1.onmessage = () => this.scroll_to({scroll: this.cfg.scroll.initial, start_y: y})
+        ch.port2.postMessage(undefined)
     }
 
     /** Create expose function from config */
