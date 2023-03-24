@@ -1,3 +1,4 @@
+/*-- CONFIGURATION BEGIN --*/
 var config = {
     prompt: '',                 // Prompt when no hint
     hint: '[%h]',               // %h is replaced with hint text
@@ -29,10 +30,3 @@ var config = {
     debug: true              // Debug information level (`false`, `'error'` or `true`)
 }
 /*-- CONFIGURATION END --*/
-
-/*-- FUNCTIONALITY BEGIN --*/
-config.front = false
-var container
-if (!container) container = document.querySelector('#fc2-title').parentElement
-container.classList.remove('front')
-container.classList.add('back')
