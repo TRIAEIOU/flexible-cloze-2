@@ -72,18 +72,11 @@ FC2 ||= class {
                 .forEach(nd => this.hide(nd));
         if (!this.cfg.show.info)
             this.hide(document.querySelector('#info.additional-content'));
-        let initial_pos;
-        if (this.cfg.front) {
-            initial_pos = 0;
-            this.viewport.onscroll = (evt) => sessionStorage.setItem('fc2_vp_top', this.viewport.scrollTop.toString());
-        }
-        else {
-            initial_pos = parseFloat(sessionStorage.getItem('fc2_vp_top')) || 0;
-        }
-        sessionStorage.setItem('fc2_vp_top', '0');
+        if (this.cfg.front)
+            this.viewport.onscroll = (_evt) => sessionStorage.setItem('fc2_vp_top', this.viewport.scrollTop.toString());
         this.content.style.display = 'block';
         document.getElementById('fc2-content-placeholder').style.display = 'none';
-        window.requestAnimationFrame(() => window.requestAnimationFrame(() => window.requestAnimationFrame(() => this.scroll_to({ scroll: this.cfg.scroll.initial, vp_pos: initial_pos }))));
+        window.requestAnimationFrame(() => window.requestAnimationFrame(() => window.requestAnimationFrame(() => this.scroll_to({ scroll: this.cfg.scroll.initial }))));
     }
     setup_debug(debug) {
         window.onerror = (emsg, _src, _ln, _col, err) => {
@@ -232,6 +225,11 @@ FC2 ||= class {
     }
     scroll_to(opts) {
         this.dbg('scroll_to', arguments);
+        let vp_top;
+        if (!this.cfg.front && !isNaN(vp_top = parseFloat(sessionStorage.getItem('fc2_vp_top'))))
+            sessionStorage.removeItem('fc2_vp_top');
+        else
+            vp_top = this.viewport.scrollTop;
         if (opts.scroll === 'none')
             return;
         let first, last;
@@ -280,8 +278,8 @@ FC2 ||= class {
                     || 20;
             };
             const vp_height = this.viewport.clientHeight;
-            const top = first.getBoundingClientRect().top - offset - line_height(window.getComputedStyle(first?.previousElementSibling || first, ':before')) + 3;
-            const bottom = last.getBoundingClientRect().bottom - offset + line_height(window.getComputedStyle(last?.nextElementSibling || last, ':after')) + 3;
+            const top = (first.getBoundingClientRect().top - offset) - line_height(window.getComputedStyle(first?.previousElementSibling || first, ':before')) + 3;
+            const bottom = (last.getBoundingClientRect().bottom - offset) + line_height(window.getComputedStyle(last?.nextElementSibling || last, ':after')) + 3;
             let y = 0;
             if (opts.scroll === 'center') {
                 if (bottom - top <= vp_height)
@@ -290,9 +288,6 @@ FC2 ||= class {
                     y = top;
             }
             else {
-                const vp_top = !this.cfg.front && opts.vp_pos !== undefined
-                    ? opts.vp_pos
-                    : this.viewport.scrollTop;
                 this.dbg('   vp_top', vp_top);
                 this.dbg('   top', top);
                 this.dbg('   bottom', bottom);

@@ -126,18 +126,9 @@ FC2 ||= class {
     if (!this.cfg.show.info)
       this.hide(document.querySelector('#info.additional-content') as HTMLElement)
 
-
-    // Setup initial scroll
-    let initial_pos: number
-    if (this.cfg.front) { // Track scrolling on front, on unload would be more efficient
-      initial_pos = 0
-      this.viewport.onscroll = (evt) =>
+    // Track scrolling on front, on unload would be more efficient
+    if (this.cfg.front) this.viewport.onscroll = (_evt) =>
         sessionStorage.setItem('fc2_vp_top', this.viewport.scrollTop.toString())
-    } else { // Retrieve scrolling on back
-      initial_pos = parseFloat(sessionStorage.getItem('fc2_vp_top')!) || 0
-
-    }
-    sessionStorage.setItem('fc2_vp_top', '0')
 
     // Reveal finished content, hide placeholder and scroll to first active cloze
     this.content.style.display = 'block'
@@ -146,7 +137,7 @@ FC2 ||= class {
     window.requestAnimationFrame(() =>
       window.requestAnimationFrame(() =>
         window.requestAnimationFrame(() =>
-          this.scroll_to({ scroll: this.cfg.scroll.initial, vp_pos: initial_pos })
+          this.scroll_to({scroll: this.cfg.scroll.initial})
         )
       )
     )
@@ -306,6 +297,14 @@ FC2 ||= class {
   /** Scroll to active clozes or specific cloze */
   scroll_to(opts: {scroll?: string, cloze?: HTMLElement, vp_pos?: number}) {
     this.dbg('scroll_to', arguments)
+
+    // Special case: restore scroll position on back from saved front pos
+    let vp_top
+    if (!this.cfg.front && !isNaN(vp_top = parseFloat(sessionStorage.getItem('fc2_vp_top')!))) {
+      sessionStorage.removeItem('fc2_vp_top')
+      this.viewport.scrollTop = vp_top
+    }
+
     if (opts.scroll === 'none') return
 
     let first, last
@@ -366,9 +365,6 @@ FC2 ||= class {
         if (bottom - top <= vp_height) y = top + (bottom - top) / 2 - vp_height / 2
         else y = top
       } else { // 'min'
-        const vp_top = !this.cfg.front && opts.vp_pos !== undefined
-          ? opts.vp_pos
-          : this.viewport.scrollTop
         this.dbg('   vp_top', vp_top)
         this.dbg('   top', top)
         this.dbg('   bottom', bottom)
