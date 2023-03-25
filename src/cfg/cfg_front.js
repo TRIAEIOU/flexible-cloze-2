@@ -1,4 +1,3 @@
-/*-- CONFIGURATION BEGIN --*/
 var config = {
     prompt: '',                 // Prompt when no hint
     hint: '%h',                 // %h is replaced with hint text
@@ -29,4 +28,3 @@ var config = {
     },
     debug: true              // Debug information level (`false`, `'error'` or `true`)
 }
-/*-- CONFIGURATION END --*/

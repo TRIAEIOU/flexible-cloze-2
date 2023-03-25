@@ -2,25 +2,9 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Create output dirs",
-            "type": "shell",
-            "command": "Write-host Creating output directories... ; md -Force ./bin, ./dist | Out-Null",
-            "options": {
-                "cwd": "${workspaceFolder}"
-            },
-            "presentation": {
-                "echo": false,
-                "reveal": "always",
-                "focus": false,
-                "panel": "shared",
-                "showReuseMessage": true,
-                "clear": false
-            }
-        },
-        {
             "label": "Build clean",
             "type": "shell",
-            "command": "Write-host Building clean... ; rm -R -Force ./dist/*, ./bin/*",
+            "command": "Write-Host -NoNewline 'Building clean...'; rm -R -Force ./build/*, ./dist/*, ./bin/*; Write-Host ' done'",
             "options": {
                 "cwd": "${workspaceFolder}"
             },
@@ -29,75 +13,131 @@
                 "reveal": "always",
                 "focus": false,
                 "panel": "shared",
-                "showReuseMessage": true,
+                "showReuseMessage": false,
                 "clear": false
             }
         },
         {
-            "label": "Build PY",
+            "label": "Build py",
             "type": "shell",
-            "command": "Write-host Building PY... ; ls ./src/py/*.py | ? { -not (Test-Path ('./bin/' + $_.Name) -PathType Leaf) -or (Test-Path ('./bin/' + $_.Name) -OlderThan $_.LastWriteTime) } | % {$_.FullName} | cp -Force -Destination ./bin | Out-Null",
+            "command": "Write-Host -NoNewline 'Building py...'; ls ./src/py/*.py | ? { -not (Test-Path ('./bin/' + $_.Name) -PathType Leaf) -or (Test-Path ('./bin/' + $_.Name) -OlderThan $_.LastWriteTime) } | % {$_.FullName} | cp -Force -Destination ./bin | Out-Null; Write-Host ' done'",
             "options": {
                 "cwd": "${workspaceFolder}"
             },
-            "dependsOn": [
-                "Create output dirs"
-            ],
             "presentation": {
                 "echo": false,
                 "reveal": "always",
                 "focus": false,
                 "panel": "shared",
-                "showReuseMessage": true,
+                "showReuseMessage": false,
+                "clear": false
+            }
+        },
+        {
+            "label": "Build ts",
+            "type": "shell",
+            "command": "Write-Host -NoNewline 'Building ts...'; tsc; Write-Host ' done'",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "presentation": {
+                "echo": false,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": false,
+                "clear": false
+            }
+        },
+        {
+            "label": "Build front template",
+            "type": "shell",
+            "command": "Write-Host -NoNewline 'Building front template...'; Get-Content -Raw ./src/html/fc2.html | %{$_.Replace('/*--###CFG###--*/', $(Get-Content -Raw ./src/cfg/cfg_front.js))} | %{$_.Replace('/*--###FUNC###--*/', $(Get-Content -Raw ./build/fc2.js | %{$_.Replace('__TEMPLATE_SIDE__', '''front''')}))} | Out-File ./bin/fc2-front.html; Write-Host ' done'",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "presentation": {
+                "echo": false,
+                "reveal": "never",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": false,
+                "clear": false
+            }
+        },
+        {
+            "label": "Build back template",
+            "type": "shell",
+            "command": "Write-Host -NoNewline 'Building back template...'; Get-Content -Raw ./src/html/fc2.html | %{$_.Replace('/*--###CFG###--*/', $(Get-Content -Raw ./src/cfg/cfg_back.js))} | %{$_.Replace('/*--###FUNC###--*/', $(Get-Content -Raw ./build/fc2.js | %{$_.Replace('__TEMPLATE_SIDE__', '''back''')}))} | Out-File ./bin/fc2-back.html; Write-Host ' done'",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "presentation": {
+                "echo": false,
+                "reveal": "never",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": false,
                 "clear": false
             }
         },
         {
             "label": "Build templates",
             "type": "shell",
-            "command": "Write-host Building templates... ; cp ./src/html/*.css ./bin | Out-Null; Get-Content -Raw ./src/html/fc2.html | %{$_.Replace('/*--###CFG###--*/', $(Get-Content -Raw ./src/html/cfg_front.js))} | Out-File ./bin/fc2-front.html; Get-Content -Raw ./src/html/fc2.html | %{$_.Replace('/*--###CFG###--*/', $(Get-Content -Raw ./src/html/cfg_back.js))} | Out-File ./bin/fc2-back.html;",
+            "command": "Write-Host -NoNewline 'Building templates...'; cp ./src/html/*.css ./bin | Out-Null; Write-Host ' done'",
             "options": {
                 "cwd": "${workspaceFolder}"
             },
+            "dependsOrder": "sequence",
             "dependsOn": [
-                "Create output dirs"
+                "Build ts",
+                "Build front template",
+                "Build back template"
             ],
             "presentation": {
                 "echo": false,
                 "reveal": "always",
                 "focus": false,
                 "panel": "shared",
-                "showReuseMessage": true,
+                "showReuseMessage": false,
+                "clear": false
+            }
+        },
+        {
+            "label": "Build all",
+            "type": "shell",
+            "command": "Write-Host -NoNewline 'Building all...'; Write-Host ' done'",
+            "dependsOn": [
+                "Build templates",
+                "Build py"
+            ],
+            "presentation": {
+                "echo": false,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": false,
                 "clear": false
             }
         },
         {
             "label": "Build update",
             "type": "shell",
-            "command": "Write-host Building update... ; rm -R -Force ./dist/*; rm -R -Force ./bin/__pycache__; Get-ChildItem -Path ./bin/*.html, ./bin/*.py, ./bin/*.css, ./README.md, ./LICENSE | Compress-Archive -Force -DestinationPath ./dist/update.zip; pandoc -t ${env:CODEPATH}/pandoc/anki-addon.lua --abbreviations=${env:CODEPATH}/pandoc/empty ./README.md -o ./dist/update.txt | Out-Null",
+            "command": "Write-Host -NoNewline 'Building update...'; rm -R -Force ./dist/*; rm -R -Force ./bin/__pycache__ 2>Out-Null; Get-ChildItem -Path ./bin/*.html, ./bin/*.py, ./bin/*.css, ./README.md, ./LICENSE | Compress-Archive -Force -DestinationPath ./dist/update.zip; pandoc -t ${env:CODEPATH}/pandoc/anki-addon.lua --abbreviations=${env:CODEPATH}/pandoc/empty ./README.md -o ./dist/update.txt | Out-Null; Write-Host ' done'",
             "options": {
                 "cwd": "${workspaceFolder}"
             },
             "dependsOn": [
-                "Create output dirs"
+                "Build all"
             ],
             "presentation": {
                 "echo": false,
                 "reveal": "always",
                 "focus": false,
                 "panel": "shared",
-                "showReuseMessage": true,
+                "showReuseMessage": false,
                 "clear": false
             }
         },
-        {
-            "label": "Build all",
-            "dependsOn": [
-                "Build templates",
-                "Build PY",
-                "Build config",
-                "Build update"
-            ]
-        }
     ]
 }

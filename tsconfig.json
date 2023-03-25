@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "rootDir": "src/ts",
+    "outDir": "./build/",
+    "removeComments": true,
+    "strict": true,
+    "noImplicitAny": false,
+    "target": "ES2021" // ?. 2020, ||= 2021
+  }
+}
