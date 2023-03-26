@@ -128,7 +128,7 @@ FC2 ||= class {
 
     // Track scrolling on front, on unload would be more efficient
     if (this.cfg.front) this.viewport.onscroll = (_evt) =>
-        sessionStorage.setItem('fc2_vp_top', this.viewport.scrollTop.toString())
+        sessionStorage.setItem('fc2_scroll_top', this.viewport.scrollTop.toString())
 
     // Reveal finished content, hide placeholder and scroll to first active cloze
     this.content.style.display = 'block'
@@ -299,10 +299,12 @@ FC2 ||= class {
     this.dbg('scroll_to', arguments)
 
     // Special case: restore scroll position on back from saved front pos
-    let vp_top
-    if (!this.cfg.front && !isNaN(vp_top = parseFloat(sessionStorage.getItem('fc2_vp_top')!))) {
-      sessionStorage.removeItem('fc2_vp_top')
-      this.viewport.scrollTop = vp_top
+    if (!this.cfg.front) {
+      const scroll_top = parseFloat(sessionStorage.getItem('fc2_scroll_top')!)
+      if (!isNaN(scroll_top)) {
+        sessionStorage.removeItem('fc2_scroll_top')
+        this.viewport.scrollTop = scroll_top
+      }
     }
 
     if (opts.scroll === 'none') return
@@ -314,12 +316,26 @@ FC2 ||= class {
       first = active[0]
       last = active[active.length - 1]
     }
-    const offset = this.viewport.getBoundingClientRect().top // scroll area offset
+    const offset = this.viewport.getBoundingClientRect().top
+    const line_height = (style: CSSStyleDeclaration) => {
+      this.dbg('line_height')
+      return parseInt(style.height) + parseInt(style.marginTop) + parseInt(style.marginBottom)
+        || parseInt(style.lineHeight)
+        || 20
+    }
+    const vp_height = this.viewport.clientHeight
+    const top = (first.getBoundingClientRect().top - offset) - line_height(
+      window.getComputedStyle(first?.previousElementSibling || first, ':before')
+    ) + 3
+    const bottom = (last.getBoundingClientRect().bottom - offset) + line_height(
+      window.getComputedStyle(last?.nextElementSibling || last, ':after')
+    ) + 3
+    let y = 0 // offset to scroll, not absolute y coordinate
 
     // Context scroll, either from preceding or HR/HX
-    if (opts.scroll === 'context') {
+    if (opts.scroll?.slice(0, 7) === 'context') {
       // Locate section start
-      let section_top = offset, section, section_seen, cloze_seen
+      let section_top = 0, section, section_seen, cloze_seen
       const sections = this.content.querySelectorAll('hr, h1, h2, h3, h4, h5, h6, .cloze')
       for (let i = 0; i < sections.length; i++) {
         cloze_seen ||= sections[i].tagName === 'SPAN'
@@ -327,56 +343,40 @@ FC2 ||= class {
         if (!cloze_seen) section = sections[i]
         if (cloze_seen && (section || section_seen)) break
       }
-
       if (section) {
         section_top = section.tagName === 'HR'
-          ? section.getBoundingClientRect().bottom
-          : section.getBoundingClientRect().top - 5
+          ? (section.getBoundingClientRect().bottom - offset)
+          : (section.getBoundingClientRect().top - offset) - 5
       } else if (!section_seen) {
         // Use preceding inactive
         const all = this.content.querySelectorAll('.cloze, .cloze-inactive')
         for (let i = 1; i < all.length; i++) {
           if (all[i] === this.current) {
-            section_top =  all[i - 1].getBoundingClientRect().bottom
+            section_top =  (all[i - 1].getBoundingClientRect().top - offset) - 5
             break
           }
         }
       }
-      section_top -= offset
-      this.dbg('   section_top', section_top)
-      this.viewport.scrollTop = section_top
-    } else {
-      const line_height = (style: CSSStyleDeclaration) => {
-        this.dbg('line_height')
-        return parseInt(style.height) + parseInt(style.marginTop) + parseInt(style.marginBottom)
-          || parseInt(style.lineHeight)
-          || 20
-      }
-      const vp_height = this.viewport.clientHeight
-      const top = (first.getBoundingClientRect().top - offset) - line_height(
-        window.getComputedStyle(first?.previousElementSibling || first, ':before')
-      ) + 3
-      const bottom = (last.getBoundingClientRect().bottom - offset) + line_height(
-        window.getComputedStyle(last?.nextElementSibling || last, ':after')
-      ) + 3
-      let y = 0
 
+      if (opts.scroll === 'context-center' && bottom - section_top <= vp_height)
+        y = section_top + (bottom - section_top) / 2 - vp_height / 2
+      else y = section_top
+
+    // center/min
+    } else {
       if (opts.scroll === 'center') {
         if (bottom - top <= vp_height) y = top + (bottom - top) / 2 - vp_height / 2
         else y = top
       } else { // 'min'
-        this.dbg('   vp_top', vp_top)
         this.dbg('   top', top)
         this.dbg('   bottom', bottom)
-        if (top < vp_top) y = top
+        if (top < 0) y = top
         // below
-        else if (bottom > vp_top + vp_height) y = bottom - vp_height
-        else y = vp_top
+        else if (bottom > vp_height) y = bottom - vp_height
       }
-
-      this.dbg('    scrolling to', this.viewport.scrollTop + y)
-      this.viewport.scrollTop += y
     }
+    this.dbg(`    scrolling ${opts.scroll} to`, this.viewport.scrollTop + y)
+    if (y) this.viewport.scrollTop += y
   }
 }
 
