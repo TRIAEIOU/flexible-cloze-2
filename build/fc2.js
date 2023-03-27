@@ -65,7 +65,7 @@ FC2 ||= class {
                 const tag_side = ['front', 'back'].includes(parts[0]) ? parts.shift() : undefined;
                 if (tag_side && tag_side !== side || this.cfg[parts[0]]?.[parts[1]] === undefined)
                     continue;
-                this.cfg[parts[0]][parts[1]] = ['true', 'false'].includes(parts[2])
+                typeof (this.cfg[parts[0]][parts[1]]) === 'boolean'
                     ? parts[2] === 'true'
                     : parts.slice(2);
             }
