@@ -7,9 +7,9 @@ interface Configuration {
     reverse: boolean                  // If true exposed clozes are hidden, others shown
   }
   scroll: {
-    initial: 'none' | 'min' | 'center' | 'context' // Scoll on initial show
-    click: 'none' | 'min' | 'center' | 'context'   // Scroll on cloze click
-    iterate: 'none' | 'min' | 'center' | 'context' // Scroll on iteration
+    initial: 'none' | 'min' | 'center' | 'context' | 'context-top' | 'context-bottom'
+    click: 'none' | 'min' | 'center' | 'context' | 'context-top' | 'context-bottom'
+    iterate: 'none' | 'min' | 'center' | 'context' | 'context-top' | 'context-bottom'
   }
   iteration: {
     top: boolean        // Always start iteration from top
@@ -103,6 +103,21 @@ FC2 ||= class {
     // Setup class lists
     this.content.parentElement!.classList.remove(this.cfg.front ? 'back' : 'front')
     this.content.parentElement!.classList.add(this.cfg.front ? 'front' : 'back')
+
+    // Parse note specific config from tags
+    const tag_el = document.querySelector('#fc2-additional #tags') as HTMLElement
+    if (tag_el) {
+      for (const tag of tag_el.innerText.split(' ').slice(1)) {
+        if (!tag.startsWith('fc2.cfg.')) continue
+        const parts = tag.slice(8).split('.')
+        const tag_side = ['front', 'back'].includes(parts[0]) ? parts.shift() : undefined
+        if (tag_side && tag_side !== side || this.cfg[parts[0]]?.[parts[1]] === undefined)
+          continue
+        this.cfg[parts[0]][parts[1]] = ['true', 'false'].includes(parts[2])
+          ? parts[2] === 'true'
+          : parts.slice(2)
+      }
+    }
 
     // Strip expose char from active clozes and hide if front
     this.content.querySelectorAll('.cloze').forEach(((cloze: HTMLElement) => {
@@ -295,7 +310,7 @@ FC2 ||= class {
   }
 
   /** Scroll to active clozes or specific cloze */
-  scroll_to(opts: {scroll?: string, cloze?: HTMLElement, vp_pos?: number}) {
+  scroll_to(opts: {scroll: string, cloze?: HTMLElement, vp_pos?: number}) {
     this.dbg('scroll_to', arguments)
 
     // Special case: restore scroll position on back from saved front pos
@@ -324,18 +339,19 @@ FC2 ||= class {
         || 20
     }
     const vp_height = this.viewport.clientHeight
-    const top = (first.getBoundingClientRect().top - offset) - line_height(
+    const cloze_top = (first.getBoundingClientRect().top - offset) - line_height(
       window.getComputedStyle(first?.previousElementSibling || first, ':before')
-    ) + 3
+    ) + 3 // top of first active cloze
+    let top // top of area to visualize, section or first active cloze
     const bottom = (last.getBoundingClientRect().bottom - offset) + line_height(
       window.getComputedStyle(last?.nextElementSibling || last, ':after')
-    ) + 3
+    ) + 3 // bottom of area to visualize, last active cloze
     let y = 0 // offset to scroll, not absolute y coordinate
 
-    // Context scroll, either from preceding or HR/HX
+    // context scroll, locate section start for top - either HR/Hn or preceding cloze
     if (opts.scroll?.slice(0, 7) === 'context') {
-      // Locate section start
-      let section_top = 0, section, section_seen, cloze_seen
+      top = 0 // nothing found assume context it is start of card
+      let section, section_seen, cloze_seen
       const sections = this.content.querySelectorAll('hr, h1, h2, h3, h4, h5, h6, .cloze')
       for (let i = 0; i < sections.length; i++) {
         cloze_seen ||= sections[i].tagName === 'SPAN'
@@ -344,37 +360,40 @@ FC2 ||= class {
         if (cloze_seen && (section || section_seen)) break
       }
       if (section) {
-        section_top = section.tagName === 'HR'
+        top = section.tagName === 'HR'
           ? (section.getBoundingClientRect().bottom - offset)
           : (section.getBoundingClientRect().top - offset) - 5
-      } else if (!section_seen) {
-        // Use preceding inactive
+      } else if (!section_seen) { // Use preceding inactive cloze or 0
         const all = this.content.querySelectorAll('.cloze, .cloze-inactive')
         for (let i = 1; i < all.length; i++) {
           if (all[i] === this.current) {
-            section_top =  (all[i - 1].getBoundingClientRect().top - offset) - 5
+            top =  (all[i - 1].getBoundingClientRect().top - offset) - 5
             break
           }
         }
       }
-
-      if (opts.scroll === 'context-center' && bottom - section_top <= vp_height)
-        y = section_top + (bottom - section_top) / 2 - vp_height / 2
-      else y = section_top
-
-    // center/min
-    } else {
-      if (opts.scroll === 'center') {
-        if (bottom - top <= vp_height) y = top + (bottom - top) / 2 - vp_height / 2
-        else y = top
-      } else { // 'min'
-        this.dbg('   top', top)
-        this.dbg('   bottom', bottom)
-        if (top < 0) y = top
-        // below
-        else if (bottom > vp_height) y = bottom - vp_height
-      }
     }
+    // no context, top is first active cloze
+    else top = cloze_top
+
+    if (['center', 'context', 'context-bottom'].includes(opts.scroll)) {
+      // entire area will fit
+      if (bottom - top <= vp_height) opts.scroll === 'context-bottom'
+        ? y = bottom - vp_height
+        : y = top + (bottom - top) / 2 - vp_height / 2
+      // won't fit on front, start from top
+      else if (this.cfg.front) y = top
+      // won't fit on back, get first cloze into view and try to get last as well
+      else y = bottom - cloze_top <= vp_height
+        ? bottom - vp_height
+        : cloze_top
+    } else { // 'min'
+      // first is above the viewport
+      if (cloze_top < 0) y = cloze_top
+      // last is below the viewport
+      else if (bottom > vp_height) y = bottom - vp_height
+    }
+
     this.dbg(`    scrolling ${opts.scroll} to`, this.viewport.scrollTop + y)
     if (y) this.viewport.scrollTop += y
   }

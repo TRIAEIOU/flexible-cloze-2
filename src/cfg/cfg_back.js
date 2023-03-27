@@ -1,12 +1,12 @@
 var config = {
     prompt: '',                 // Prompt when no hint
-    hint: '[%h]',               // %h is replaced with hint text
+    hint: '%h',               // %h is replaced with hint text
     expose: {
         char: '!',              // Char to mark exposed cloze
         pos: 'begin',           // Char pos: `pre`, `begin`, `end` or `post`
         reverse: false          // If true exposed clozes are hidden, others shown
     },
-    scroll: {                   // Valid values: `none`, `min`, `center` or `context`
+    scroll: {                   // Valid values: `none`, `min`, `center`, `context`, `context-top` or `context-bottom`
         initial: 'min',         // Scoll on initial show
         click: 'min',           // Scroll on cloze click
         iterate: 'min'          // Scroll on iteration

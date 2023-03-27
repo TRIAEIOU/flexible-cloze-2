@@ -8,6 +8,10 @@ Reimplementation of [Flexible cloze](https://ankiweb.net/shared/info/1632356464)
 
 ![Flexible cloze 2](https://raw.githubusercontent.com/TRIAEIOU/flexible-cloze-2/main/Screenshots/front-and-back.png){height=500px}
 
+## iOS
+
+Please note, I have no iOS device to test on, it *should* work as it is generic javascript. If something appears broken, please let me know (with debug info, see below).
+
 ## Use case
 
 One note generation strategy is keeping one cloze note per "subject", rather than lots of small notes. This allows using Anki as the primary "note keeping location" rather than having the actual notes somewhere else (in OneNote, markdown files etc.) and have to create Anki notes for quizzing as a separate step. It also greatly improves maintainability (at lecture: "hmm, I seem to remember it was X, not Y, now where is that Anki note so I can amend it?"). During reviewing it adds the posibility to easily look up related info ("so if it wasn't ABX X for Y, for what was ABX X used?"). This while following the general **card** principles of making individual cards "atomic" and brief.
@@ -78,11 +82,12 @@ Configuration is made in the note template, configuration is made between `/*-- 
   - `prompt`: Prompt format/text for clozes without hint. Example: `[...]`
   - `hint`: Prompt format/text for clozes with hint where `%h` will be replaced by the hint text. Example: `[%h]`
 - `scroll`: Configurable scrolling behavior on card show/flip, when clicking a hidden cloze and when cycling to next/previous with edge taps or keyboard shortcuts:
-  - `none`: no scroll
-  - `min`: scrolls as little as possible to get active cloze(s) into view
-  - `center`: centers the active clozes in the window.
-  - `context`: scrolls to just below the preceding inactive cloze (or centers if all context fits).
-    . `section-context`: as `context` but will scroll to just below preceding inactive cloze or `<hr>` tag or just above preceding `<h1>`-`<h6>` tag (or centers if all context fits).
+  - `none`: no scroll.
+  - `min`: scrolls as little as possible to get active cloze(s) into view.
+  - `center`: centers the active clozes in the viewport (or places the first active cloze at the top if all active clozes won't fit the viewport).
+  - `context`: as center but includes the context (content from preceding `<hr>`, `<h1>`-`<h6>` or inactive cloze).
+  - `context-top`: as context but aligns the start of the context at the top of the viewport
+  - `context-bottom`: as context but aligns the last of the active clozes at the bottom of the viewport (if the entire context fits, otherwise aligns top of context at top of viewport).
   - Scroll on initial display (of front or back): `initial`.
   - Scroll on click: `click`.
   - Scroll on iterate (pressing next key etc.): `iterate`.
@@ -94,8 +99,10 @@ Configuration is made in the note template, configuration is made between `/*-- 
   - `inactive`: inactive clozes (setting to `true`will make FC2 behave similar to core Anki clozes).
   - `addtional`: Additional fields (including Information field).
   - `information`: Information field (regardless of `additional`).
+- `debug`: can be used to print debug information, useful if you have an issue and want to report it (`false` for none, `error` errors and `true` for errors and debug information).
+- Configuration can be overridden on an individual note by using Anki `Tags`, e.g add `fc2.cfg.front.scroll.initial.context-bottom` to set the front side initial scroll of the note to `context-bottom` (leave out the side to set for both front and back, e.g. `fc2.cfg.scroll.initial.context-bottom`)
 - Styling of different elements (e.g. "I want the answer to be displayed inline rather than in a block") can easily be configured in the `Styling` section of the card template.
-- Changes will mainly be made inside `FC2 BEGIN`/`END` tags, which in turn is divided into functionality and configuration allowing the user to avoid overwriting their modification part on update.
+- Changes will mainly be made inside `FUNCTIONALITY BEGIN`/`FUNCTIONALITY END` tags, which in turn is divided into functionality and configuration allowing the user to avoid overwriting their modification part on update.
 
 ## Regarding styling
 
@@ -166,3 +173,4 @@ There is effectively no add-on, it's all JavaScript (and HTML/CSS) and runs 100%
 - 2023-02-07: Adapt JS to AnkiDroid behaviour, fix [expose bug](https://github.com/TRIAEIOU/flexible-cloze-2/issues/4).
 - 2023-02-10: Fix hint bug.
 - 2023-02-18: Fix scroll and hint bugs.
+- 2023-03-26: Refactor, add `context-top` and `context-bottom`, add note specific config through tags, add debug option/info.

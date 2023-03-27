@@ -56,6 +56,20 @@ FC2 ||= class {
         this.expose = this.generate_expose();
         this.content.parentElement.classList.remove(this.cfg.front ? 'back' : 'front');
         this.content.parentElement.classList.add(this.cfg.front ? 'front' : 'back');
+        const tag_el = document.querySelector('#fc2-additional #tags');
+        if (tag_el) {
+            for (const tag of tag_el.innerText.split(' ').slice(1)) {
+                if (!tag.startsWith('fc2.cfg.'))
+                    continue;
+                const parts = tag.slice(8).split('.');
+                const tag_side = ['front', 'back'].includes(parts[0]) ? parts.shift() : undefined;
+                if (tag_side && tag_side !== side || this.cfg[parts[0]]?.[parts[1]] === undefined)
+                    continue;
+                this.cfg[parts[0]][parts[1]] = ['true', 'false'].includes(parts[2])
+                    ? parts[2] === 'true'
+                    : parts.slice(2);
+            }
+        }
         this.content.querySelectorAll('.cloze').forEach(((cloze) => {
             this.expose(cloze);
             if (this.cfg.front)
@@ -250,11 +264,13 @@ FC2 ||= class {
                 || 20;
         };
         const vp_height = this.viewport.clientHeight;
-        const top = (first.getBoundingClientRect().top - offset) - line_height(window.getComputedStyle(first?.previousElementSibling || first, ':before')) + 3;
+        const cloze_top = (first.getBoundingClientRect().top - offset) - line_height(window.getComputedStyle(first?.previousElementSibling || first, ':before')) + 3;
+        let top;
         const bottom = (last.getBoundingClientRect().bottom - offset) + line_height(window.getComputedStyle(last?.nextElementSibling || last, ':after')) + 3;
         let y = 0;
         if (opts.scroll?.slice(0, 7) === 'context') {
-            let section_top = 0, section, section_seen, cloze_seen;
+            top = 0;
+            let section, section_seen, cloze_seen;
             const sections = this.content.querySelectorAll('hr, h1, h2, h3, h4, h5, h6, .cloze');
             for (let i = 0; i < sections.length; i++) {
                 cloze_seen ||= sections[i].tagName === 'SPAN';
@@ -265,7 +281,7 @@ FC2 ||= class {
                     break;
             }
             if (section) {
-                section_top = section.tagName === 'HR'
+                top = section.tagName === 'HR'
                     ? (section.getBoundingClientRect().bottom - offset)
                     : (section.getBoundingClientRect().top - offset) - 5;
             }
@@ -273,31 +289,31 @@ FC2 ||= class {
                 const all = this.content.querySelectorAll('.cloze, .cloze-inactive');
                 for (let i = 1; i < all.length; i++) {
                     if (all[i] === this.current) {
-                        section_top = (all[i - 1].getBoundingClientRect().top - offset) - 5;
+                        top = (all[i - 1].getBoundingClientRect().top - offset) - 5;
                         break;
                     }
                 }
             }
-            if (opts.scroll === 'context-center' && bottom - section_top <= vp_height)
-                y = section_top + (bottom - section_top) / 2 - vp_height / 2;
+        }
+        else
+            top = cloze_top;
+        if (['center', 'context', 'context-bottom'].includes(opts.scroll)) {
+            if (bottom - top <= vp_height)
+                opts.scroll === 'context-bottom'
+                    ? y = bottom - vp_height
+                    : y = top + (bottom - top) / 2 - vp_height / 2;
+            else if (this.cfg.front)
+                y = top;
             else
-                y = section_top;
+                y = bottom - cloze_top <= vp_height
+                    ? bottom - vp_height
+                    : cloze_top;
         }
         else {
-            if (opts.scroll === 'center') {
-                if (bottom - top <= vp_height)
-                    y = top + (bottom - top) / 2 - vp_height / 2;
-                else
-                    y = top;
-            }
-            else {
-                this.dbg('   top', top);
-                this.dbg('   bottom', bottom);
-                if (top < 0)
-                    y = top;
-                else if (bottom > vp_height)
-                    y = bottom - vp_height;
-            }
+            if (cloze_top < 0)
+                y = cloze_top;
+            else if (bottom > vp_height)
+                y = bottom - vp_height;
         }
         this.dbg(`    scrolling ${opts.scroll} to`, this.viewport.scrollTop + y);
         if (y)

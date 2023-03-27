@@ -6,7 +6,7 @@ var config = {
         pos: 'begin',           // Char pos: `pre`, `begin`, `end` or `post`
         reverse: false          // If true exposed clozes are hidden, others shown
     },
-    scroll: {                   // Valid values: `none`, `min`, `center` or `context`
+    scroll: {                   // Valid values: `none`, `min`, `center`, `context`, `context-top` or `context-bottom`
         initial: 'context',     // Scoll on initial show
         click: 'min',           // Scroll on cloze click
         iterate: 'min'          // Scroll on iteration

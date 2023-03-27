@@ -52,7 +52,7 @@
         {
             "label": "Build front template",
             "type": "shell",
-            "command": "Write-Host -NoNewline 'Building front template...'; Get-Content -Raw ./src/html/fc2.html | %{$_.Replace('/*--###CFG###--*/', $(Get-Content -Raw ./src/cfg/cfg_front.js))} | %{$_.Replace('/*--###FUNC###--*/', $(Get-Content -Raw ./build/fc2.js | %{$_.Replace('__TEMPLATE_SIDE__', '''front''')}))} | Out-File ./bin/fc2-front.html; Write-Host ' done'",
+            "command": "Write-Host -NoNewline 'Building front template...'; Get-Content -Raw ./src/html/fc2.html | %{$_.Replace('/*--###CFG###--*/', $(Get-Content -Raw ./src/cfg/cfg_front.js).Trim())} | %{$_.Replace('/*--###FUNC###--*/', $(Get-Content -Raw ./build/fc2.js | %{$_.Replace('__TEMPLATE_SIDE__', '''front''')}).Trim())} | Out-File ./bin/fc2-front.html; Write-Host ' done'",
             "options": {
                 "cwd": "${workspaceFolder}"
             },
@@ -68,7 +68,7 @@
         {
             "label": "Build back template",
             "type": "shell",
-            "command": "Write-Host -NoNewline 'Building back template...'; Get-Content -Raw ./src/html/fc2.html | %{$_.Replace('/*--###CFG###--*/', $(Get-Content -Raw ./src/cfg/cfg_back.js))} | %{$_.Replace('/*--###FUNC###--*/', $(Get-Content -Raw ./build/fc2.js | %{$_.Replace('__TEMPLATE_SIDE__', '''back''')}))} | Out-File ./bin/fc2-back.html; Write-Host ' done'",
+            "command": "Write-Host -NoNewline 'Building back template...'; Get-Content -Raw ./src/html/fc2.html | %{$_.Replace('/*--###CFG###--*/', $(Get-Content -Raw ./src/cfg/cfg_back.js).Trim())} | %{$_.Replace('/*--###FUNC###--*/', $(Get-Content -Raw ./build/fc2.js | %{$_.Replace('__TEMPLATE_SIDE__', '''back''')}).Trim())} | Out-File ./bin/fc2-back.html; Write-Host ' done'",
             "options": {
                 "cwd": "${workspaceFolder}"
             },
