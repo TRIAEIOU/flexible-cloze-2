@@ -310,7 +310,7 @@ FC2 ||= class {
                     : cloze_top;
         }
         else {
-            if (cloze_top < 0)
+            if (cloze_top < 0 || bottom - top >= vp_height)
                 y = cloze_top;
             else if (bottom > vp_height)
                 y = bottom - vp_height;

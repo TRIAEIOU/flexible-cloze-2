@@ -26,5 +26,6 @@ var config = {
         additional: true,       // Additional fields (Note, Mnemonics etc.)
         info: true              // Information field
     },
-    debug: true              // Debug information level (`false`, `'error'` or `true`)
+    search: true,               // Search field
+    debug: true                 // Debug information level (`false`, `'error'` or `true`)
 }

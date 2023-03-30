@@ -388,14 +388,18 @@ FC2 ||= class {
         ? bottom - vp_height
         : cloze_top
     } else { // 'min'
-      // first is above the viewport
-      if (cloze_top < 0) y = cloze_top
+      // first is above the viewport or all won't fit
+      if (cloze_top < 0 || bottom - top >= vp_height) y = cloze_top
       // last is below the viewport
       else if (bottom > vp_height) y = bottom - vp_height
     }
 
     this.dbg(`    scrolling ${opts.scroll} to`, this.viewport.scrollTop + y)
     if (y) this.viewport.scrollTop += y
+  }
+
+  search() {
+
   }
 }
 
