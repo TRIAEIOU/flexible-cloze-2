@@ -57,7 +57,6 @@
 <div id="nav-toggle-all" class="nav-area-top"></div>
 <div id="nav-prev-cloze" class="nav-area-side"></div>
 <div id="nav-next-cloze" class="nav-area-side"></div>
-<div id="nav-toggle-search" class="nav-area-bottom"></div>
 
 <script type="application/javascript">
 /*-- CONFIGURATION BEGIN --*/
@@ -89,7 +88,7 @@ var config = {
         additional: false,      // Additional fields (Note, Mnemonics etc.)
         info: false             // Information field
     },
-    debug: true                 // Debug information level (`false`, `'error'` or `true`)
+    log: true                 // Debug information level (`false`, `'error'` or `true`)
 }
 /*-- CONFIGURATION END --*/
 /*-- FUNCTIONALITY BEGIN --*/
@@ -97,9 +96,8 @@ var config = {
 var FC2;
 FC2 ||= class {
     constructor(config) {
-        this.log = () => { };
-        if (config.debug)
-            this.setup_debug(config.debug);
+        if (config.log)
+            this.log = this.logger(config.log);
         if (document.querySelector('.cloze')['dataset'].ordinal === undefined)
             return;
         document.addEventListener("click", (evt) => {
@@ -116,16 +114,20 @@ FC2 ||= class {
                 this.toggle_field(target.nextElementSibling);
             else if (target.classList.contains('additional-content'))
                 this.toggle_field(evt.target);
-            else if (target.id === 'fc2-show-all-btn')
-                this.toggle_all();
-            else if (target.id === 'nav-toggle-all')
-                this.toggle_all();
+            else if (target.id === 'fc2-show-all-btn') {
+                this.toggle_all()
+                    ? this.search.show()
+                    : this.search.hide();
+            }
+            else if (target.id === 'nav-toggle-all') {
+                this.toggle_all()
+                    ? this.search.show()
+                    : this.search.hide();
+            }
             else if (target.id === 'nav-prev-cloze')
                 this.iter(false);
             else if (target.id === 'nav-next-cloze')
                 this.iter(true);
-            else if (target.id === 'nav-toggle-search')
-                this.toggle_search();
         });
         document.addEventListener("keydown", (evt) => {
             if (document.activeElement === this.search?.field)
@@ -139,7 +141,9 @@ FC2 ||= class {
                 evt.preventDefault();
             }
             else if (evt.key === this.cfg.shortcuts.toggle_all) {
-                this.toggle_all();
+                this.toggle_all()
+                    ? this.search.show()
+                    : this.search.hide();
                 evt.preventDefault();
             }
         });
@@ -149,10 +153,9 @@ FC2 ||= class {
         this.cfg.front = side === 'front';
         this.content = document.getElementById('fc2-content');
         this.viewport = document.getElementById('fc2-scroll-area');
+        this.search = this.searcher();
         this.current = this.content.querySelector('.cloze');
-        this.log.element = document.getElementById('fc2-log');
         this.ordinal ||= parseInt(this.current.dataset.ordinal);
-        this.search = null;
         this.expose = this.generate_expose();
         this.content.parentElement.classList.remove(this.cfg.front ? 'back' : 'front');
         this.content.parentElement.classList.add(this.cfg.front ? 'front' : 'back');
@@ -192,63 +195,98 @@ FC2 ||= class {
         document.getElementById('fc2-content-placeholder').style.display = 'none';
         window.requestAnimationFrame(() => window.requestAnimationFrame(() => window.requestAnimationFrame(() => this.scroll_to({ scroll: this.cfg.scroll.initial }))));
     }
-    toggle_search() {
-        if (this.search) {
-            this.search.panel.parentElement.removeChild(this.search.panel);
-            this.search = null;
-        }
-        else {
-            const panel = document.createElement('div');
-            panel.id = 'fc2-search';
-            panel.innerHTML = '<input type="text" id="fc2-search-field" placeholder="Type to search"/><div id="fc2-search-btn" onclick="fc2.do_search();">SEARCH</div>';
-            this.search = {
-                panel: this.viewport.parentElement.insertBefore(panel, this.viewport.nextElementSibling),
-                field: document.getElementById('fc2-search-field')
-            };
-        }
-    }
-    do_search() {
-        fc2.log(`::fc2 ${fc2.search?.field.value}`, fc2);
-        if (!fc2.search?.field?.value)
-            return;
-        const str = fc2.search.field.innerText;
-        const res = document.evaluate(`//div[@id=fc2-content]//*[contains(text(), '${str}')]`, fc2.content);
-        fc2.log("::::", JSON.stringify(res));
-    }
-    setup_debug(debug) {
-        window.onerror = (emsg, _src, _ln, _col, err) => {
-            this.log.element ||= add_log_el();
-            this.log.element.innerText += `error ${emsg}:\n${err.stack}\n`;
-            this.log.element.scrollTop = this.log.element.scrollHeight;
-            return true;
-        };
-        if (debug === true) {
-            this.log = function (str, args) {
-                this.log.element ||= add_log_el();
-                let msg = str;
-                if (args && (typeof (args) === typeof (arguments) || typeof (args) === typeof ([]))) {
-                    for (let i = 0; i < args.length; i++) {
-                        msg += i ? ', ' : ': ';
-                        if (typeof (args[i]) == 'object')
-                            msg += JSON.stringify(args[i]);
-                        else if (typeof (args[i]) == 'string')
-                            msg += `"${args[i]}"`;
-                        else
-                            msg += args[i];
+    logger(lvl) {
+        let log = () => { };
+        if (lvl) {
+            if (lvl === true) {
+                log = (str, args) => {
+                    if (log.element.hidden)
+                        log.element.hidden = false;
+                    let msg = str;
+                    if (args && (typeof (args) === typeof (arguments) || typeof (args) === typeof ([]))) {
+                        for (let i = 0; i < args.length; i++) {
+                            msg += i ? ', ' : ': ';
+                            if (typeof (args[i]) == 'object')
+                                msg += JSON.stringify(args[i]);
+                            else if (typeof (args[i]) == 'string')
+                                msg += `"${args[i]}"`;
+                            else
+                                msg += args[i];
+                        }
                     }
-                }
-                else if (args)
-                    msg += `: ${args}`;
-                this.log.element.innerText += `${msg}\n`;
-                this.log.element.scrollTop = this.log.element.scrollHeight;
+                    else if (args)
+                        msg += `: ${args}`;
+                    log.element.innerText += `${msg}\n`;
+                    log.element.scrollTop = log.element.scrollHeight;
+                };
+            }
+            window.onerror = (emsg, _src, _ln, _col, err) => {
+                if (log.element.hidden)
+                    log.element.hidden = false;
+                log.element.innerText += `error ${emsg}:\n${err.stack}\n`;
+                log.element.scrollTop = log.element.scrollHeight;
+                return true;
             };
+            log.element = document.createElement('pre');
+            log.element.id = 'fc2-log';
+            log.element.hidden = true;
+            log.element = document.getElementById('fc2-scroll-area')?.parentElement?.appendChild(log.element);
         }
-        const add_log_el = () => {
-            const log = document.createElement('pre');
-            log.id = 'fc2-log';
-            this.viewport.parentElement.insertBefore(log, this.viewport.nextElementSibling);
-            return log;
+        return log;
+    }
+    searcher() {
+        const searchfn = (() => {
+            searchfn.match = (str, nd, res) => {
+                this.log('searchfn.match');
+                let found = false;
+                for (const child of nd.childNodes)
+                    found = searchfn.match(str, child, res) || found;
+                if (!found && nd['innerText']?.indexOf(str) >= 0) {
+                    found = true;
+                    res.push(nd);
+                }
+                return found;
+            };
+            if (!searchfn.field?.value)
+                return;
+            if (!searchfn.matches?.length || searchfn.field.value !== searchfn.str) {
+                this.log('searchfn.searching');
+                for (const el of searchfn.matches)
+                    el.classList.remove('search-match');
+                searchfn.matches = [];
+                searchfn.index = -1;
+                searchfn.match(searchfn.field.innerText, this.content, searchfn.matches);
+                for (const el of searchfn.matches)
+                    el.classList.add('search-match');
+            }
+            if (searchfn.matches?.length) {
+                searchfn.index = searchfn.index === searchfn.matches.length - 1
+                    ? 0
+                    : searchfn.index + 1;
+                this.log(`  searchfn found match, scrolling to index ${searchfn.index}`);
+                searchfn.matches[searchfn.index].scrollIntoView();
+            }
+        });
+        searchfn.matches = [];
+        searchfn.index = -1;
+        const panel = document.createElement('div');
+        panel.id = 'fc2-search';
+        panel.hidden = true;
+        panel.innerHTML = '<input type="text" id="fc2-search-field" placeholder="Type to search"/><div id="fc2-search-btn" onclick="fc2.search();">SEARCH</div>';
+        searchfn.panel = document.getElementById('fc2-scroll-area').parentElement.appendChild(panel);
+        searchfn.field = document.getElementById('fc2-search-field');
+        searchfn.show = () => {
+            fc2.log('searcher.show');
+            searchfn.panel.hidden = false;
+            searchfn.field.focus();
         };
+        searchfn.hide = () => {
+            fc2.log('searcher.hide');
+            for (const nd of searchfn.matches)
+                nd.classList.remove('search-match');
+            searchfn.panel.hidden = true;
+        };
+        return searchfn;
     }
     generate_expose() {
         this.log('generate_expose', arguments);
@@ -335,12 +373,16 @@ FC2 ||= class {
     }
     toggle_all() {
         this.log('toggle_all', arguments);
-        if (this.content.querySelector('.cloze.hide, .cloze-inactive.hide'))
+        if (this.content.querySelector('.cloze.hide, .cloze-inactive.hide')) {
             this.content.querySelectorAll('.cloze.hide, .cloze-inactive.hide')
                 .forEach(el => { this.show(el); });
-        else
+            return true;
+        }
+        else {
             this.content.querySelectorAll('.cloze:not(.hide), .cloze-inactive:not(.hide)')
                 .forEach(el => { this.hide(el); });
+            return false;
+        }
     }
     iter(fwd) {
         this.log('iter', arguments);

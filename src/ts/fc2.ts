@@ -27,7 +27,6 @@ interface Configuration {
     info: boolean       // Information field
   }
   log: undefined|boolean|'error'    // Logging level (`false`, `'error'` or `true`)
-  search: boolean|undefined
   front?: boolean                   // Front or back side
 }
 
@@ -41,8 +40,12 @@ interface Logger {
 
 interface Searcher {
   (): void
-  panel?: HTMLElement|undefined
-  field?: HTMLInputElement|undefined
+  match(str: string, nd: Node, res: Node[]): boolean
+  panel: HTMLElement
+  field: HTMLInputElement
+  str: string|undefined
+  matches: HTMLElement[]
+  index: number
   show(): void
   hide(): void
 }
@@ -60,9 +63,7 @@ FC2 ||= class {
   /** One-time runs */
   constructor(config: Configuration) {
     // Setup logging
-    this.log = this.logger(config.log)
-    this.search = this.searcher(config.search)
-
+    if (config.log) this.log = this.logger(config.log)
     // Check for backend version
     if (document.querySelector('.cloze')!['dataset'].ordinal === undefined)
       return
@@ -84,9 +85,17 @@ FC2 ||= class {
       else if (target.classList.contains('additional-content'))
         this.toggle_field(evt.target as HTMLElement)
       // Toggle all button
-      else if (target.id === 'fc2-show-all-btn') this.toggle_all()
+      else if (target.id === 'fc2-show-all-btn') {
+        this.toggle_all()
+          ? this.search.show()
+          : this.search.hide()
+      }
       // Nav bars
-      else if (target.id === 'nav-toggle-all') this.toggle_all()
+      else if (target.id === 'nav-toggle-all') {
+        this.toggle_all()
+          ? this.search.show()
+          : this.search.hide()
+      }
       else if (target.id === 'nav-prev-cloze') this.iter(false)
       else if (target.id === 'nav-next-cloze') this.iter(true)
     })
@@ -101,6 +110,8 @@ FC2 ||= class {
         evt.preventDefault()
       } else if (evt.key === this.cfg.shortcuts.toggle_all) {
         this.toggle_all()
+          ? this.search.show()
+          : this.search.hide()
         evt.preventDefault()
       }
     })
@@ -112,6 +123,7 @@ FC2 ||= class {
     this.cfg.front = side === 'front'
     this.content = document.getElementById('fc2-content')!
     this.viewport = document.getElementById('fc2-scroll-area')!
+    this.search = this.searcher()
     this.current = this.content.querySelector('.cloze')!
 
     this.ordinal ||= parseInt(this.current.dataset.ordinal!)
@@ -178,7 +190,6 @@ FC2 ||= class {
   /** Initialize debug element and setup `this.dbg()` depending on config */
   logger(lvl: boolean|undefined|'error') {
     let log: Logger = () => {}
-
     if (lvl) {
       if (lvl === true) {
         log = (str: string, args: any) => {
@@ -208,31 +219,65 @@ FC2 ||= class {
       log.element = document.createElement('pre')
       log.element.id = 'fc2-log'
       log.element.hidden = true
-      this.viewport.parentElement!.insertBefore(log.element, this.viewport.nextElementSibling)
+      log.element = document.getElementById('fc2-scroll-area')?.parentElement?.appendChild(log.element)
     }
 
     return log
   }
 
-  searcher(search: boolean|undefined) {
-    let searchfn: Searcher
+  searcher() {
+    const searchfn = (() => {
+      /** Recurse node to find deepest matches */
+      searchfn.match = (str: string, nd: Node, res: Node[]) => {
+        this.log('searchfn.match')
+        let found = false
+        for (const child of nd.childNodes) found = searchfn.match(str, child, res) || found
+        if (!found && nd['innerText']?.indexOf(str) >= 0) {
+          found = true
+          res.push(nd)
+        }
+        return found
+      }
 
-    if (!search) {
-      searchfn= (() => {}) as Searcher
-      searchfn.toggle = () => {}
-    } else {
-      searchfn = (() => {
-        if(!searchfn.field?.value) return
-        const str = searchfn.field.innerText
-        // search logic
-      }) as Searcher
-      const panel = document.createElement('div')
-      panel.id = 'fc2-search'
-      panel.hidden = true
-      panel.innerHTML = '<input type="text" id="fc2-search-field" placeholder="Type to search"/><div id="fc2-search-btn" onclick="fc2.search();">SEARCH</div>'
-      searchfn.panel = this.viewport.parentElement!.insertBefore(panel, this.viewport.nextElementSibling)
-      searchfn.field = document.getElementById('fc2-search-field') as HTMLInputElement
-      searchfn.toggle = () => {searchfn.panel!.hidden = !searchfn.panel!.hidden}
+      if (!searchfn.field?.value) return
+      // No current matches or changed search string
+      if (!searchfn.matches?.length || searchfn.field.value !== searchfn.str) {
+        this.log('searchfn.searching')
+        for (const el of searchfn.matches) el.classList.remove('search-match')
+        searchfn.matches = []
+        searchfn.index = -1
+        searchfn.match(searchfn.field.innerText, this.content, searchfn.matches)
+        for (const el of searchfn.matches) el.classList.add('search-match')
+      }
+
+      // Scroll to next match
+      if (searchfn.matches?.length) {
+        searchfn.index = searchfn.index === searchfn.matches.length - 1
+          ? 0
+          : searchfn.index! + 1
+          this.log(`  searchfn found match, scrolling to index ${searchfn.index}`)
+          searchfn.matches[searchfn.index].scrollIntoView()
+      }
+    }) as Searcher
+    searchfn.matches = []
+    searchfn.index = -1
+
+    const panel = document.createElement('div')
+    panel.id = 'fc2-search'
+    panel.hidden = true
+    panel.innerHTML = '<input type="text" id="fc2-search-field" placeholder="Type to search"/><div id="fc2-search-btn" onclick="fc2.search();">SEARCH</div>'
+    searchfn.panel = document.getElementById('fc2-scroll-area')!.parentElement!.appendChild(panel)
+    searchfn.field = document.getElementById('fc2-search-field') as HTMLInputElement
+
+    searchfn.show = () => {
+      fc2.log('searcher.show')
+      searchfn.panel!.hidden = false
+      searchfn.field!.focus()
+    }
+    searchfn.hide = () => {
+      fc2.log('searcher.hide')
+      for (const nd of searchfn.matches) nd.classList.remove('search-match')
+      searchfn.panel!.hidden = true
     }
 
     return searchfn
@@ -329,10 +374,12 @@ FC2 ||= class {
     if (this.content.querySelector('.cloze.hide, .cloze-inactive.hide')) {
       this.content.querySelectorAll('.cloze.hide, .cloze-inactive.hide')
         .forEach(el => { this.show(el as HTMLElement) })
+      return true
     }
     else {
       this.content.querySelectorAll('.cloze:not(.hide), .cloze-inactive:not(.hide)')
         .forEach(el => { this.hide(el as HTMLElement) })
+      return false
     }
   }
 
