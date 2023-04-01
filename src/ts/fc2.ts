@@ -26,26 +26,42 @@ interface Configuration {
     additional: boolean // Additional fields (Note, Mnemonics etc.)
     info: boolean       // Information field
   }
-  debug: undefined | boolean | 'error' // Debug information level (`false`, `'error'` or `true`)
-  front?: boolean                  // Front or back side
+  log: undefined|boolean|'error'    // Logging level (`false`, `'error'` or `true`)
+  search: boolean|undefined
+  front?: boolean                   // Front or back side
 }
 
 // Avoid double declarations
 var FC2
+
+interface Logger {
+  (str: string, args?: any): void
+  element?: HTMLElement|null
+}
+
+interface Searcher {
+  (): void
+  panel?: HTMLElement|undefined
+  field?: HTMLInputElement|undefined
+  show(): void
+  hide(): void
+}
+
 FC2 ||= class {
-  dbg: Function = () => {}
+  log!: Logger
   expose!: (el: HTMLElement) => boolean
   cfg!: Configuration
-  log!: HTMLElement | null
   content!: HTMLElement
+  search!: Searcher
   viewport!: HTMLElement
   current!: HTMLElement
   ordinal!: number
 
   /** One-time runs */
   constructor(config: Configuration) {
-    // Setup debug
-    if (config.debug) this.setup_debug(config.debug)
+    // Setup logging
+    this.log = this.logger(config.log)
+    this.search = this.searcher(config.search)
 
     // Check for backend version
     if (document.querySelector('.cloze')!['dataset'].ordinal === undefined)
@@ -76,6 +92,7 @@ FC2 ||= class {
     })
 
     document.addEventListener("keydown", (evt: KeyboardEvent) => {
+      if (document.activeElement === this.search?.field) return
       if (evt.key === this.cfg.shortcuts.next) {
         this.iter(true)
         evt.preventDefault()
@@ -96,7 +113,7 @@ FC2 ||= class {
     this.content = document.getElementById('fc2-content')!
     this.viewport = document.getElementById('fc2-scroll-area')!
     this.current = this.content.querySelector('.cloze')!
-    this.log = document.getElementById('fc2-log')
+
     this.ordinal ||= parseInt(this.current.dataset.ordinal!)
     this.expose = this.generate_expose()
 
@@ -159,43 +176,71 @@ FC2 ||= class {
   }
 
   /** Initialize debug element and setup `this.dbg()` depending on config */
-  setup_debug(debug: boolean|undefined|'error') {
-    // Capture errors
-    window.onerror = (emsg, _src, _ln, _col, err) => {
-      this.log ||= add_log_el()
-      this.log.innerText += `error ${emsg}:\n${err!.stack}\n`
-      this.log.scrollTop = this.log.scrollHeight
-      return true
-    }
+  logger(lvl: boolean|undefined|'error') {
+    let log: Logger = () => {}
 
-    // Else noop
-    if (debug === true) this.dbg = function (str: string, args: any) {
-      this.log ||= add_log_el()
-      let msg = str
-      if (args && (typeof (args) === typeof (arguments) || typeof (args) === typeof ([]))) {
-        for (let i = 0; i < args.length; i++) {
-          msg += i ? ', ' : ': '
-          if (typeof (args[i]) == 'object') msg += JSON.stringify(args[i])
-          else if (typeof (args[i]) == 'string') msg += `"${args[i]}"`
-          else msg += args[i]
+    if (lvl) {
+      if (lvl === true) {
+        log = (str: string, args: any) => {
+          if (log.element!.hidden) log.element!.hidden = false
+          let msg = str
+          if (args && (typeof (args) === typeof (arguments) || typeof (args) === typeof ([]))) {
+            for (let i = 0; i < args.length; i++) {
+              msg += i ? ', ' : ': '
+              if (typeof (args[i]) == 'object') msg += JSON.stringify(args[i])
+              else if (typeof (args[i]) == 'string') msg += `"${args[i]}"`
+              else msg += args[i]
+            }
+          } else if (args) msg += `: ${args}`
+          log.element!.innerText += `${msg}\n`
+          log.element!.scrollTop = log.element!.scrollHeight
         }
-      } else if (args) msg += `: ${args}`
-      this.log.innerText += `${msg}\n`
-      this.log.scrollTop = this.log.scrollHeight
+      }
+
+      // Capture errors
+      window.onerror = (emsg, _src, _ln, _col, err) => {
+        if (log.element!.hidden) log.element!.hidden = false
+        log.element!.innerText += `error ${emsg}:\n${err!.stack}\n`
+        log.element!.scrollTop = log.element!.scrollHeight
+        return true
+      }
+
+      log.element = document.createElement('pre')
+      log.element.id = 'fc2-log'
+      log.element.hidden = true
+      this.viewport.parentElement!.insertBefore(log.element, this.viewport.nextElementSibling)
     }
 
-    /** Append log element */
-    function add_log_el() {
-      const log = document.createElement('pre')
-      log.id = 'fc2-log'
-      document.getElementById('fc2-scroll-area')!.parentElement!.appendChild(log)
-      return log
+    return log
+  }
+
+  searcher(search: boolean|undefined) {
+    let searchfn: Searcher
+
+    if (!search) {
+      searchfn= (() => {}) as Searcher
+      searchfn.toggle = () => {}
+    } else {
+      searchfn = (() => {
+        if(!searchfn.field?.value) return
+        const str = searchfn.field.innerText
+        // search logic
+      }) as Searcher
+      const panel = document.createElement('div')
+      panel.id = 'fc2-search'
+      panel.hidden = true
+      panel.innerHTML = '<input type="text" id="fc2-search-field" placeholder="Type to search"/><div id="fc2-search-btn" onclick="fc2.search();">SEARCH</div>'
+      searchfn.panel = this.viewport.parentElement!.insertBefore(panel, this.viewport.nextElementSibling)
+      searchfn.field = document.getElementById('fc2-search-field') as HTMLInputElement
+      searchfn.toggle = () => {searchfn.panel!.hidden = !searchfn.panel!.hidden}
     }
+
+    return searchfn
   }
 
   /** Create expose function from config */
   generate_expose(): (el: HTMLElement) => boolean {
-    this.dbg('generate_expose', arguments)
+   this.log('generate_expose', arguments)
     let expose_
     if (this.cfg.expose.pos === 'pre') {
       expose_ = (el) => {
@@ -235,7 +280,7 @@ FC2 ||= class {
 
   /** Hide cloze/field (and save cloze content PRN) */
   hide(el: HTMLElement) {
-    this.dbg('hide', arguments)
+   this.log('hide', arguments)
     if (!el || el.classList.contains('hide')) return
     el.classList.add('hide')
     // Done if additional field
@@ -254,7 +299,7 @@ FC2 ||= class {
 
   /** Show cloze/field (and save cloze hint PRN) */
   show(el: HTMLElement) {
-    this.dbg('show', arguments)
+   this.log('show', arguments)
     if (!el || !el.classList.contains('hide')) return
     el.classList.remove('hide')
     // Done if additional field
@@ -266,13 +311,13 @@ FC2 ||= class {
 
   /** Toggle cloze visibility state */
   toggle_cloze(cloze: HTMLElement) {
-    this.dbg('toggle_cloze', arguments)
+   this.log('toggle_cloze', arguments)
     cloze.classList.contains('hide') ? this.show(cloze) : this.hide(cloze)
   }
 
   /** Toggle field visibility state */
   toggle_field(field: HTMLElement) {
-    this.dbg('toggle_field', arguments)
+   this.log('toggle_field', arguments)
     field.classList.contains('hide')
       ? field.classList.remove('hide')
       : field.classList.add('hide')
@@ -280,18 +325,20 @@ FC2 ||= class {
 
   /** Toggle all clozes and fields, sync towards show */
   toggle_all() {
-    this.dbg('toggle_all', arguments)
-    if (this.content.querySelector('.cloze.hide, .cloze-inactive.hide'))
+   this.log('toggle_all', arguments)
+    if (this.content.querySelector('.cloze.hide, .cloze-inactive.hide')) {
       this.content.querySelectorAll('.cloze.hide, .cloze-inactive.hide')
         .forEach(el => { this.show(el as HTMLElement) })
-    else
+    }
+    else {
       this.content.querySelectorAll('.cloze:not(.hide), .cloze-inactive:not(.hide)')
         .forEach(el => { this.hide(el as HTMLElement) })
+    }
   }
 
   /** Iterate forward or backward, start by showing current if hidden */
   iter(fwd: boolean) {
-    this.dbg('iter', arguments)
+   this.log('iter', arguments)
     const els = this.content.querySelectorAll('.cloze');
     let nxt
     if (this.current?.classList.contains('hide'))
@@ -311,7 +358,7 @@ FC2 ||= class {
 
   /** Scroll to active clozes or specific cloze */
   scroll_to(opts: {scroll: string, cloze?: HTMLElement, vp_pos?: number}) {
-    this.dbg('scroll_to', arguments)
+   this.log('scroll_to', arguments)
 
     // Special case: restore scroll position on back from saved front pos
     if (!this.cfg.front) {
@@ -333,7 +380,7 @@ FC2 ||= class {
     }
     const offset = this.viewport.getBoundingClientRect().top
     const line_height = (style: CSSStyleDeclaration) => {
-      this.dbg('line_height')
+     this.log('line_height')
       return parseInt(style.height) + parseInt(style.marginTop) + parseInt(style.marginBottom)
         || parseInt(style.lineHeight)
         || 20
@@ -394,12 +441,8 @@ FC2 ||= class {
       else if (bottom > vp_height) y = bottom - vp_height
     }
 
-    this.dbg(`    scrolling ${opts.scroll} to`, this.viewport.scrollTop + y)
+   this.log(`    scrolling ${opts.scroll} to`, this.viewport.scrollTop + y)
     if (y) this.viewport.scrollTop += y
-  }
-
-  search() {
-
   }
 }
 

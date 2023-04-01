@@ -2,7 +2,7 @@
 var FC2;
 FC2 ||= class {
     constructor(config) {
-        this.dbg = () => { };
+        this.log = () => { };
         if (config.debug)
             this.setup_debug(config.debug);
         if (document.querySelector('.cloze')['dataset'].ordinal === undefined)
@@ -29,8 +29,12 @@ FC2 ||= class {
                 this.iter(false);
             else if (target.id === 'nav-next-cloze')
                 this.iter(true);
+            else if (target.id === 'nav-toggle-search')
+                this.toggle_search();
         });
         document.addEventListener("keydown", (evt) => {
+            if (document.activeElement === this.search?.field)
+                return;
             if (evt.key === this.cfg.shortcuts.next) {
                 this.iter(true);
                 evt.preventDefault();
@@ -51,8 +55,9 @@ FC2 ||= class {
         this.content = document.getElementById('fc2-content');
         this.viewport = document.getElementById('fc2-scroll-area');
         this.current = this.content.querySelector('.cloze');
-        this.log = document.getElementById('fc2-log');
+        this.log.element = document.getElementById('fc2-log');
         this.ordinal ||= parseInt(this.current.dataset.ordinal);
+        this.search = null;
         this.expose = this.generate_expose();
         this.content.parentElement.classList.remove(this.cfg.front ? 'back' : 'front');
         this.content.parentElement.classList.add(this.cfg.front ? 'front' : 'back');
@@ -92,16 +97,39 @@ FC2 ||= class {
         document.getElementById('fc2-content-placeholder').style.display = 'none';
         window.requestAnimationFrame(() => window.requestAnimationFrame(() => window.requestAnimationFrame(() => this.scroll_to({ scroll: this.cfg.scroll.initial }))));
     }
+    toggle_search() {
+        if (this.search) {
+            this.search.panel.parentElement.removeChild(this.search.panel);
+            this.search = null;
+        }
+        else {
+            const panel = document.createElement('div');
+            panel.id = 'fc2-search';
+            panel.innerHTML = '<input type="text" id="fc2-search-field" placeholder="Type to search"/><div id="fc2-search-btn" onclick="fc2.do_search();">SEARCH</div>';
+            this.search = {
+                panel: this.viewport.parentElement.insertBefore(panel, this.viewport.nextElementSibling),
+                field: document.getElementById('fc2-search-field')
+            };
+        }
+    }
+    do_search() {
+        fc2.log(`::fc2 ${fc2.search?.field.value}`, fc2);
+        if (!fc2.search?.field?.value)
+            return;
+        const str = fc2.search.field.innerText;
+        const res = document.evaluate(`//div[@id=fc2-content]//*[contains(text(), '${str}')]`, fc2.content);
+        fc2.log("::::", JSON.stringify(res));
+    }
     setup_debug(debug) {
         window.onerror = (emsg, _src, _ln, _col, err) => {
-            this.log ||= add_log_el();
-            this.log.innerText += `error ${emsg}:\n${err.stack}\n`;
-            this.log.scrollTop = this.log.scrollHeight;
+            this.log.element ||= add_log_el();
+            this.log.element.innerText += `error ${emsg}:\n${err.stack}\n`;
+            this.log.element.scrollTop = this.log.element.scrollHeight;
             return true;
         };
-        if (debug === true)
-            this.dbg = function (str, args) {
-                this.log ||= add_log_el();
+        if (debug === true) {
+            this.log = function (str, args) {
+                this.log.element ||= add_log_el();
                 let msg = str;
                 if (args && (typeof (args) === typeof (arguments) || typeof (args) === typeof ([]))) {
                     for (let i = 0; i < args.length; i++) {
@@ -116,18 +144,19 @@ FC2 ||= class {
                 }
                 else if (args)
                     msg += `: ${args}`;
-                this.log.innerText += `${msg}\n`;
-                this.log.scrollTop = this.log.scrollHeight;
+                this.log.element.innerText += `${msg}\n`;
+                this.log.element.scrollTop = this.log.element.scrollHeight;
             };
-        function add_log_el() {
+        }
+        const add_log_el = () => {
             const log = document.createElement('pre');
             log.id = 'fc2-log';
-            document.getElementById('fc2-scroll-area').parentElement.appendChild(log);
+            this.viewport.parentElement.insertBefore(log, this.viewport.nextElementSibling);
             return log;
-        }
+        };
     }
     generate_expose() {
-        this.dbg('generate_expose', arguments);
+        this.log('generate_expose', arguments);
         let expose_;
         if (this.cfg.expose.pos === 'pre') {
             expose_ = (el) => {
@@ -172,7 +201,7 @@ FC2 ||= class {
         return this.cfg.expose.reverse ? (el) => { return !expose_(el); } : expose_;
     }
     hide(el) {
-        this.dbg('hide', arguments);
+        this.log('hide', arguments);
         if (!el || el.classList.contains('hide'))
             return;
         el.classList.add('hide');
@@ -189,7 +218,7 @@ FC2 ||= class {
         el.innerHTML = el.dataset.hint;
     }
     show(el) {
-        this.dbg('show', arguments);
+        this.log('show', arguments);
         if (!el || !el.classList.contains('hide'))
             return;
         el.classList.remove('hide');
@@ -200,17 +229,17 @@ FC2 ||= class {
             this.hide(child);
     }
     toggle_cloze(cloze) {
-        this.dbg('toggle_cloze', arguments);
+        this.log('toggle_cloze', arguments);
         cloze.classList.contains('hide') ? this.show(cloze) : this.hide(cloze);
     }
     toggle_field(field) {
-        this.dbg('toggle_field', arguments);
+        this.log('toggle_field', arguments);
         field.classList.contains('hide')
             ? field.classList.remove('hide')
             : field.classList.add('hide');
     }
     toggle_all() {
-        this.dbg('toggle_all', arguments);
+        this.log('toggle_all', arguments);
         if (this.content.querySelector('.cloze.hide, .cloze-inactive.hide'))
             this.content.querySelectorAll('.cloze.hide, .cloze-inactive.hide')
                 .forEach(el => { this.show(el); });
@@ -219,7 +248,7 @@ FC2 ||= class {
                 .forEach(el => { this.hide(el); });
     }
     iter(fwd) {
-        this.dbg('iter', arguments);
+        this.log('iter', arguments);
         const els = this.content.querySelectorAll('.cloze');
         let nxt;
         if (this.current?.classList.contains('hide'))
@@ -238,7 +267,7 @@ FC2 ||= class {
         this.scroll_to({ scroll: this.cfg.scroll.iterate, cloze: this.current });
     }
     scroll_to(opts) {
-        this.dbg('scroll_to', arguments);
+        this.log('scroll_to', arguments);
         if (!this.cfg.front) {
             const scroll_top = parseFloat(sessionStorage.getItem('fc2_scroll_top'));
             if (!isNaN(scroll_top)) {
@@ -258,7 +287,7 @@ FC2 ||= class {
         }
         const offset = this.viewport.getBoundingClientRect().top;
         const line_height = (style) => {
-            this.dbg('line_height');
+            this.log('line_height');
             return parseInt(style.height) + parseInt(style.marginTop) + parseInt(style.marginBottom)
                 || parseInt(style.lineHeight)
                 || 20;
@@ -315,7 +344,7 @@ FC2 ||= class {
             else if (bottom > vp_height)
                 y = bottom - vp_height;
         }
-        this.dbg(`    scrolling ${opts.scroll} to`, this.viewport.scrollTop + y);
+        this.log(`    scrolling ${opts.scroll} to`, this.viewport.scrollTop + y);
         if (y)
             this.viewport.scrollTop += y;
     }

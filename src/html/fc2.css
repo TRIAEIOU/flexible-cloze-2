@@ -13,6 +13,11 @@
         .additional-header { cursor: pointer; display: block; }
         .additional-content { display: block; }
         .additional-content.hide { display: none; }
+#fc2-search {display: flex; flex-flow: row nowrap; margin: 2px; z-index: 10; border-top: 1px solid var(--fg); padding: 2px;}
+    #fc2-search-field {flex: 1 1; height: 20px;}
+#fc2-search-field:focus {outline: none !important; border-color: var(--border-focus);}
+    #fc2-search-btn {flex: 0 0; margin-left: 5px; padding: 2px; border: 1px solid var(--fg); font-size: 12px; vertical-align: middle; background-color: var(--button-bg);}
+#fc2-search-btn:active {background-color: var(--fg-faint);}
 #fc2-log { flex: initial; display: flex; flex-flow: column nowrap; height: 50px; font-size: 10px;
 background-color: #ff8886; color: #000000; word-wrap: break-word; white-space: pre-wrap;
 overflow: auto; margin: 0px;}
@@ -27,6 +32,8 @@ overflow: auto; margin: 0px;}
 #nav-toggle-all { position: fixed; top: 0; left: 0; right: 0;  z-index: 1; }
 #nav-prev-cloze { position: fixed;  top: 0; left: 0; bottom: 0;  z-index: 1; }
 #nav-next-cloze { position: fixed;  top: 0; right: 0; bottom: 0;  z-index: 1; }
+#nav-toggle-search { position: fixed; ottom: 0; left: 0; right: 0;  z-index: 2; }
+.nav-area-bottom { height: 30px; cursor: pointer; background-color: transparent; }
 /*-- FUNCTIONALITY END --*/
 
 /*-- CONFIGURATION BEGIN --*/
@@ -43,6 +50,9 @@ Top bar navigation area configuration, increase size by increasing height */
 .nav-area-side
 { width: 30px; cursor: pointer; background-color: transparent; }
 
+/* Bottom bar navigation area configuration, increase size by increasing height */
+.nav-area-bottom
+{ height: 30px; cursor: pointer; background-color: transparent; }
 
 /* CARD GENERAL STYLING =========================================== */
 .card
