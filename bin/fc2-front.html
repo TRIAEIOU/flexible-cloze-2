@@ -130,21 +130,26 @@ FC2 ||= class {
                 this.iter(true);
         });
         document.addEventListener("keydown", (evt) => {
-            if (document.activeElement === this.search?.field)
-                return;
-            if (evt.key === this.cfg.shortcuts.next) {
+            if (evt.key === 'Escape' && !this.search.panel.hidden) {
+                this.search.hide();
+                evt.stopImmediatePropagation();
+                evt.preventDefault();
+            }
+            else if (evt.key === this.cfg.shortcuts.next)
                 this.iter(true);
-                evt.preventDefault();
-            }
-            else if (evt.key === this.cfg.shortcuts.previous) {
+            else if (evt.key === this.cfg.shortcuts.previous)
                 this.iter(false);
-                evt.preventDefault();
-            }
-            else if (evt.key === this.cfg.shortcuts.toggle_all) {
+            else if (evt.key === this.cfg.shortcuts.toggle_all)
                 this.toggle_all()
                     ? this.search.show()
                     : this.search.hide();
-                evt.preventDefault();
+            else if (evt.key === 'f' && evt.ctrlKey && !evt.metaKey) {
+                if (this.search.panel.hidden) {
+                    this.toggle_all(true);
+                    this.search.show();
+                }
+                else
+                    this.search.field.focus();
             }
         });
     }
@@ -230,63 +235,100 @@ FC2 ||= class {
             log.element = document.createElement('pre');
             log.element.id = 'fc2-log';
             log.element.hidden = true;
-            log.element = document.getElementById('fc2-scroll-area')?.parentElement?.appendChild(log.element);
+            log.element = document.getElementById('fc2-scroll-area')
+                ?.parentElement?.appendChild(log.element);
         }
         return log;
     }
     searcher() {
-        const searchfn = (() => {
-            searchfn.match = (str, nd, res) => {
-                this.log('searchfn.match');
-                let found = false;
-                for (const child of nd.childNodes)
-                    found = searchfn.match(str, child, res) || found;
-                if (!found && nd['innerText']?.indexOf(str) >= 0) {
-                    found = true;
-                    res.push(nd);
-                }
-                return found;
-            };
-            if (!searchfn.field?.value)
+        const fn = (() => {
+            if (!fn.field?.value) {
+                fn.matches = fn.unwrap(fn.matches), fn.index = -1;
+                fn.sstr = '';
                 return;
-            if (!searchfn.matches?.length || searchfn.field.value !== searchfn.str) {
-                this.log('searchfn.searching');
-                for (const el of searchfn.matches)
-                    el.classList.remove('search-match');
-                searchfn.matches = [];
-                searchfn.index = -1;
-                searchfn.match(searchfn.field.innerText, this.content, searchfn.matches);
-                for (const el of searchfn.matches)
-                    el.classList.add('search-match');
             }
-            if (searchfn.matches?.length) {
-                searchfn.index = searchfn.index === searchfn.matches.length - 1
-                    ? 0
-                    : searchfn.index + 1;
-                this.log(`  searchfn found match, scrolling to index ${searchfn.index}`);
-                searchfn.matches[searchfn.index].scrollIntoView();
+            if (!fn.matches?.length || fn.field.value !== fn.sstr) {
+                fn.matches = fn.unwrap(fn.matches), fn.index = -1;
+                fn.sstr = fn.field.value;
+                fn.matches = fn.wrap(fn.match(fn.sstr, this.content), fn.sstr);
+            }
+            if (fn.matches?.length) {
+                if (fn.index >= 0)
+                    fn.matches[fn.index].classList.replace('search-match', 'search-matches');
+                fn.index = (fn.index < fn.matches.length)
+                    ? fn.index + 1
+                    : 0;
+                fn.matches[fn.index].classList.replace('search-matches', 'search-match');
+                fn.matches[fn.index].scrollIntoView({ behavior: 'auto', block: 'center', inline: 'nearest' });
             }
         });
-        searchfn.matches = [];
-        searchfn.index = -1;
+        fn.matches = [], fn.index = -1, fn.sstr = '';
         const panel = document.createElement('div');
         panel.id = 'fc2-search';
         panel.hidden = true;
-        panel.innerHTML = '<input type="text" id="fc2-search-field" placeholder="Type to search"/><div id="fc2-search-btn" onclick="fc2.search();">SEARCH</div>';
-        searchfn.panel = document.getElementById('fc2-scroll-area').parentElement.appendChild(panel);
-        searchfn.field = document.getElementById('fc2-search-field');
-        searchfn.show = () => {
+        panel.innerHTML = '<input type="text" id="fc2-search-field" placeholder="Search for text"/><div id="fc2-search-btn" tabindex="0" onclick="fc2.search();">SEARCH</div>';
+        fn.panel = document.getElementById('fc2-scroll-area').parentElement.appendChild(panel);
+        fn.field = document.getElementById('fc2-search-field');
+        fn.field.addEventListener('keydown', (evt) => {
+            if (evt.key === 'Enter') {
+                if (document.documentElement.classList.contains('mobile'))
+                    fn.button.focus();
+                fn();
+            }
+            else if (evt.key === 'Escape')
+                fn.hide();
+            evt.stopPropagation();
+        });
+        fn.button = document.getElementById('fc2-search-btn');
+        fn.match = (str, nd) => {
+            let res = [];
+            for (const cnd of nd.childNodes) {
+                if (cnd.nodeType === Node.TEXT_NODE && cnd.textContent.indexOf(str) !== -1)
+                    res.push(cnd);
+                else if (cnd.nodeType === Node.ELEMENT_NODE && cnd['innerText']?.indexOf(str) !== -1)
+                    res = res.concat(fn.match(str, cnd));
+            }
+            return res;
+        };
+        fn.wrap = (nds, str) => {
+            if (!nds?.length)
+                return [];
+            const res = [];
+            for (const nd of nds) {
+                const ctx = nd.textContent.split(str);
+                if (ctx.length > 1) {
+                    const nxt = nd.nextSibling;
+                    nd.textContent = ctx[0];
+                    for (let i = 1; i < ctx.length; i++) {
+                        const span = document.createElement('span');
+                        span.textContent = str;
+                        span.classList.add('search-matches');
+                        res.push(nd.parentNode.insertBefore(span, nxt));
+                        nd.parentNode.insertBefore(document.createTextNode(ctx[i]), nxt);
+                    }
+                }
+            }
+            return res;
+        };
+        fn.unwrap = (els) => {
+            if (els) {
+                for (const el of els)
+                    el.parentElement?.replaceChild(document.createTextNode(el.textContent), el);
+            }
+            this.content.normalize();
+            return [];
+        };
+        fn.show = () => {
             fc2.log('searcher.show');
-            searchfn.panel.hidden = false;
-            searchfn.field.focus();
+            fn.panel.hidden = false;
+            fn.field.focus();
         };
-        searchfn.hide = () => {
+        fn.hide = () => {
             fc2.log('searcher.hide');
-            for (const nd of searchfn.matches)
-                nd.classList.remove('search-match');
-            searchfn.panel.hidden = true;
+            fn.matches = fn.unwrap(fn.matches), fn.index = -1;
+            fn.panel.hidden = true;
         };
-        return searchfn;
+        return fn;
     }
     generate_expose() {
         this.log('generate_expose', arguments);
@@ -371,9 +413,10 @@ FC2 ||= class {
             ? field.classList.remove('hide')
             : field.classList.add('hide');
     }
-    toggle_all() {
+    toggle_all(show = undefined) {
         this.log('toggle_all', arguments);
-        if (this.content.querySelector('.cloze.hide, .cloze-inactive.hide')) {
+        if (show === true || (show === undefined &&
+            this.content.querySelector('.cloze.hide, .cloze-inactive.hide'))) {
             this.content.querySelectorAll('.cloze.hide, .cloze-inactive.hide')
                 .forEach(el => { this.show(el); });
             return true;

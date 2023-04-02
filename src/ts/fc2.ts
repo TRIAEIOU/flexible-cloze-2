@@ -27,6 +27,7 @@ interface Configuration {
     info: boolean       // Information field
   }
   log: undefined|boolean|'error'    // Logging level (`false`, `'error'` or `true`)
+  focus_search: boolean|undefined   // Automatically focus search bar (brings up virtual keyboard)
   front?: boolean                   // Front or back side
 }
 
@@ -40,10 +41,13 @@ interface Logger {
 
 interface Searcher {
   (): void
-  match(str: string, nd: Node, res: Node[]): boolean
+  wrap(nds: Node[], str: string): HTMLElement[]
+  unwrap(els: HTMLElement[]): HTMLElement[]
+  match(str: string, nd: Node): Node[]
   panel: HTMLElement
   field: HTMLInputElement
-  str: string|undefined
+  button: HTMLElement
+  sstr: string
   matches: HTMLElement[]
   index: number
   show(): void
@@ -101,18 +105,22 @@ FC2 ||= class {
     })
 
     document.addEventListener("keydown", (evt: KeyboardEvent) => {
-      if (document.activeElement === this.search?.field) return
-      if (evt.key === this.cfg.shortcuts.next) {
-        this.iter(true)
+      if (evt.key === 'Escape' && !this.search.panel.hidden) {
+        this.search.hide()
+        evt.stopImmediatePropagation()
         evt.preventDefault()
-      } else if (evt.key === this.cfg.shortcuts.previous) {
-        this.iter(false)
-        evt.preventDefault()
-      } else if (evt.key === this.cfg.shortcuts.toggle_all) {
+      }
+      else if (evt.key === this.cfg.shortcuts.next) this.iter(true)
+      else if (evt.key === this.cfg.shortcuts.previous) this.iter(false)
+      else if (evt.key === this.cfg.shortcuts.toggle_all)
         this.toggle_all()
           ? this.search.show()
           : this.search.hide()
-        evt.preventDefault()
+      else if (evt.key === 'f' && evt.ctrlKey && !evt.metaKey) {
+        if (this.search.panel.hidden) {
+          this.toggle_all(true)
+          this.search.show()
+        } else this.search.field.focus()
       }
     })
   }
@@ -219,68 +227,125 @@ FC2 ||= class {
       log.element = document.createElement('pre')
       log.element.id = 'fc2-log'
       log.element.hidden = true
-      log.element = document.getElementById('fc2-scroll-area')?.parentElement?.appendChild(log.element)
+      log.element = document.getElementById('fc2-scroll-area')
+        ?.parentElement?.appendChild(log.element)
     }
 
     return log
   }
 
+  /** Initializes and returns search function interface, default method is search */
   searcher() {
-    const searchfn = (() => {
-      /** Recurse node to find deepest matches */
-      searchfn.match = (str: string, nd: Node, res: Node[]) => {
-        this.log('searchfn.match')
-        let found = false
-        for (const child of nd.childNodes) found = searchfn.match(str, child, res) || found
-        if (!found && nd['innerText']?.indexOf(str) >= 0) {
-          found = true
-          res.push(nd)
-        }
-        return found
+    // Setup search function (default method)
+    const fn = (() => {
+      // Nothing in search field - clear
+      if (!fn.field?.value) {
+        fn.matches = fn.unwrap(fn.matches), fn.index = -1
+        fn.sstr = ''
+        return
       }
 
-      if (!searchfn.field?.value) return
-      // No current matches or changed search string
-      if (!searchfn.matches?.length || searchfn.field.value !== searchfn.str) {
-        this.log('searchfn.searching')
-        for (const el of searchfn.matches) el.classList.remove('search-match')
-        searchfn.matches = []
-        searchfn.index = -1
-        searchfn.match(searchfn.field.innerText, this.content, searchfn.matches)
-        for (const el of searchfn.matches) el.classList.add('search-match')
+      // No current matches or changed search string, clear old and create new searh
+      if (!fn.matches?.length || fn.field.value !== fn.sstr) {
+        fn.matches = fn.unwrap(fn.matches), fn.index = -1
+        fn.sstr = fn.field.value
+        fn.matches = fn.wrap(fn.match(fn.sstr, this.content), fn.sstr)
       }
 
-      // Scroll to next match
-      if (searchfn.matches?.length) {
-        searchfn.index = searchfn.index === searchfn.matches.length - 1
-          ? 0
-          : searchfn.index! + 1
-          this.log(`  searchfn found match, scrolling to index ${searchfn.index}`)
-          searchfn.matches[searchfn.index].scrollIntoView()
+      // If we have matches, clear previous highlight, highlight next and scroll
+      if (fn.matches?.length) {
+        if (fn.index >= 0)
+          fn.matches[fn.index].classList.replace('search-match', 'search-matches')
+        fn.index = (fn.index < fn.matches.length)
+          ? fn.index + 1
+          : 0
+        fn.matches[fn.index].classList.replace('search-matches', 'search-match')
+        fn.matches[fn.index].scrollIntoView(
+          {behavior: 'auto', block: 'center', inline: 'nearest'}
+        )
       }
     }) as Searcher
-    searchfn.matches = []
-    searchfn.index = -1
+    fn.matches = [], fn.index = -1, fn.sstr = ''
 
+    // Setup panel
     const panel = document.createElement('div')
     panel.id = 'fc2-search'
     panel.hidden = true
-    panel.innerHTML = '<input type="text" id="fc2-search-field" placeholder="Type to search"/><div id="fc2-search-btn" onclick="fc2.search();">SEARCH</div>'
-    searchfn.panel = document.getElementById('fc2-scroll-area')!.parentElement!.appendChild(panel)
-    searchfn.field = document.getElementById('fc2-search-field') as HTMLInputElement
+    panel.innerHTML = '<input type="text" id="fc2-search-field" placeholder="Search for text"/><div id="fc2-search-btn" tabindex="0" onclick="fc2.search();">SEARCH</div>'
+    fn.panel = document.getElementById('fc2-scroll-area')!.parentElement!.appendChild(panel)
+    fn.field = document.getElementById('fc2-search-field') as HTMLInputElement
+    fn.field.addEventListener('keydown', (evt) => {
+      if (evt.key === 'Enter') {
+        // On mobile we want to hide keyboard and use button
+        if (document.documentElement.classList.contains('mobile'))
+          fn.button.focus()
+        fn()
+      } else if (evt.key === 'Escape') fn.hide()
+      evt.stopPropagation()
+    })
+    fn.button = document.getElementById('fc2-search-btn') as HTMLDivElement
 
-    searchfn.show = () => {
+    // Methods
+    /** Recurse node to find deepest matches */
+    fn.match = (str: string, nd: Node) => {
+      let res: Node[] = []
+      for (const cnd of nd.childNodes) {
+        // Text node, if found store
+        if (cnd.nodeType === Node.TEXT_NODE && cnd.textContent!.indexOf(str) !== -1)
+          res.push(cnd)
+        // HTML node, if found recurse into node
+        else if (cnd.nodeType === Node.ELEMENT_NODE && cnd['innerText']?.indexOf(str) !== -1)
+          res = res.concat(fn.match(str, cnd))
+      }
+      return res
+    }
+
+    /** Wrap matches in text node in `<span class="search-matches">` and return list of matches */
+    fn.wrap = (nds: Node[], str: string) => {
+      if (!nds?.length) return []
+      const res: HTMLElement[] = []
+      for (const nd of nds) {
+        const ctx = nd.textContent!.split(str)
+        if (ctx.length > 1) {
+          const nxt = nd.nextSibling
+          nd.textContent = ctx[0]
+          for (let i = 1; i < ctx.length; i++) {
+            const span = document.createElement('span')
+            span.textContent = str
+            span.classList.add('search-matches')
+            res.push(nd.parentNode!.insertBefore(span, nxt))
+            nd.parentNode!.insertBefore(document.createTextNode(ctx[i]), nxt)
+          }
+        }
+      }
+      return res
+    }
+
+    /** Unwrap nodes from `<span class="search-matches">` */
+    fn.unwrap = (els: HTMLElement[]) => {
+      if (els) {
+        for (const el of els)
+          el.parentElement?.replaceChild(document.createTextNode(el.textContent!), el)
+      }
+      this.content.normalize()
+      return []
+    }
+
+    /** Show search bar */
+    fn.show = () => {
       fc2.log('searcher.show')
-      searchfn.panel!.hidden = false
-      searchfn.field!.focus()
-    }
-    searchfn.hide = () => {
-      fc2.log('searcher.hide')
-      for (const nd of searchfn.matches) nd.classList.remove('search-match')
-      searchfn.panel!.hidden = true
+      fn.panel.hidden = false
+      fn.field.focus()
     }
 
-    return searchfn
+    /** Hide search panel */
+    fn.hide = () => {
+      fc2.log('searcher.hide')
+      fn.matches = fn.unwrap(fn.matches), fn.index = -1
+      fn.panel.hidden = true
+    }
+
+    return fn
   }
 
   /** Create expose function from config */
@@ -368,10 +433,13 @@ FC2 ||= class {
       : field.classList.add('hide')
   }
 
-  /** Toggle all clozes and fields, sync towards show */
-  toggle_all() {
+  /** Toggle all clozes and fields, sync towards show or force */
+  toggle_all(show: boolean|undefined = undefined) {
    this.log('toggle_all', arguments)
-    if (this.content.querySelector('.cloze.hide, .cloze-inactive.hide')) {
+    if (show === true || (
+      show === undefined &&
+      this.content.querySelector('.cloze.hide, .cloze-inactive.hide')
+    )) {
       this.content.querySelectorAll('.cloze.hide, .cloze-inactive.hide')
         .forEach(el => { this.show(el as HTMLElement) })
       return true

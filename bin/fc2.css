@@ -16,13 +16,12 @@
 #fc2-search {display: flex; flex-flow: row nowrap; margin: 2px; z-index: 10; border-top: 1px solid var(--fg); padding: 2px;}
 #fc2-search[hidden] {display: none;}
     #fc2-search-field {flex: 1 1; height: 20px;}
-#fc2-search-field:focus {outline: none !important; border-color: var(--border-focus);}
-    #fc2-search-btn {flex: 0 0; margin-left: 5px; padding: 2px; border: 1px solid var(--fg); font-size: 12px; vertical-align: middle; background-color: var(--button-bg);}
-#fc2-search-btn:active {background-color: var(--fg-faint);}
+    #fc2-search-btn {flex: 0 0; margin-left: 5px; padding: 2px; border: 1px solid var(--fg); font-size: 8px; vertical-align: middle; background-color: var(--button-bg);}
+    #fc2-search-btn:active {background-color: var(--fg-faint);}
 #fc2-log { flex: initial; display: flex; flex-flow: column nowrap; height: 50px; font-size: 10px;
 background-color: #ff8886; color: #000000; word-wrap: break-word; white-space: pre-wrap;
 overflow: auto; margin: 0px;}
-#fc2-log[hidden=true] {display: none;}
+#fc2-log[hidden] {display: none;}
 #fc2-show-all { flex: 0 0; cursor: pointer; }
 
 #fc2-footer { flex: 0 0; z-index: 2; }
@@ -34,7 +33,8 @@ overflow: auto; margin: 0px;}
 #nav-toggle-all { position: fixed; top: 0; left: 0; right: 0;  z-index: 1; }
 #nav-prev-cloze { position: fixed;  top: 0; left: 0; bottom: 0;  z-index: 1; }
 #nav-next-cloze { position: fixed;  top: 0; right: 0; bottom: 0;  z-index: 1; }
-.search-match {background-color: #465A65;}
+.search-matches {background-color: #768A95; padding: 3px; margin: 3px;}
+.search-match {background-color: #465A65; color: white; padding: 3px; margin: 3px;}
 /*-- FUNCTIONALITY END --*/
 
 /*-- CONFIGURATION BEGIN --*/
