@@ -43,6 +43,8 @@ You can of course also use FC2 if you just want some more configurability/functi
 
 - Clicking an active cloze on the front side will cycle it between hint (if there is one) and show.
 - Clicking an inactive cloze on the front side will cycle it between hide and show (no hint).
+- Toggle all/cycle between active and/or inactive clozes (configurable) by tapping left/right/top of screen or keyboard shortcuts.
+- Search in card from the reviewer (`Ctrl+F` or top bar) - if you, like me, have all your notes in Anki and want to be able to look something up quickly from your phone.
 - There is an optional "show all" button (styleable in class .fcz-show-all-btn). Note that he button is set to `display: none` in default configuration, you have to set it to `display: inline` on the Styling page of the cards dialog to get it to show.
 
 ### Lists
@@ -103,6 +105,14 @@ Configuration is made in the note template, configuration is made between `/*-- 
 - Configuration can be overridden on an individual note by using Anki `Tags`, e.g add `fc2.cfg.front.scroll.initial.context-bottom` to set the front side initial scroll of the note to `context-bottom` (leave out the side to set for both front and back, e.g. `fc2.cfg.scroll.initial.context-bottom`)
 - Styling of different elements (e.g. "I want the answer to be displayed inline rather than in a block") can easily be configured in the `Styling` section of the card template.
 - Changes will mainly be made inside `FUNCTIONALITY BEGIN`/`FUNCTIONALITY END` tags, which in turn is divided into functionality and configuration allowing the user to avoid overwriting their modification part on update.
+
+## Recommended companion addons
+
+Some useful companion addons if you, like I, keep one note per subject rather than per question:
+
+- Review in ascedning cloze ordinal order: [Asdcending cloze reviews](https://ankiweb.net/shared/info/545968093)
+- Sort cloze ordinals in ascending order while keeping learning state: [Sort clozes]()
+- If you prefer note taking in markdown: [Markdown input]()
 
 ## Regarding styling
 
@@ -173,4 +183,4 @@ There is effectively no add-on, it's all JavaScript (and HTML/CSS) and runs 100%
 - 2023-02-07: Adapt JS to AnkiDroid behaviour, fix [expose bug](https://github.com/TRIAEIOU/flexible-cloze-2/issues/4).
 - 2023-02-10: Fix hint bug.
 - 2023-02-18: Fix scroll and hint bugs.
-- 2023-03-26: Refactor, add `context-top` and `context-bottom`, add note specific config through tags, add debug option/info.
+- 2023-03-26: Refactor, add `context-top` and `context-bottom`, add note specific config through tags, add debug option/info, add search function.

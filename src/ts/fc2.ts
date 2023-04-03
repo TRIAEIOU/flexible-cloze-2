@@ -31,8 +31,6 @@ interface Configuration {
   front?: boolean                   // Front or back side
 }
 
-// Avoid double declarations
-var FC2
 
 interface Logger {
   (str: string, args?: any): void
@@ -41,9 +39,9 @@ interface Logger {
 
 interface Searcher {
   (): void
-  wrap(nds: Node[], str: string): HTMLElement[]
+  wrap(nds: Node[], re: RegExp): HTMLElement[]
   unwrap(els: HTMLElement[]): HTMLElement[]
-  match(str: string, nd: Node): Node[]
+  match(re: RegExp, nd: Node): Node[]
   panel: HTMLElement
   field: HTMLInputElement
   button: HTMLElement
@@ -54,92 +52,51 @@ interface Searcher {
   hide(): void
 }
 
-FC2 ||= class {
-  log!: Logger
-  expose!: (el: HTMLElement) => boolean
-  cfg!: Configuration
-  content!: HTMLElement
-  search!: Searcher
-  viewport!: HTMLElement
-  current!: HTMLElement
-  ordinal!: number
+interface FC2 {
+  cfg: Configuration
+  log: Logger
+  search: Searcher
+  content: HTMLElement
+  viewport: HTMLElement
+  current: HTMLElement
+  ordinal: number
+  (config: Configuration, side: 'front'|'back'): void
+  expose(el: HTMLElement): boolean
+  logger(lvl: boolean|undefined|'error'): Logger
+  searcher(): Searcher
+  toggle_cloze(cloze: HTMLElement): void
+  scroll_to(opts: {scroll: string, cloze?: HTMLElement, vp_pos?: number}): void
+  toggle_field(field: HTMLElement): void
+  toggle_all(show?: boolean): boolean
+  iter(fwd: boolean): void
+  generate_expose(): (el: HTMLElement) => boolean
+  show(el: HTMLElement): void
+  hide(el: HTMLElement): void
+  mouse(evt: MouseEvent): void
+  keyboard(evt: KeyboardEvent): void
+}
 
-  /** One-time runs */
-  constructor(config: Configuration) {
+declare var config: Configuration
+declare var __TEMPLATE_SIDE__: 'front'|'back'
+var fc2
+fc2 ||= ((config: Configuration) => {
+  /** Default action is side init (done on each card/side) */
+  const self = ((config: Configuration, side: 'front'|'back') => {
     // Setup logging
-    if (config.log) this.log = this.logger(config.log)
-    // Check for backend version
-    if (document.querySelector('.cloze')!['dataset'].ordinal === undefined)
-      return
+    self.log = self.logger(config.log)
+    self.cfg = config
+    self.cfg.front = side === 'front'
+    self.content = document.getElementById('fc2-content')!
+    self.viewport = document.getElementById('fc2-scroll-area')!
+    self.search = self.searcher()
+    self.current = self.content.querySelector('.cloze')!
 
-    // Setup document level event handlers
-    document.addEventListener("click", (evt: MouseEvent) => {
-      const target = evt.target as HTMLElement
-      // Cloze click handling
-      if (target.classList!.contains('cloze')
-        || target.classList.contains('cloze-inactive')) {
-        evt.stopPropagation() // To avoid toggling parents
-        if (!this.cfg.iteration.top) this.current = evt.target as HTMLElement
-        this.toggle_cloze(evt.target as HTMLElement)
-        this.scroll_to({ scroll: this.cfg.scroll.click, cloze: evt.target as HTMLElement })
-
-      } // Additional content (header and actual content)
-      else if (target.classList.contains('additional-header'))
-        this.toggle_field(target.nextElementSibling as HTMLElement)
-      else if (target.classList.contains('additional-content'))
-        this.toggle_field(evt.target as HTMLElement)
-      // Toggle all button
-      else if (target.id === 'fc2-show-all-btn') {
-        this.toggle_all()
-          ? this.search.show()
-          : this.search.hide()
-      }
-      // Nav bars
-      else if (target.id === 'nav-toggle-all') {
-        this.toggle_all()
-          ? this.search.show()
-          : this.search.hide()
-      }
-      else if (target.id === 'nav-prev-cloze') this.iter(false)
-      else if (target.id === 'nav-next-cloze') this.iter(true)
-    })
-
-    document.addEventListener("keydown", (evt: KeyboardEvent) => {
-      if (evt.key === 'Escape' && !this.search.panel.hidden) {
-        this.search.hide()
-        evt.stopImmediatePropagation()
-        evt.preventDefault()
-      }
-      else if (evt.key === this.cfg.shortcuts.next) this.iter(true)
-      else if (evt.key === this.cfg.shortcuts.previous) this.iter(false)
-      else if (evt.key === this.cfg.shortcuts.toggle_all)
-        this.toggle_all()
-          ? this.search.show()
-          : this.search.hide()
-      else if (evt.key === 'f' && evt.ctrlKey && !evt.metaKey) {
-        if (this.search.panel.hidden) {
-          this.toggle_all(true)
-          this.search.show()
-        } else this.search.field.focus()
-      }
-    })
-  }
-
-  /** Done on each card/side */
-  load(config: Configuration, side: 'front'|'back') {
-    this.cfg = config
-    this.cfg.front = side === 'front'
-    this.content = document.getElementById('fc2-content')!
-    this.viewport = document.getElementById('fc2-scroll-area')!
-    this.search = this.searcher()
-    this.current = this.content.querySelector('.cloze')!
-
-    this.ordinal ||= parseInt(this.current.dataset.ordinal!)
-    this.expose = this.generate_expose()
+    self.ordinal ||= parseInt(self.current.dataset.ordinal!)
+    self.expose = self.generate_expose()
 
     // Setup class lists
-    this.content.parentElement!.classList.remove(this.cfg.front ? 'back' : 'front')
-    this.content.parentElement!.classList.add(this.cfg.front ? 'front' : 'back')
+    self.content.parentElement!.classList.remove(self.cfg.front ? 'back' : 'front')
+    self.content.parentElement!.classList.add(self.cfg.front ? 'front' : 'back')
 
     // Parse note specific config from tags
     const tag_el = document.querySelector('#fc2-additional #tags') as HTMLElement
@@ -148,62 +105,66 @@ FC2 ||= class {
         if (!tag.startsWith('fc2.cfg.')) continue
         const parts = tag.slice(8).split('.')
         const tag_side = ['front', 'back'].includes(parts[0]) ? parts.shift() : undefined
-        if (tag_side && tag_side !== side || this.cfg[parts[0]]?.[parts[1]] === undefined)
+        if (tag_side && tag_side !== side || self.cfg[parts[0]]?.[parts[1]] === undefined)
           continue
-        typeof(this.cfg[parts[0]][parts[1]]) === 'boolean'
+        typeof(self.cfg[parts[0]][parts[1]]) === 'boolean'
           ? parts[2] === 'true'
           : parts.slice(2)
       }
     }
 
     // Strip expose char from active clozes and hide if front
-    this.content.querySelectorAll('.cloze').forEach(((cloze: HTMLElement) => {
-      this.expose(cloze)
-      if (this.cfg.front) this.hide(cloze)
+    self.content.querySelectorAll('.cloze').forEach(((cloze: HTMLElement) => {
+      self.expose(cloze)
+      if (self.cfg.front) self.hide(cloze)
     }) as any)
 
     // Expose inactive clozes from expose char or containing active cloze
-    this.content.querySelectorAll('.cloze-inactive').forEach(((cloze: HTMLElement) => {
-      if (this.expose(cloze) || cloze.querySelector('.cloze'))
+    self.content.querySelectorAll('.cloze-inactive').forEach(((cloze: HTMLElement) => {
+      if (self.expose(cloze) || cloze.querySelector('.cloze'))
         cloze.classList.remove('cloze-inactive')
-      else if (!this.cfg.show.inactive) this.hide(cloze)
+      else if (!self.cfg.show.inactive) self.hide(cloze)
     }) as any)
 
     // Show additional fields per default depending on config
-    if (!this.cfg.show.additional)
-      this.viewport.querySelectorAll(':not(#info).additional-content')
-        .forEach(nd => this.hide(nd as HTMLElement))
+    if (!self.cfg.show.additional)
+      self.viewport.querySelectorAll(':not(#info).additional-content')
+        .forEach(nd => self.hide(nd as HTMLElement))
 
     // Show info field per default depending on config
-    if (!this.cfg.show.info)
-      this.hide(document.querySelector('#info.additional-content') as HTMLElement)
+    if (!self.cfg.show.info)
+      self.hide(document.querySelector('#info.additional-content') as HTMLElement)
 
     // Track scrolling on front, on unload would be more efficient
-    if (this.cfg.front) this.viewport.onscroll = (_evt) =>
-        sessionStorage.setItem('fc2_scroll_top', this.viewport.scrollTop.toString())
+    if (self.cfg.front) self.viewport.onscroll = (_evt) =>
+        sessionStorage.setItem('fc2_scroll_top', self.viewport.scrollTop.toString())
+
+    // Setup document level event handlers - should not be added if already there
+    document.addEventListener("click", self.mouse)
+    document.addEventListener("keydown", self.keyboard)
 
     // Reveal finished content, hide placeholder and scroll to first active cloze
-    this.content.style.display = 'block'
+    self.content.style.display = 'block'
     document.getElementById('fc2-content-placeholder')!.style.display = 'none'
     // Stacked requests as AnkiDroid takes a few frames to finish layout
     window.requestAnimationFrame(() =>
       window.requestAnimationFrame(() =>
         window.requestAnimationFrame(() =>
-          this.scroll_to({scroll: this.cfg.scroll.initial})
+          self.scroll_to({scroll: self.cfg.scroll.initial})
         )
       )
     )
-  }
+  }) as FC2
 
-  /** Initialize debug element and setup `this.dbg()` depending on config */
-  logger(lvl: boolean|undefined|'error') {
+  /** Initialize debug element and setup `self.dbg()` depending on config */
+  self.logger = (lvl: boolean|undefined|'error') => {
     let log: Logger = () => {}
     if (lvl) {
       if (lvl === true) {
         log = (str: string, args: any) => {
           if (log.element!.hidden) log.element!.hidden = false
           let msg = str
-          if (args && (typeof (args) === typeof (arguments) || typeof (args) === typeof ([]))) {
+          if (typeof(args) === 'object') {
             for (let i = 0; i < args.length; i++) {
               msg += i ? ', ' : ': '
               if (typeof (args[i]) == 'object') msg += JSON.stringify(args[i])
@@ -235,7 +196,7 @@ FC2 ||= class {
   }
 
   /** Initializes and returns search function interface, default method is search */
-  searcher() {
+  self.searcher = () => {
     // Setup search function (default method)
     const fn = (() => {
       // Nothing in search field - clear
@@ -249,7 +210,8 @@ FC2 ||= class {
       if (!fn.matches?.length || fn.field.value !== fn.sstr) {
         fn.matches = fn.unwrap(fn.matches), fn.index = -1
         fn.sstr = fn.field.value
-        fn.matches = fn.wrap(fn.match(fn.sstr, this.content), fn.sstr)
+        const re = new RegExp(fn.sstr, 'gi')
+        fn.matches = fn.wrap(fn.match(re, self.content), re)
       }
 
       // If we have matches, clear previous highlight, highlight next and scroll
@@ -287,35 +249,46 @@ FC2 ||= class {
 
     // Methods
     /** Recurse node to find deepest matches */
-    fn.match = (str: string, nd: Node) => {
+    fn.match = (re: RegExp, nd: Node) => {
       let res: Node[] = []
       for (const cnd of nd.childNodes) {
+        re.lastIndex = 0 // Reset regex
         // Text node, if found store
-        if (cnd.nodeType === Node.TEXT_NODE && cnd.textContent!.indexOf(str) !== -1)
+        if (cnd.nodeType === Node.TEXT_NODE && re.test(cnd.textContent!))
           res.push(cnd)
         // HTML node, if found recurse into node
-        else if (cnd.nodeType === Node.ELEMENT_NODE && cnd['innerText']?.indexOf(str) !== -1)
-          res = res.concat(fn.match(str, cnd))
+        else if (cnd.nodeType === Node.ELEMENT_NODE && re.test(cnd['innerText']))
+          res = res.concat(fn.match(re, cnd))
       }
       return res
     }
 
     /** Wrap matches in text node in `<span class="search-matches">` and return list of matches */
-    fn.wrap = (nds: Node[], str: string) => {
+    fn.wrap = (nds: Node[], re: RegExp) => {
       if (!nds?.length) return []
       const res: HTMLElement[] = []
       for (const nd of nds) {
-        const ctx = nd.textContent!.split(str)
-        if (ctx.length > 1) {
-          const nxt = nd.nextSibling
-          nd.textContent = ctx[0]
-          for (let i = 1; i < ctx.length; i++) {
-            const span = document.createElement('span')
-            span.textContent = str
-            span.classList.add('search-matches')
-            res.push(nd.parentNode!.insertBefore(span, nxt))
-            nd.parentNode!.insertBefore(document.createTextNode(ctx[i]), nxt)
-          }
+        const parent = nd.parentElement!
+        const nxt = nd.nextSibling
+        const txt = parent.removeChild(nd).textContent!
+        let m, last = re.lastIndex = 0
+        while (m = re.exec(txt)){
+          parent.insertBefore(
+            document.createTextNode(txt.slice(last, m!.index)),
+            nxt
+          )
+          const span = document.createElement('span')
+          span.textContent = m[0]
+          span.classList.add('search-matches')
+          res.push(parent.insertBefore(span, nxt))
+          last = re.lastIndex
+        }
+        // Add any trailing text after last match
+        if (last < txt.length) {
+          parent.insertBefore(
+            document.createTextNode(txt.slice(last)),
+            nxt
+          )
         }
       }
       return res
@@ -327,20 +300,20 @@ FC2 ||= class {
         for (const el of els)
           el.parentElement?.replaceChild(document.createTextNode(el.textContent!), el)
       }
-      this.content.normalize()
+      self.content.normalize()
       return []
     }
 
     /** Show search bar */
     fn.show = () => {
-      fc2.log('searcher.show')
+      self.log('searcher.show')
       fn.panel.hidden = false
       fn.field.focus()
     }
 
     /** Hide search panel */
     fn.hide = () => {
-      fc2.log('searcher.hide')
+      self.log('searcher.hide')
       fn.matches = fn.unwrap(fn.matches), fn.index = -1
       fn.panel.hidden = true
     }
@@ -349,48 +322,60 @@ FC2 ||= class {
   }
 
   /** Create expose function from config */
-  generate_expose(): (el: HTMLElement) => boolean {
-   this.log('generate_expose', arguments)
+  self.generate_expose = () => {
+   self.log('generate_expose')
     let expose_
-    if (this.cfg.expose.pos === 'pre') {
+    if (self.cfg.expose.pos === 'pre') {
       expose_ = (el) => {
-        if (el.previousSibling?.data?.endsWith(this.cfg.expose.char))
+        if (el.previousSibling?.data?.endsWith(self.cfg.expose.char))
           el.previousSibling.data = el.previousSibling.data.slice(0, -1)
         else return false
         return true
       }
-    } else if (this.cfg.expose.pos === 'post') {
+    } else if (self.cfg.expose.pos === 'post') {
       expose_ = (el) => {
-        if (el.nextSibling?.data?.startsWith(this.cfg.expose.char))
+        if (el.nextSibling?.data?.startsWith(self.cfg.expose.char))
           el.nextSibling.data = el.nextSibling.data.substring(1)
         else return false
         return true
       }
-    } else if (this.cfg.expose.pos === 'end') {
+    } else if (self.cfg.expose.pos === 'end') {
       expose_ = (el) => {
-        if (el.dataset.cloze?.endsWith(this.cfg.expose.char))
+        if (el.dataset.cloze?.endsWith(self.cfg.expose.char))
           el.dataset.cloze = el.dataset.cloze.slice(0, -1)
-        else if (el.lastChild?.data?.endsWith(this.cfg.expose.char))
+        else if (el.lastChild?.data?.endsWith(self.cfg.expose.char))
           el.lastChild.data = el.lastChild.data.slice(0, -1)
         else return false
         return true
       }
     } else {
       expose_ = (el) => { // begin
-        if (el.dataset.cloze?.startsWith(this.cfg.expose.char))
+        if (el.dataset.cloze?.startsWith(self.cfg.expose.char))
           el.dataset.cloze = el.dataset.cloze.substring(1)
-        else if (el.firstChild?.data?.startsWith(this.cfg.expose.char))
+        else if (el.firstChild?.data?.startsWith(self.cfg.expose.char))
           el.firstChild.data = el.firstChild.data.substring(1)
         else return false
         return true
       }
     }
-    return this.cfg.expose.reverse ? (el) => { return !expose_(el) } : expose_
+    return self.cfg.expose.reverse ? (el) => { return !expose_(el) } : expose_
   }
 
-  /** Hide cloze/field (and save cloze content PRN) */
-  hide(el: HTMLElement) {
-   this.log('hide', arguments)
+  /** Show cloze/field (and save cloze hint PRN) */
+  self.show = (el: HTMLElement) => {
+    self.log('show', el.tagName)
+     if (!el?.classList.contains('hide')) return
+     el.classList.remove('hide')
+     // Done if additional field
+     if (el.classList.contains('additional-content')) return
+     el.innerHTML = el.dataset.cloze!
+     for (const child of el.querySelectorAll(':scope .cloze, :scope .cloze-inactive'))
+       self.hide(child as HTMLElement)
+   }
+
+   /** Hide cloze/field (and save cloze content PRN) */
+  self.hide = (el: HTMLElement) => {
+   self.log('hide')
     if (!el || el.classList.contains('hide')) return
     el.classList.add('hide')
     // Done if additional field
@@ -400,87 +385,75 @@ FC2 ||= class {
     // Store hint PRN and possible
     if (el.dataset.hint === undefined) {
       if (el.innerHTML === '[...]' || el.classList.contains('cloze-inactive'))
-        el.dataset.hint = this.cfg.prompt
+        el.dataset.hint = self.cfg.prompt
       else
-        el.dataset.hint = "" // This should try to parse hint from content and format?
+        el.dataset.hint = "" // self should try to parse hint from content and format?
     }
     el.innerHTML = el.dataset.hint
   }
 
-  /** Show cloze/field (and save cloze hint PRN) */
-  show(el: HTMLElement) {
-   this.log('show', arguments)
-    if (!el || !el.classList.contains('hide')) return
-    el.classList.remove('hide')
-    // Done if additional field
-    if (el.classList.contains('additional-content')) return
-    el.innerHTML = el.dataset.cloze!
-    for (const child of el.querySelectorAll(':scope .cloze, :scope .cloze-inactive'))
-      this.hide(child as HTMLElement)
+  /** Iterate forward or backward, start by showing current if hidden */
+  self.iter = (fwd: boolean) => {
+    self.log('iter')
+    const els = self.content.querySelectorAll('.cloze');
+    let nxt
+    if (self.current?.classList.contains('hide'))
+      nxt = self.current
+    if (fwd && self.current === els[els.length - 1])
+      nxt = self.cfg.iteration.loop ? els[0] : self.current
+    else if (!fwd && self.current === els[0])
+      nxt = self.cfg.iteration.loop ? els[els.length - 1] : self.current
+    for (let i = 0; !nxt && i < els.length; i++) {
+      if (els[i] === self.current) nxt = els[i + (fwd ? 1 : -1)]
+    }
+    if (nxt !== self.current && self.cfg.iteration.hide)
+      self.hide(self.current)
+    self.show(self.current = nxt)
+    self.scroll_to({ scroll: self.cfg.scroll.iterate, cloze: self.current })
   }
 
   /** Toggle cloze visibility state */
-  toggle_cloze(cloze: HTMLElement) {
-   this.log('toggle_cloze', arguments)
-    cloze.classList.contains('hide') ? this.show(cloze) : this.hide(cloze)
+  self.toggle_cloze = (cloze: HTMLElement) => {
+    self.log('toggle_cloze')
+    cloze.classList.contains('hide') ? self.show(cloze) : self.hide(cloze)
   }
 
   /** Toggle field visibility state */
-  toggle_field(field: HTMLElement) {
-   this.log('toggle_field', arguments)
+  self.toggle_field = (field: HTMLElement) => {
+   self.log('toggle_field')
     field.classList.contains('hide')
       ? field.classList.remove('hide')
       : field.classList.add('hide')
   }
 
   /** Toggle all clozes and fields, sync towards show or force */
-  toggle_all(show: boolean|undefined = undefined) {
-   this.log('toggle_all', arguments)
+  self.toggle_all = (show: boolean|undefined = undefined) => {
+    self.log('toggle_all')
     if (show === true || (
-      show === undefined &&
-      this.content.querySelector('.cloze.hide, .cloze-inactive.hide')
+        (show === undefined) &&
+        self.content.querySelector('.cloze.hide, .cloze-inactive.hide')
     )) {
-      this.content.querySelectorAll('.cloze.hide, .cloze-inactive.hide')
-        .forEach(el => { this.show(el as HTMLElement) })
+      self.content.querySelectorAll('.cloze.hide, .cloze-inactive.hide')
+        .forEach(el => { self.show(el as HTMLElement) })
       return true
     }
     else {
-      this.content.querySelectorAll('.cloze:not(.hide), .cloze-inactive:not(.hide)')
-        .forEach(el => { this.hide(el as HTMLElement) })
+      self.content.querySelectorAll('.cloze:not(.hide), .cloze-inactive:not(.hide)')
+        .forEach(el => { self.hide(el as HTMLElement) })
       return false
     }
   }
 
-  /** Iterate forward or backward, start by showing current if hidden */
-  iter(fwd: boolean) {
-   this.log('iter', arguments)
-    const els = this.content.querySelectorAll('.cloze');
-    let nxt
-    if (this.current?.classList.contains('hide'))
-      nxt = this.current
-    if (fwd && this.current === els[els.length - 1])
-      nxt = this.cfg.iteration.loop ? els[0] : this.current
-    else if (!fwd && this.current === els[0])
-      nxt = this.cfg.iteration.loop ? els[els.length - 1] : this.current
-    for (let i = 0; !nxt && i < els.length; i++) {
-      if (els[i] === this.current) nxt = els[i + (fwd ? 1 : -1)]
-    }
-    if (nxt !== this.current && this.cfg.iteration.hide)
-      this.hide(this.current)
-    this.show(this.current = nxt)
-    this.scroll_to({ scroll: this.cfg.scroll.iterate, cloze: this.current })
-  }
-
   /** Scroll to active clozes or specific cloze */
-  scroll_to(opts: {scroll: string, cloze?: HTMLElement, vp_pos?: number}) {
-   this.log('scroll_to', arguments)
+  self.scroll_to = (opts: {scroll: string, cloze?: HTMLElement, vp_pos?: number}) => {
+   self.log('scroll_to')
 
     // Special case: restore scroll position on back from saved front pos
-    if (!this.cfg.front) {
+    if (!self.cfg.front) {
       const scroll_top = parseFloat(sessionStorage.getItem('fc2_scroll_top')!)
       if (!isNaN(scroll_top)) {
         sessionStorage.removeItem('fc2_scroll_top')
-        this.viewport.scrollTop = scroll_top
+        self.viewport.scrollTop = scroll_top
       }
     }
 
@@ -489,18 +462,18 @@ FC2 ||= class {
     let first, last
     if (opts.cloze) first = last = opts.cloze
     else {
-      const active = this.content.querySelectorAll('.cloze')
+      const active = self.content.querySelectorAll('.cloze')
       first = active[0]
       last = active[active.length - 1]
     }
-    const offset = this.viewport.getBoundingClientRect().top
+    const offset = self.viewport.getBoundingClientRect().top
     const line_height = (style: CSSStyleDeclaration) => {
-     this.log('line_height')
+     self.log('line_height')
       return parseInt(style.height) + parseInt(style.marginTop) + parseInt(style.marginBottom)
         || parseInt(style.lineHeight)
         || 20
     }
-    const vp_height = this.viewport.clientHeight
+    const vp_height = self.viewport.clientHeight
     const cloze_top = (first.getBoundingClientRect().top - offset) - line_height(
       window.getComputedStyle(first?.previousElementSibling || first, ':before')
     ) + 3 // top of first active cloze
@@ -514,7 +487,7 @@ FC2 ||= class {
     if (opts.scroll?.slice(0, 7) === 'context') {
       top = 0 // nothing found assume context it is start of card
       let section, section_seen, cloze_seen
-      const sections = this.content.querySelectorAll('hr, h1, h2, h3, h4, h5, h6, .cloze')
+      const sections = self.content.querySelectorAll('hr, h1, h2, h3, h4, h5, h6, .cloze')
       for (let i = 0; i < sections.length; i++) {
         cloze_seen ||= sections[i].tagName === 'SPAN'
         section_seen ||= sections[i].tagName !== 'SPAN'
@@ -526,9 +499,9 @@ FC2 ||= class {
           ? (section.getBoundingClientRect().bottom - offset)
           : (section.getBoundingClientRect().top - offset) - 5
       } else if (!section_seen) { // Use preceding inactive cloze or 0
-        const all = this.content.querySelectorAll('.cloze, .cloze-inactive')
+        const all = self.content.querySelectorAll('.cloze, .cloze-inactive')
         for (let i = 1; i < all.length; i++) {
-          if (all[i] === this.current) {
+          if (all[i] === self.current) {
             top =  (all[i - 1].getBoundingClientRect().top - offset) - 5
             break
           }
@@ -544,7 +517,7 @@ FC2 ||= class {
         ? y = bottom - vp_height
         : y = top + (bottom - top) / 2 - vp_height / 2
       // won't fit on front, start from top
-      else if (this.cfg.front) y = top
+      else if (self.cfg.front) y = top
       // won't fit on back, get first cloze into view and try to get last as well
       else y = bottom - cloze_top <= vp_height
         ? bottom - vp_height
@@ -556,14 +529,68 @@ FC2 ||= class {
       else if (bottom > vp_height) y = bottom - vp_height
     }
 
-   this.log(`    scrolling ${opts.scroll} to`, this.viewport.scrollTop + y)
-    if (y) this.viewport.scrollTop += y
+   self.log(`    scrolling ${opts.scroll} to`, self.viewport.scrollTop + y)
+    if (y) self.viewport.scrollTop += y
   }
-}
 
-declare var config: Configuration
-declare var __TEMPLATE_SIDE__: 'front'|'back'
-var fc2
-fc2 ||= new FC2(config)
-fc2.load(config, __TEMPLATE_SIDE__)
+  /** Handle document level mouse events */
+  self.mouse = (evt: MouseEvent) => {
+    const target = evt.target as HTMLElement
+    // Cloze click handling
+    if (target.classList!.contains('cloze')
+      || target.classList.contains('cloze-inactive')) {
+      evt.stopPropagation() // To avoid toggling parents
+      if (!self.cfg.iteration.top) self.current = evt.target as HTMLElement
+      self.toggle_cloze(evt.target as HTMLElement)
+      self.scroll_to({ scroll: self.cfg.scroll.click, cloze: evt.target as HTMLElement })
 
+    } // Additional content (header and actual content)
+    else if (target.classList.contains('additional-header'))
+      self.toggle_field(target.nextElementSibling as HTMLElement)
+    else if (target.classList.contains('additional-content'))
+      self.toggle_field(evt.target as HTMLElement)
+    // Toggle all button
+    else if (target.id === 'fc2-show-all-btn') {
+      self.toggle_all()
+        ? self.search.show()
+        : self.search.hide()
+    }
+    // Nav bars
+    else if (target.id === 'nav-toggle-all') {
+      self.toggle_all()
+        ? self.search.show()
+        : self.search.hide()
+    }
+    else if (target.id === 'nav-prev-cloze') self.iter(false)
+    else if (target.id === 'nav-next-cloze') self.iter(true)
+  }
+
+  /** Handle document level keyboard events */
+  self.keyboard = (evt: KeyboardEvent) => {
+    if (evt.key === 'Escape' && !self.search.panel.hidden) {
+      self.search.hide()
+      evt.stopImmediatePropagation()
+      evt.preventDefault()
+    }
+    else if (evt.key === self.cfg.shortcuts.next) self.iter(true)
+    else if (evt.key === self.cfg.shortcuts.previous) self.iter(false)
+    else if (evt.key === self.cfg.shortcuts.toggle_all)
+      self.toggle_all()
+        ? self.search.show()
+        : self.search.hide()
+    else if (evt.key === 'f' && evt.ctrlKey && !evt.metaKey) {
+      if (self.search.panel.hidden) {
+        self.toggle_all(true)
+        self.search.show()
+      } else self.search.field.focus()
+    }
+  }
+
+  /** One-time runs ************************************************************/
+  // Check for backend version
+  if (document.querySelector('.cloze')!['dataset'].ordinal === undefined)
+    return
+  return self
+})(config)
+
+fc2(config, __TEMPLATE_SIDE__)
