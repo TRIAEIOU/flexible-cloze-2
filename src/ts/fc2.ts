@@ -27,10 +27,8 @@ interface Configuration {
     info: boolean       // Information field
   }
   log: undefined|boolean|'error'    // Logging level (`false`, `'error'` or `true`)
-  focus_search: boolean|undefined   // Automatically focus search bar (brings up virtual keyboard)
   front?: boolean                   // Front or back side
 }
-
 
 interface Logger {
   (str: string, args?: any): void
@@ -39,17 +37,17 @@ interface Logger {
 
 interface Searcher {
   (): void
-  wrap(nds: Node[], re: RegExp): HTMLElement[]
-  unwrap(els: HTMLElement[]): HTMLElement[]
-  match(re: RegExp, nd: Node): Node[]
+  clear(): void
+  show(): void
+  hide(): void
+  scroll: HTMLElement
+  content: HTMLElement
   panel: HTMLElement
   field: HTMLInputElement
   button: HTMLElement
   sstr: string
   matches: HTMLElement[]
   index: number
-  show(): void
-  hide(): void
 }
 
 interface FC2 {
@@ -62,8 +60,8 @@ interface FC2 {
   ordinal: number
   (config: Configuration, side: 'front'|'back'): void
   expose(el: HTMLElement): boolean
-  logger(lvl: boolean|undefined|'error'): Logger
-  searcher(): Searcher
+  logger(parent: HTMLElement, lvl: boolean|undefined|'error'): Logger
+  searcher(scroll: HTMLElement, content: HTMLElement): Searcher
   toggle_cloze(cloze: HTMLElement): void
   scroll_to(opts: {scroll: string, cloze?: HTMLElement, vp_pos?: number}): void
   toggle_field(field: HTMLElement): void
@@ -83,12 +81,12 @@ fc2 ||= ((config: Configuration) => {
   /** Default action is side init (done on each card/side) */
   const self = ((config: Configuration, side: 'front'|'back') => {
     // Setup logging
-    self.log = self.logger(config.log)
+    self.log = self.logger(document.getElementById('fc2-scroll-area')!.parentElement!, config.log)
     self.cfg = config
     self.cfg.front = side === 'front'
     self.content = document.getElementById('fc2-content')!
     self.viewport = document.getElementById('fc2-scroll-area')!
-    self.search = self.searcher()
+    self.search = self.searcher(self.viewport, self.content)
     self.current = self.content.querySelector('.cloze')!
 
     self.ordinal ||= parseInt(self.current.dataset.ordinal!)
@@ -156,8 +154,8 @@ fc2 ||= ((config: Configuration) => {
     )
   }) as FC2
 
-  /** Initialize debug element and setup `self.dbg()` depending on config */
-  self.logger = (lvl: boolean|undefined|'error') => {
+  /** Initialize debug element and setup `self.log()` depending on config */
+  self.logger = (parent: HTMLElement, lvl: boolean|undefined|'error') => {
     let log: Logger = () => {}
     if (lvl) {
       if (lvl === true) {
@@ -188,37 +186,37 @@ fc2 ||= ((config: Configuration) => {
       log.element = document.createElement('pre')
       log.element.id = 'fc2-log'
       log.element.hidden = true
-      log.element = document.getElementById('fc2-scroll-area')
-        ?.parentElement?.appendChild(log.element)
+      log.element = parent.appendChild(log.element)
     }
 
     return log
   }
 
-  /** Initializes and returns search function interface, default method is search */
-  self.searcher = () => {
+  /**
+   * Initializes and returns search function interface, default method is search
+   * Credit Julien Grégoire: https://stackoverflow.com/questions/58553501/how-to-highlight-search-text-from-string-of-html-content-without-breaking
+   */
+  self.searcher = (scroll: HTMLElement, content: HTMLElement) => {
     // Setup search function (default method)
     const fn = (() => {
       // Nothing in search field - clear
       if (!fn.field?.value) {
-        fn.matches = fn.unwrap(fn.matches), fn.index = -1
-        fn.sstr = ''
+        fn.clear()
         return
       }
 
-      // No current matches or changed search string, clear old and create new searh
-      if (!fn.matches?.length || fn.field.value !== fn.sstr) {
-        fn.matches = fn.unwrap(fn.matches), fn.index = -1
+      // Changed search string, clear old and create new searh
+      if (fn.field.value !== fn.sstr) {
+        fn.clear()
         fn.sstr = fn.field.value
-        const re = new RegExp(fn.sstr, 'gi')
-        fn.matches = fn.wrap(fn.match(re, self.content), re)
+        highlight(RegExp(fn.sstr.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), 'gi'))
       }
 
       // If we have matches, clear previous highlight, highlight next and scroll
       if (fn.matches?.length) {
         if (fn.index >= 0)
           fn.matches[fn.index].classList.replace('search-match', 'search-matches')
-        fn.index = (fn.index < fn.matches.length)
+        fn.index = fn.index < fn.matches.length - 1
           ? fn.index + 1
           : 0
         fn.matches[fn.index].classList.replace('search-matches', 'search-match')
@@ -226,95 +224,107 @@ fc2 ||= ((config: Configuration) => {
           {behavior: 'auto', block: 'center', inline: 'nearest'}
         )
       }
+
+      function highlight(re: RegExp) {
+        const txt = fn.content.textContent!
+        const rct = fn.scroll.getBoundingClientRect()
+        const stl = getComputedStyle(fn.content)
+        const offset = {
+          top: fn.scroll.scrollTop - rct.top - parseFloat(stl.marginTop),
+          left: fn.scroll.scrollLeft - rct.left - parseFloat(stl.marginLeft)
+        }
+        let match, sstr = fn.field.value
+        const sel = window.getSelection()!
+        sel.removeAllRanges()
+        // to handle multiple result you need to go through all matches
+        while (match = re.exec(txt)) {
+          const itr = nd_itr(fn.content)
+          let index = 0
+          // the result is the text node, so you can iterate and compare the index you are searching to all text nodes length
+          let res = itr.next()
+
+          while (!res.done) {
+            let rng
+            if (match.index >= index && match.index < index + res.value.length) {
+              // when we have the correct node and index we add a range
+              rng = new Range()
+              rng.setStart(res.value, match.index - index)
+            }
+            if (
+              match.index + sstr.length >= index &&
+              match.index + sstr.length < index + res.value.length
+            ) {
+              // when we find the end node, we can set the range end
+              rng.setEnd(res.value, match.index + sstr.length - index)
+              sel.addRange(rng)
+              // this is where we add the divs based on the client rects of the range
+              for (const rect of rng.getClientRects()) {
+                const light = document.createElement('DIV')
+                light.innerText = rng.toString()
+                fn.content.appendChild(light)
+                light.classList.add('search-matches')
+                light.style.top = rect.y + offset.top + 'px'
+                light.style.left = rect.x  + offset.left + 'px'
+                light.style.height = rect.height + 'px'
+                light.style.width = rect.width + 'px'
+                fn.matches.push(light)
+              }
+            }
+            index += res.value.length
+            res = itr.next()
+          }
+        }
+        sel.removeAllRanges()
+      }
+
+      /** Iterate all descendents */
+      function* nd_itr(nd: Node) {
+        for (const cnd of nd.childNodes) {
+          if (cnd.nodeType === Node.TEXT_NODE) yield cnd
+          else yield* nd_itr(cnd)
+        }
+      }
     }) as Searcher
+
+    /** Remove all highlighing */
+    fn.clear = () => {
+      for (const el of fn.matches) el.remove()
+      fn.index = -1, fn.sstr = '', fn.matches = []
+    }
+
+    // Init vars
+    fn.scroll = scroll, fn.content = content
     fn.matches = [], fn.index = -1, fn.sstr = ''
 
     // Setup panel
     const panel = document.createElement('div')
     panel.id = 'fc2-search'
     panel.hidden = true
-    panel.innerHTML = '<input type="text" id="fc2-search-field" placeholder="Search for text"/><div id="fc2-search-btn" tabindex="0" onclick="fc2.search();">SEARCH</div>'
+    panel.innerHTML = '<input type="text" id="fc2-search-field" placeholder="Search for text"/><div id="fc2-search-btn" tabindex="0" onclick="fc2.log(`click!`); fc2.search();">Search</div>'
     fn.panel = document.getElementById('fc2-scroll-area')!.parentElement!.appendChild(panel)
     fn.field = document.getElementById('fc2-search-field') as HTMLInputElement
     fn.field.addEventListener('keydown', (evt) => {
       if (evt.key === 'Enter') {
-        // On mobile we want to hide keyboard and use button
-        if (document.documentElement.classList.contains('mobile'))
-          fn.button.focus()
         fn()
+        // For some reason keyboard input is lost on Desktop so we need to reset it
+        fn.button.focus() // On mobile we want to hide keyboard and use button
+        if (!document.documentElement.classList.contains('mobile')) fn.field.focus()
       } else if (evt.key === 'Escape') fn.hide()
       evt.stopPropagation()
     })
     fn.button = document.getElementById('fc2-search-btn') as HTMLDivElement
 
     // Methods
-    /** Recurse node to find deepest matches */
-    fn.match = (re: RegExp, nd: Node) => {
-      let res: Node[] = []
-      for (const cnd of nd.childNodes) {
-        re.lastIndex = 0 // Reset regex
-        // Text node, if found store
-        if (cnd.nodeType === Node.TEXT_NODE && re.test(cnd.textContent!))
-          res.push(cnd)
-        // HTML node, if found recurse into node
-        else if (cnd.nodeType === Node.ELEMENT_NODE && re.test(cnd['innerText']))
-          res = res.concat(fn.match(re, cnd))
-      }
-      return res
-    }
-
-    /** Wrap matches in text node in `<span class="search-matches">` and return list of matches */
-    fn.wrap = (nds: Node[], re: RegExp) => {
-      if (!nds?.length) return []
-      const res: HTMLElement[] = []
-      for (const nd of nds) {
-        const parent = nd.parentElement!
-        const nxt = nd.nextSibling
-        const txt = parent.removeChild(nd).textContent!
-        let m, last = re.lastIndex = 0
-        while (m = re.exec(txt)){
-          parent.insertBefore(
-            document.createTextNode(txt.slice(last, m!.index)),
-            nxt
-          )
-          const span = document.createElement('span')
-          span.textContent = m[0]
-          span.classList.add('search-matches')
-          res.push(parent.insertBefore(span, nxt))
-          last = re.lastIndex
-        }
-        // Add any trailing text after last match
-        if (last < txt.length) {
-          parent.insertBefore(
-            document.createTextNode(txt.slice(last)),
-            nxt
-          )
-        }
-      }
-      return res
-    }
-
-    /** Unwrap nodes from `<span class="search-matches">` */
-    fn.unwrap = (els: HTMLElement[]) => {
-      if (els) {
-        for (const el of els)
-          el.parentElement?.replaceChild(document.createTextNode(el.textContent!), el)
-      }
-      self.content.normalize()
-      return []
-    }
-
     /** Show search bar */
     fn.show = () => {
-      self.log('searcher.show')
       fn.panel.hidden = false
+      fn.field.select()
       fn.field.focus()
     }
 
     /** Hide search panel */
     fn.hide = () => {
-      self.log('searcher.hide')
-      fn.matches = fn.unwrap(fn.matches), fn.index = -1
+      fn.clear()
       fn.panel.hidden = true
     }
 
@@ -586,11 +596,10 @@ fc2 ||= ((config: Configuration) => {
     }
   }
 
-  /** One-time runs ************************************************************/
   // Check for backend version
-  if (document.querySelector('.cloze')!['dataset'].ordinal === undefined)
-    return
-  return self
+  return document.querySelector('.cloze')!['dataset'].ordinal !== undefined
+    ? self
+    : null
 })(config)
 
 fc2(config, __TEMPLATE_SIDE__)

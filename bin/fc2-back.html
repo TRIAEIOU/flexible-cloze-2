@@ -92,16 +92,15 @@ var config = {
 }
 /*-- CONFIGURATION END --*/
 /*-- FUNCTIONALITY BEGIN --*/
-"use strict";
 var fc2;
 fc2 ||= ((config) => {
     const self = ((config, side) => {
-        self.log = self.logger(config.log);
+        self.log = self.logger(document.getElementById('fc2-scroll-area').parentElement, config.log);
         self.cfg = config;
         self.cfg.front = side === 'front';
         self.content = document.getElementById('fc2-content');
         self.viewport = document.getElementById('fc2-scroll-area');
-        self.search = self.searcher();
+        self.search = self.searcher(self.viewport, self.content);
         self.current = self.content.querySelector('.cloze');
         self.ordinal ||= parseInt(self.current.dataset.ordinal);
         self.expose = self.generate_expose();
@@ -145,7 +144,7 @@ fc2 ||= ((config) => {
         document.getElementById('fc2-content-placeholder').style.display = 'none';
         window.requestAnimationFrame(() => window.requestAnimationFrame(() => window.requestAnimationFrame(() => self.scroll_to({ scroll: self.cfg.scroll.initial }))));
     });
-    self.logger = (lvl) => {
+    self.logger = (parent, lvl) => {
         let log = () => { };
         if (lvl) {
             if (lvl === true) {
@@ -180,102 +179,114 @@ fc2 ||= ((config) => {
             log.element = document.createElement('pre');
             log.element.id = 'fc2-log';
             log.element.hidden = true;
-            log.element = document.getElementById('fc2-scroll-area')
-                ?.parentElement?.appendChild(log.element);
+            log.element = parent.appendChild(log.element);
         }
         return log;
     };
-    self.searcher = () => {
+    self.searcher = (scroll, content) => {
         const fn = (() => {
             if (!fn.field?.value) {
-                fn.matches = fn.unwrap(fn.matches), fn.index = -1;
-                fn.sstr = '';
+                fn.clear();
                 return;
             }
-            if (!fn.matches?.length || fn.field.value !== fn.sstr) {
-                fn.matches = fn.unwrap(fn.matches), fn.index = -1;
+            if (fn.field.value !== fn.sstr) {
+                fn.clear();
                 fn.sstr = fn.field.value;
-                const re = new RegExp(fn.sstr, 'gi');
-                fn.matches = fn.wrap(fn.match(re, self.content), re);
+                highlight(RegExp(fn.sstr.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), 'gi'));
             }
             if (fn.matches?.length) {
                 if (fn.index >= 0)
                     fn.matches[fn.index].classList.replace('search-match', 'search-matches');
-                fn.index = (fn.index < fn.matches.length)
+                fn.index = fn.index < fn.matches.length - 1
                     ? fn.index + 1
                     : 0;
                 fn.matches[fn.index].classList.replace('search-matches', 'search-match');
                 fn.matches[fn.index].scrollIntoView({ behavior: 'auto', block: 'center', inline: 'nearest' });
             }
+            function highlight(re) {
+                const txt = fn.content.textContent;
+                const rct = fn.scroll.getBoundingClientRect();
+                const stl = getComputedStyle(fn.content);
+                const offset = {
+                    top: fn.scroll.scrollTop - rct.top - parseFloat(stl.marginTop),
+                    left: fn.scroll.scrollLeft - rct.left - parseFloat(stl.marginLeft)
+                };
+                let match, sstr = fn.field.value;
+                const sel = window.getSelection();
+                sel.removeAllRanges();
+                while (match = re.exec(txt)) {
+                    const itr = nd_itr(fn.content);
+                    let index = 0;
+                    let res = itr.next();
+                    while (!res.done) {
+                        let rng;
+                        if (match.index >= index && match.index < index + res.value.length) {
+                            rng = new Range();
+                            rng.setStart(res.value, match.index - index);
+                        }
+                        if (match.index + sstr.length >= index &&
+                            match.index + sstr.length < index + res.value.length) {
+                            rng.setEnd(res.value, match.index + sstr.length - index);
+                            sel.addRange(rng);
+                            for (const rect of rng.getClientRects()) {
+                                const light = document.createElement('DIV');
+                                light.innerText = rng.toString();
+                                fn.content.appendChild(light);
+                                light.classList.add('search-matches');
+                                light.style.top = rect.y + offset.top + 'px';
+                                light.style.left = rect.x + offset.left + 'px';
+                                light.style.height = rect.height + 'px';
+                                light.style.width = rect.width + 'px';
+                                fn.matches.push(light);
+                            }
+                        }
+                        index += res.value.length;
+                        res = itr.next();
+                    }
+                }
+                sel.removeAllRanges();
+            }
+            function* nd_itr(nd) {
+                for (const cnd of nd.childNodes) {
+                    if (cnd.nodeType === Node.TEXT_NODE)
+                        yield cnd;
+                    else
+                        yield* nd_itr(cnd);
+                }
+            }
         });
+        fn.clear = () => {
+            for (const el of fn.matches)
+                el.remove();
+            fn.index = -1, fn.sstr = '', fn.matches = [];
+        };
+        fn.scroll = scroll, fn.content = content;
         fn.matches = [], fn.index = -1, fn.sstr = '';
         const panel = document.createElement('div');
         panel.id = 'fc2-search';
         panel.hidden = true;
-        panel.innerHTML = '<input type="text" id="fc2-search-field" placeholder="Search for text"/><div id="fc2-search-btn" tabindex="0" onclick="fc2.search();">SEARCH</div>';
+        panel.innerHTML = '<input type="text" id="fc2-search-field" placeholder="Search for text"/><div id="fc2-search-btn" tabindex="0" onclick="fc2.log(`click!`); fc2.search();">Search</div>';
         fn.panel = document.getElementById('fc2-scroll-area').parentElement.appendChild(panel);
         fn.field = document.getElementById('fc2-search-field');
         fn.field.addEventListener('keydown', (evt) => {
             if (evt.key === 'Enter') {
-                if (document.documentElement.classList.contains('mobile'))
-                    fn.button.focus();
                 fn();
+                fn.button.focus();
+                if (!document.documentElement.classList.contains('mobile'))
+                    fn.field.focus();
             }
             else if (evt.key === 'Escape')
                 fn.hide();
             evt.stopPropagation();
         });
         fn.button = document.getElementById('fc2-search-btn');
-        fn.match = (re, nd) => {
-            let res = [];
-            for (const cnd of nd.childNodes) {
-                re.lastIndex = 0;
-                if (cnd.nodeType === Node.TEXT_NODE && re.test(cnd.textContent))
-                    res.push(cnd);
-                else if (cnd.nodeType === Node.ELEMENT_NODE && re.test(cnd['innerText']))
-                    res = res.concat(fn.match(re, cnd));
-            }
-            return res;
-        };
-        fn.wrap = (nds, re) => {
-            if (!nds?.length)
-                return [];
-            const res = [];
-            for (const nd of nds) {
-                const parent = nd.parentElement;
-                const nxt = nd.nextSibling;
-                const txt = parent.removeChild(nd).textContent;
-                let m, last = re.lastIndex = 0;
-                while (m = re.exec(txt)) {
-                    parent.insertBefore(document.createTextNode(txt.slice(last, m.index)), nxt);
-                    const span = document.createElement('span');
-                    span.textContent = m[0];
-                    span.classList.add('search-matches');
-                    res.push(parent.insertBefore(span, nxt));
-                    last = re.lastIndex;
-                }
-                if (last < txt.length) {
-                    parent.insertBefore(document.createTextNode(txt.slice(last)), nxt);
-                }
-            }
-            return res;
-        };
-        fn.unwrap = (els) => {
-            if (els) {
-                for (const el of els)
-                    el.parentElement?.replaceChild(document.createTextNode(el.textContent), el);
-            }
-            self.content.normalize();
-            return [];
-        };
         fn.show = () => {
-            self.log('searcher.show');
             fn.panel.hidden = false;
+            fn.field.select();
             fn.field.focus();
         };
         fn.hide = () => {
-            self.log('searcher.hide');
-            fn.matches = fn.unwrap(fn.matches), fn.index = -1;
+            fn.clear();
             fn.panel.hidden = true;
         };
         return fn;
@@ -530,11 +541,12 @@ fc2 ||= ((config) => {
                 self.search.field.focus();
         }
     };
-    if (document.querySelector('.cloze')['dataset'].ordinal === undefined)
-        return;
-    return self;
+    return document.querySelector('.cloze')['dataset'].ordinal !== undefined
+        ? self
+        : null;
 })(config);
 fc2(config, 'back');
+export {};
 /*-- FUNCTIONALITY END --*/
 </script>
 

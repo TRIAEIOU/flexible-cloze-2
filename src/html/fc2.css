@@ -1,40 +1,40 @@
 /*-- FUNCTIONALITY BEGIN --*/
-.card
-{  position: fixed !important; top: 0; bottom: 0; left: 0; right: 0; display: flex; }
+.card {position: fixed !important; top: 0; bottom: 0; left: 0; right: 0; display: flex;}
 
-#qa, #content
-{ flex: 1 1; display: flex; flex-flow: column nowrap; overflow: auto; margin: 0px; }
+#qa, #content {flex: 1 1; display: flex; flex-flow: column nowrap; overflow: auto; margin: 0px;}
 
-#fc2-title, #title { flex: 0 0; }
-#fc2-scroll-area { flex: 1 1; display: flex; flex-flow: column nowrap; overflow: auto; }
-    #fc2-content { flex: 1 1; display: none; }
-    #fc2-content-placeholder { flex: 1 1; margin: 10px; }
-    #fc2-additional { flex: 0 0; z-index: 2; display: flex; flex-flow: column nowrap; }
-        .additional-header { cursor: pointer; display: block; }
-        .additional-content { display: block; }
-        .additional-content.hide { display: none; }
-#fc2-search {display: flex; flex-flow: row nowrap; margin: 2px; z-index: 10; border-top: 1px solid var(--fg); padding: 2px;}
+#fc2-title, #title {flex: 0 0; }
+#fc2-scroll-area {flex: 1 1; display: flex; flex-flow: column nowrap; overflow: auto;}
+    #fc2-content {flex: 1 1; display: none; position: relative}
+    #fc2-content-placeholder {flex: 1 1;}
+    #fc2-additional {flex: 0 0; display: flex; flex-flow: column nowrap;}
+        .additional-header {cursor: pointer; display: block;}
+        .additional-content {display: block;}
+        .additional-content.hide {display: none;}
+#fc2-search {z-index: 3; display: flex; flex-flow: row nowrap; margin: 2px; border-top: 1px solid var(--fg); padding: 2px;}
 #fc2-search[hidden] {display: none;}
     #fc2-search-field {flex: 1 1; height: 20px;}
-    #fc2-search-btn {flex: 0 0; margin-left: 5px; padding: 2px; border: 1px solid var(--fg); font-size: 8px; vertical-align: middle; background-color: var(--button-bg);}
+    #fc2-search-btn {flex: 0 0; margin-left: 5px; padding-left: 2px; padding-right: 2px; padding-top: 1px; padding-bottom: 1px; border: 1px solid var(--fg); border-radius: 5px; font-size: 12px; line-height: 20px; background-color: var(--button-bg);}
     #fc2-search-btn:active {background-color: var(--fg-faint);}
-#fc2-log { flex: initial; display: flex; flex-flow: column nowrap; height: 50px; font-size: 10px;
-background-color: #ff8886; color: #000000; word-wrap: break-word; white-space: pre-wrap;
-overflow: auto; margin: 0px;}
+#fc2-log {z-index: 3; flex: initial; display: flex; flex-flow: column nowrap; height: 50px;
+    font-size: 10px; background-color: #ff8886; color: #000000; word-wrap: break-word;
+    white-space: pre-wrap; overflow: auto; margin: 0px;}
 #fc2-log[hidden] {display: none;}
-#fc2-show-all { flex: 0 0; cursor: pointer; }
+#fc2-show-all {z-index: 3; flex: 0 0; cursor: pointer;}
 
-#fc2-footer { flex: 0 0; z-index: 2; }
-	#fc2-legend-footer { display: flex; flex-flow: row nowrap; }
+#fc2-footer {z-index: 3; flex: 0 0;}
+	#fc2-legend-footer {display: flex; flex-flow: row nowrap;}
 		.fc2-legend-entry, #fc2-legent-entry {flex: 1 1;}
-	#fc2-flag-footer { display: flex; flex-flow: row nowrap }
-		.fc2-flag { flex: 1 1 100%; }
+	#fc2-flag-footer {display: flex; flex-flow: row nowrap}
+		.fc2-flag {flex: 1 1 100%;}
 
-#nav-toggle-all { position: fixed; top: 0; left: 0; right: 0;  z-index: 1; }
-#nav-prev-cloze { position: fixed;  top: 0; left: 0; bottom: 0;  z-index: 1; }
-#nav-next-cloze { position: fixed;  top: 0; right: 0; bottom: 0;  z-index: 1; }
-.search-matches {background-color: #768A95; padding: 3px; margin: 3px;}
-.search-match {background-color: #465A65; color: white; padding: 3px; margin: 3px;}
+#nav-toggle-all {position: fixed; z-index: 2; top: 0; left: 0; right: 0;}
+#nav-prev-cloze {position: fixed; z-index: 2; top: 0; left: 0; bottom: 0;}
+#nav-next-cloze {position: fixed; z-index: 2; top: 0; right: 0; bottom: 0;}
+.search-matches {position: absolute; z-index: 1; background-color: #768A95;
+    color: black; vertical-align: top;}
+.search-match {position: absolute; z-index: 1; background-color: #465A65;
+    color: white; vertical-align: top;}
 /*-- FUNCTIONALITY END --*/
 
 /*-- CONFIGURATION BEGIN --*/
