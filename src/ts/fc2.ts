@@ -58,7 +58,7 @@ interface FC2 {
   viewport: HTMLElement
   current: HTMLElement
   ordinal: number
-  (config: Configuration, side: 'front'|'back'): void
+  load(config: Configuration, side: 'front'|'back'): void
   expose(el: HTMLElement): boolean
   logger(parent: HTMLElement, lvl: boolean|undefined|'error'): Logger
   searcher(scroll: HTMLElement, content: HTMLElement): Searcher
@@ -77,9 +77,11 @@ interface FC2 {
 declare var config: Configuration
 declare var __TEMPLATE_SIDE__: 'front'|'back'
 var fc2
-fc2 ||= (() => {
+if (!fc2) {
   /** Default action is side init (done on each card/side) */
-  const self = ((config: Configuration, side: 'front'|'back') => {
+  const self = {} as FC2
+
+  self.load = (config: Configuration, side: 'front'|'back') => {
     // Setup logging
     self.log = self.logger(document.getElementById('fc2-scroll-area')!.parentElement!, config.log)
     self.cfg = config
@@ -152,7 +154,7 @@ fc2 ||= (() => {
         )
       )
     )
-  }) as FC2
+  }
 
   /** Initialize debug element and setup `self.log()` depending on config */
   self.logger = (parent: HTMLElement, lvl: boolean|undefined|'error') => {
@@ -603,9 +605,8 @@ fc2 ||= (() => {
   }
 
   // Check for backend version
-  return document.querySelector('.cloze')!['dataset'].ordinal !== undefined
+  fc2 = document.querySelector('.cloze')!['dataset'].ordinal !== undefined
     ? self
-    : null
-})()
-
-fc2(config, __TEMPLATE_SIDE__)
+    : () => {}
+}
+fc2.load(config, __TEMPLATE_SIDE__)
