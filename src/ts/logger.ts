@@ -1,31 +1,24 @@
 /**
- * logger(parent_selector: string, lvl:boolean|undefined|'error')
+ * logger(element: HTMLElement, lvl:boolean|undefined|'error')
  * returns static instance of logger.
  */
+interface GetLogger {
+  (element: HTMLElement, lvl: boolean|undefined|'error'): Logger
+}
 interface Logger {
   (str: string, args?: any): void
   element: HTMLElement
 }
 
 // Avoid double definitions
-var logger
+var logger: GetLogger
+// @ts-ignore just typing above
 if (!logger) { // Keep in isolated scope to avoid namespace polution
-  console.log('creating logger')
-  function fn(parent: string, lvl: boolean|undefined|'error') {
-    // Get existing output element or create new one
-    let elm = document.getElementById('log-panel')
-    if (!elm) {
-      elm = document.createElement('pre')
-      elm.id = 'log-panel'
-      elm.hidden = true
-      elm = (document.querySelector(parent) || document.body).appendChild(elm)
-    }
+  function fn(element: HTMLElement, lvl: boolean|undefined|'error') {
 
-    // Return any existing instance (with updated output element)
-    if (fn['self']) {
-      fn['self'].element = elm
-      return fn['self']
-    }
+    // Initialize provided element
+    element.id = 'log-panel'
+    element.hidden = true
 
     // Default log function is noop
     let log: Logger = ((_) => {}) as Logger
@@ -33,7 +26,7 @@ if (!logger) { // Keep in isolated scope to avoid namespace polution
     // Any debug level
     if (lvl) {
       // Store element
-      log.element = elm
+      log.element = element
       // If full debug replace default noop with actual output
       if (lvl === true) {
         log = ((str: string, args: any) => {
@@ -63,7 +56,6 @@ if (!logger) { // Keep in isolated scope to avoid namespace polution
 
     // Return newly stored instance
     return fn['self'] = log
-
   }
   logger = fn
 }
