@@ -59,3 +59,5 @@ if (!logger) { // Keep in isolated scope to avoid namespace polution
   }
   logger = fn
 }
+
+export Logger

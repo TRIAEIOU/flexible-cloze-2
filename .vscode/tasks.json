@@ -36,7 +36,7 @@
         {
             "label": "Build ts",
             "type": "shell",
-            "command": "Write-Host -NoNewline 'Building ts...'; tsc; Write-Host ' done'",
+            "command": "Write-Host -NoNewline 'Building ts...'; rollup -c; Write-Host ' done'",
             "options": {
                 "cwd": "${workspaceFolder}"
             },

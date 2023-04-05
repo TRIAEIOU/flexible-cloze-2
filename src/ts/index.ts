@@ -1,4 +1,5 @@
-/// <reference path="./logger.ts" />
+import {Logger} from './logger'
+
 interface Configuration {
   prompt: string          // Prompt when no hint
   hint: string            // %h is replaced with hint text
@@ -31,25 +32,9 @@ interface Configuration {
   front?: boolean                   // Front or back side
 }
 
-interface Searcher {
-  (): void
-  highlight(re: RegExp): void
-  clear(): void
-  show(): void
-  hide(): void
-  scroll: HTMLElement
-  content: HTMLElement
-  panel: HTMLElement
-  field: HTMLInputElement
-  button: HTMLElement
-  sstr: string
-  matches: HTMLElement[]
-  index: number
-}
-
 // Avoid multiple declarations
 var FC2
-if (!FC2 && document.querySelector('.cloze')!['dataset'].ordinal !== undefined) {
+if (!FC2) {
   FC2 = class {
     cfg!: Configuration
     log!: Logger
