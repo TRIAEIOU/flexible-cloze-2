@@ -1,3 +1,4 @@
+/// <reference path="./logger.ts" />
 interface Configuration {
   prompt: string          // Prompt when no hint
   hint: string            // %h is replaced with hint text
@@ -30,11 +31,6 @@ interface Configuration {
   front?: boolean                   // Front or back side
 }
 
-interface Logger {
-  (str: string, args?: any): void
-  element?: HTMLElement|null
-}
-
 interface Searcher {
   (): void
   highlight(re: RegExp): void
@@ -51,33 +47,10 @@ interface Searcher {
   index: number
 }
 
-interface FC2 {
-  cfg: Configuration
-  log: Logger
-  search: Searcher
-  expose: (el: HTMLElement) => boolean
-  content: HTMLElement
-  viewport: HTMLElement
-  current: HTMLElement
-  ordinal: number
-  load(config: Configuration, side: 'front'|'back'): void
-  logger(parent: HTMLElement, lvl: boolean|undefined|'error'): Logger
-  searcher(scroll: HTMLElement, content: HTMLElement): Searcher
-  toggle_cloze(cloze: HTMLElement): void
-  scroll_to(opts: {scroll: string, cloze?: HTMLElement, vp_pos?: number}): void
-  toggle_field(field: HTMLElement): void
-  toggle_all(show?: boolean): boolean
-  iter(fwd: boolean): void
-  generate_expose(): (el: HTMLElement) => boolean
-  show(el: HTMLElement): void
-  hide(el: HTMLElement): void
-  mouse(evt: MouseEvent): void
-  keyboard(evt: KeyboardEvent): void
-}
-
-var fc2
-if (!fc2 && document.querySelector('.cloze')!['dataset'].ordinal !== undefined) {
-  fc2 = class {
+// Avoid multiple declarations
+var FC2
+if (!FC2 && document.querySelector('.cloze')!['dataset'].ordinal !== undefined) {
+  FC2 = class {
     cfg!: Configuration
     log!: Logger
     search!: Searcher
@@ -87,54 +60,28 @@ if (!fc2 && document.querySelector('.cloze')!['dataset'].ordinal !== undefined) 
     current!: HTMLElement
     ordinal!: number
 
-    /** Initialize debug element and setup `this.log()` depending on config */
-    logger(parent: HTMLElement, lvl: boolean|undefined|'error') {
-      let log: Logger = () => {}
-      if (lvl) {
-        if (lvl === true) {
-          log = (str: string, args: any) => {
-            if (log.element!.hidden) log.element!.hidden = false
-            let msg = str
-            if (typeof(args) === 'object') {
-              for (let i = 0; i < args.length; i++) {
-                msg += i ? ', ' : ': '
-                if (typeof (args[i]) == 'object') msg += JSON.stringify(args[i])
-                else if (typeof (args[i]) == 'string') msg += `"${args[i]}"`
-                else msg += args[i]
-              }
-            } else if (args) msg += `: ${args}`
-            log.element!.innerText += `${msg}\n`
-            log.element!.scrollTop = log.element!.scrollHeight
-          }
-        }
-
-        // Capture errors
-        window.onerror = (emsg, _src, _ln, _col, err) => {
-          if (log.element!.hidden) log.element!.hidden = false
-          log.element!.innerText += `error ${emsg}:\n${err!.stack}\n`
-          log.element!.scrollTop = log.element!.scrollHeight
-          return true
-        }
-
-        log.element = document.createElement('pre')
-        log.element.id = 'log-panel'
-        log.element.hidden = true
-        log.element = parent.appendChild(log.element)
-      }
-
-      return log
-    }
-
-    /** Default action is side init (done on each card/side) */
+    /** Load/parse (done on each card/side) */
     load(config: Configuration, side: 'front'|'back') {
+      this.viewport = document.getElementById('fc2-scroll-area')!
+
       // Setup logging
-      this.log = this.logger(document.getElementById('fc2-scroll-area')!.parentElement!, config.log)
+      let elm = document.getElementById('log-panel')
+      if (!elm) {
+        elm = document.createElement('pre')
+        elm.id = 'log-panel'
+        elm.hidden = true
+        elm = this.viewport.parentElement!.appendChild(elm)
+      }
+      this.log = logger(elm, config.log)
+
       this.cfg = config
       this.cfg.front = side === 'front'
       this.content = document.getElementById('fc2-content')!
-      this.viewport = document.getElementById('fc2-scroll-area')!
-      this.search = this.searcher(this.viewport, this.content)
       this.current = this.content.querySelector('.cloze')!
+      // Check backend version
+      if (this.current.dataset.ordinal === undefined) return
+
+      this.search = this.searcher(this.viewport, this.content)
 
       this.ordinal ||= parseInt(this.current.dataset.ordinal!)
       this.expose = this.generate_expose()
@@ -615,4 +562,6 @@ if (!fc2 && document.querySelector('.cloze')!['dataset'].ordinal !== undefined) 
 
 declare var config: Configuration
 declare var __TEMPLATE_SIDE__: 'front'|'back'
+var fc2
+fc2 ||= new FC2
 fc2.load(config, __TEMPLATE_SIDE__)
