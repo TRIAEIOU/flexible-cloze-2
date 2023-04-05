@@ -77,7 +77,7 @@ interface FC2 {
 declare var config: Configuration
 declare var __TEMPLATE_SIDE__: 'front'|'back'
 var fc2
-fc2 ||= ((config: Configuration) => {
+fc2 ||= (() => {
   /** Default action is side init (done on each card/side) */
   const self = ((config: Configuration, side: 'front'|'back') => {
     // Setup logging
@@ -184,7 +184,7 @@ fc2 ||= ((config: Configuration) => {
       }
 
       log.element = document.createElement('pre')
-      log.element.id = 'fc2-log'
+      log.element.id = 'log-panel'
       log.element.hidden = true
       log.element = parent.appendChild(log.element)
     }
@@ -199,6 +199,7 @@ fc2 ||= ((config: Configuration) => {
   self.searcher = (scroll: HTMLElement, content: HTMLElement) => {
     // Setup search function (default method)
     const fn = (() => {
+      self.log('searcher()')
       // Nothing in search field - clear
       if (!fn.field?.value) {
         fn.clear()
@@ -226,6 +227,7 @@ fc2 ||= ((config: Configuration) => {
       }
 
       function highlight(re: RegExp) {
+        self.log('searcher.highlight()')
         const txt = fn.content.textContent!
         const rct = fn.scroll.getBoundingClientRect()
         const stl = getComputedStyle(fn.content)
@@ -288,6 +290,7 @@ fc2 ||= ((config: Configuration) => {
 
     /** Remove all highlighing */
     fn.clear = () => {
+      self.log('searcher.clear()')
       for (const el of fn.matches) el.remove()
       fn.index = -1, fn.sstr = '', fn.matches = []
     }
@@ -298,11 +301,11 @@ fc2 ||= ((config: Configuration) => {
 
     // Setup panel
     const panel = document.createElement('div')
-    panel.id = 'fc2-search'
+    panel.id = 'search-panel'
     panel.hidden = true
-    panel.innerHTML = '<input type="text" id="fc2-search-field" placeholder="Search for text"/><div id="fc2-search-btn" tabindex="0" onclick="fc2.log(`click!`); fc2.search();">Search</div>'
-    fn.panel = document.getElementById('fc2-scroll-area')!.parentElement!.appendChild(panel)
-    fn.field = document.getElementById('fc2-search-field') as HTMLInputElement
+    panel.innerHTML = '<input type="text" id="search-field" placeholder="Search for text"/><div id="search-btn" tabindex="0">Search</div>'
+    fn.panel = scroll.parentElement!.appendChild(panel)
+    fn.field = document.getElementById('search-field') as HTMLInputElement
     fn.field.addEventListener('keydown', (evt) => {
       if (evt.key === 'Enter') {
         fn()
@@ -312,11 +315,13 @@ fc2 ||= ((config: Configuration) => {
       } else if (evt.key === 'Escape') fn.hide()
       evt.stopPropagation()
     })
-    fn.button = document.getElementById('fc2-search-btn') as HTMLDivElement
+    fn.button = document.getElementById('search-btn') as HTMLDivElement
+    fn.button.onclick = fn
 
     // Methods
     /** Show search bar */
     fn.show = () => {
+      self.log('searcher.show()')
       fn.panel.hidden = false
       fn.field.select()
       fn.field.focus()
@@ -324,6 +329,7 @@ fc2 ||= ((config: Configuration) => {
 
     /** Hide search panel */
     fn.hide = () => {
+      self.log('searcher.hide()')
       fn.clear()
       fn.panel.hidden = true
     }
@@ -600,6 +606,6 @@ fc2 ||= ((config: Configuration) => {
   return document.querySelector('.cloze')!['dataset'].ordinal !== undefined
     ? self
     : null
-})(config)
+})()
 
 fc2(config, __TEMPLATE_SIDE__)

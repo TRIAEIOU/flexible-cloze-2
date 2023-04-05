@@ -1,5 +1,6 @@
+"use strict";
 var fc2;
-fc2 ||= ((config) => {
+fc2 ||= (() => {
     const self = ((config, side) => {
         self.log = self.logger(document.getElementById('fc2-scroll-area').parentElement, config.log);
         self.cfg = config;
@@ -83,7 +84,7 @@ fc2 ||= ((config) => {
                 return true;
             };
             log.element = document.createElement('pre');
-            log.element.id = 'fc2-log';
+            log.element.id = 'log-panel';
             log.element.hidden = true;
             log.element = parent.appendChild(log.element);
         }
@@ -91,6 +92,7 @@ fc2 ||= ((config) => {
     };
     self.searcher = (scroll, content) => {
         const fn = (() => {
+            self.log('searcher()');
             if (!fn.field?.value) {
                 fn.clear();
                 return;
@@ -110,6 +112,7 @@ fc2 ||= ((config) => {
                 fn.matches[fn.index].scrollIntoView({ behavior: 'auto', block: 'center', inline: 'nearest' });
             }
             function highlight(re) {
+                self.log('searcher.highlight()');
                 const txt = fn.content.textContent;
                 const rct = fn.scroll.getBoundingClientRect();
                 const stl = getComputedStyle(fn.content);
@@ -162,6 +165,7 @@ fc2 ||= ((config) => {
             }
         });
         fn.clear = () => {
+            self.log('searcher.clear()');
             for (const el of fn.matches)
                 el.remove();
             fn.index = -1, fn.sstr = '', fn.matches = [];
@@ -169,11 +173,11 @@ fc2 ||= ((config) => {
         fn.scroll = scroll, fn.content = content;
         fn.matches = [], fn.index = -1, fn.sstr = '';
         const panel = document.createElement('div');
-        panel.id = 'fc2-search';
+        panel.id = 'search-panel';
         panel.hidden = true;
-        panel.innerHTML = '<input type="text" id="fc2-search-field" placeholder="Search for text"/><div id="fc2-search-btn" tabindex="0" onclick="fc2.log(`click!`); fc2.search();">Search</div>';
-        fn.panel = document.getElementById('fc2-scroll-area').parentElement.appendChild(panel);
-        fn.field = document.getElementById('fc2-search-field');
+        panel.innerHTML = '<input type="text" id="search-field" placeholder="Search for text"/><div id="search-btn" tabindex="0">Search</div>';
+        fn.panel = scroll.parentElement.appendChild(panel);
+        fn.field = document.getElementById('search-field');
         fn.field.addEventListener('keydown', (evt) => {
             if (evt.key === 'Enter') {
                 fn();
@@ -185,13 +189,16 @@ fc2 ||= ((config) => {
                 fn.hide();
             evt.stopPropagation();
         });
-        fn.button = document.getElementById('fc2-search-btn');
+        fn.button = document.getElementById('search-btn');
+        fn.button.onclick = fn;
         fn.show = () => {
+            self.log('searcher.show()');
             fn.panel.hidden = false;
             fn.field.select();
             fn.field.focus();
         };
         fn.hide = () => {
+            self.log('searcher.hide()');
             fn.clear();
             fn.panel.hidden = true;
         };
@@ -450,6 +457,5 @@ fc2 ||= ((config) => {
     return document.querySelector('.cloze')['dataset'].ordinal !== undefined
         ? self
         : null;
-})(config);
+})();
 fc2(config, __TEMPLATE_SIDE__);
-export {};
