@@ -42,11 +42,30 @@ var fc2
     }
 
     class Searcher {
-        constructor(scroll, content, logger = (() => { })) {
+        constructor(element, logger = (() => { })) {
             logger('searcher.constructor()');
-            this.scroll = scroll;
-            this.content = content;
-            this.log = logger;
+            this.element = element, this.log = logger;
+            this.matches = [], this.index = -1, this.sstr = '';
+            const panel = document.createElement('div');
+            panel.id = 'search-panel';
+            panel.hidden = true;
+            panel.innerHTML = '<input type="text" id="search-field" placeholder="Search for text"/><div id="search-btn" tabindex="0">Search</div>';
+            this.panel = element.parentElement.insertBefore(panel, this.element.nextElementSibling);
+            this.field = document.getElementById('search-field');
+            this.field.addEventListener('keydown', (evt) => {
+                if (evt.key === 'Enter') {
+                    this.search();
+                    this.button.focus();
+                    if (!document.documentElement.classList.contains('mobile'))
+                        this.field.focus();
+                }
+                else if (evt.key === 'Escape')
+                    return;
+                evt.stopPropagation();
+            });
+            this.button = document.getElementById('search-btn');
+            this.button.onclick = (evt) => { this.search(); };
+            this.field.onfocus = (evt) => { this.field.select(); };
         }
         search() {
             this.log('searcher.search');
@@ -71,18 +90,18 @@ var fc2
         }
         highlight(re) {
             this.log('searcher.highlight');
-            const txt = this.content.textContent;
-            const rct = this.scroll.getBoundingClientRect();
-            const stl = getComputedStyle(this.content);
+            const txt = this.element.textContent;
+            const rct = this.element.getBoundingClientRect();
+            const stl = getComputedStyle(this.element);
             const offset = {
-                top: this.scroll.scrollTop - rct.top - parseFloat(stl.marginTop),
-                left: this.scroll.scrollLeft - rct.left - parseFloat(stl.marginLeft)
+                top: this.element.scrollTop - rct.top - parseFloat(stl.marginTop),
+                left: this.element.scrollLeft - rct.left - parseFloat(stl.marginLeft)
             };
-            let match, sstr = this.field.value;
             const sel = window.getSelection();
             sel.removeAllRanges();
+            let match, sstr = this.field.value;
             while (match = re.exec(txt)) {
-                const itr = nd_itr(this.content);
+                const itr = nd_itr(this.element);
                 let index = 0;
                 let res = itr.next();
                 while (!res.done) {
@@ -92,13 +111,14 @@ var fc2
                         rng.setStart(res.value, match.index - index);
                     }
                     if (match.index + sstr.length >= index &&
-                        match.index + sstr.length < index + res.value.length) {
+                        match.index + sstr.length < index + res.value.length &&
+                        rng) {
                         rng.setEnd(res.value, match.index + sstr.length - index);
                         sel.addRange(rng);
                         for (const rect of rng.getClientRects()) {
                             const light = document.createElement('DIV');
                             light.innerText = rng.toString();
-                            this.content.appendChild(light);
+                            this.element.appendChild(light);
                             light.classList.add('search-matches');
                             light.style.top = rect.y + offset.top + 'px';
                             light.style.left = rect.x + offset.left + 'px';
@@ -127,20 +147,20 @@ var fc2
                 el.remove();
             this.index = -1, this.sstr = '', this.matches = [];
         }
-        show() {
-            this.log('searcher.show');
-            this.panel.hidden = false;
-            this.field.select();
+        focus() {
+            this.log('searcher.focus');
+            this.hidden = false;
             this.field.focus();
         }
-        hide() {
-            this.log('searcher.hide');
-            this.clear();
-            this.panel.hidden = true;
-        }
+        get hidden() { return this.panel.hidden; }
+        set hidden(hide) { if (this.panel.hidden = hide)
+            this.clear(); }
     }
 
     class FC2 {
+        constructor() {
+            this.listeners = false;
+        }
         load(config, side) {
             this.viewport = document.getElementById('fc2-scroll-area');
             let elm = document.getElementById('log-panel');
@@ -157,7 +177,7 @@ var fc2
             this.current = this.content.querySelector('.cloze');
             if (this.current.dataset.ordinal === undefined)
                 return;
-            this.search = new Searcher(this.viewport, this.content, this.log);
+            this.search = new Searcher(this.viewport, this.log);
             this.ordinal || (this.ordinal = parseInt(this.current.dataset.ordinal));
             this.expose = this.generate_expose();
             this.content.parentElement.classList.remove(this.cfg.front ? 'back' : 'front');
@@ -189,15 +209,18 @@ var fc2
             }));
             if (!this.cfg.show.additional)
                 this.viewport.querySelectorAll(':not(#info).additional-content')
-                    .forEach(nd => this.hide(nd));
+                    .forEach(nd => nd.hidden = true);
             if (!this.cfg.show.info)
-                this.hide(document.querySelector('#info.additional-content'));
+                document.querySelector('#info.additional-content').hidden = true;
             if (this.cfg.front)
                 this.viewport.onscroll = (_evt) => sessionStorage.setItem('fc2_scroll_top', this.viewport.scrollTop.toString());
-            document.addEventListener("click", this.mouse.bind(this));
-            document.addEventListener("keydown", this.keyboard.bind(this));
+            if (!this.listeners) {
+                document.addEventListener("click", this.mouse.bind(this));
+                document.addEventListener("keydown", this.keyboard.bind(this));
+                this.listeners = true;
+            }
             this.content.style.display = 'block';
-            document.getElementById('fc2-content-placeholder').style.display = 'none';
+            document.getElementById('fc2-content-placeholder').remove();
             window.requestAnimationFrame(() => window.requestAnimationFrame(() => window.requestAnimationFrame(() => this.scroll_to({ scroll: this.cfg.scroll.initial }))));
         }
         generate_expose() {
@@ -250,19 +273,17 @@ var fc2
             if (!el?.classList.contains('hide'))
                 return;
             el.classList.remove('hide');
-            if (el.classList.contains('additional-content'))
-                return;
             el.innerHTML = el.dataset.cloze;
             for (const child of el.querySelectorAll(':scope .cloze, :scope .cloze-inactive'))
                 this.hide(child);
         }
         hide(el) {
             this.log('hide');
-            if (!el || el.classList.contains('hide'))
+            if (el?.classList.contains('hide'))
                 return;
             el.classList.add('hide');
-            if (el.classList.contains('additional-content'))
-                return;
+            if (!this.search.hidden)
+                this.search.hidden = true;
             if (el.dataset.cloze === undefined)
                 el.dataset.cloze = el.innerHTML;
             if (el.dataset.hint === undefined) {
@@ -294,25 +315,36 @@ var fc2
         }
         toggle_cloze(cloze) {
             this.log('toggle_cloze');
-            cloze.classList.contains('hide') ? this.show(cloze) : this.hide(cloze);
+            const show = cloze.classList.contains('hide');
+            if (show)
+                this.show(cloze);
+            else
+                this.hide(cloze);
+            return show;
         }
         toggle_field(field) {
             this.log('toggle_field');
-            field.classList.contains('hide')
-                ? field.classList.remove('hide')
-                : field.classList.add('hide');
+            const fld = field.parentElement?.querySelector('.additional-content');
+            fld.hidden = !fld.hidden;
         }
         toggle_all(show = undefined) {
             this.log('toggle_all');
-            if (show === true || ((show === undefined) &&
-                this.content.querySelector('.cloze.hide, .cloze-inactive.hide'))) {
+            if (show === true || this.search.hidden ||
+                show === undefined &&
+                    this.content.querySelector('.cloze.hide, .cloze-inactive.hide, .additional-content[hidden]')) {
                 this.content.querySelectorAll('.cloze.hide, .cloze-inactive.hide')
                     .forEach(el => { this.show(el); });
+                this.viewport.querySelectorAll('.additional-content[hidden]')
+                    .forEach(el => { el.hidden = false; });
+                this.search.hidden = false;
                 return true;
             }
             else {
                 this.content.querySelectorAll('.cloze:not(.hide), .cloze-inactive:not(.hide)')
                     .forEach(el => { this.hide(el); });
+                this.viewport.querySelectorAll('.additional-content:not([hidden])')
+                    .forEach(el => { el.hidden = true; });
+                this.search.hidden = true;
                 return false;
             }
         }
@@ -337,7 +369,7 @@ var fc2
             }
             const offset = this.viewport.getBoundingClientRect().top;
             const line_height = (style) => {
-                this.log('line_height');
+                this.log('    line_height');
                 return parseInt(style.height) + parseInt(style.marginTop) + parseInt(style.marginBottom)
                     || parseInt(style.lineHeight)
                     || 20;
@@ -399,56 +431,52 @@ var fc2
                 this.viewport.scrollTop += y;
         }
         mouse(evt) {
+            this.log('mouse event');
             const target = evt.target;
-            if (target.classList.contains('cloze')
-                || target.classList.contains('cloze-inactive')) {
+            const classes = target.classList;
+            if (classes.contains('cloze') || classes.contains('cloze-inactive')) {
                 evt.stopPropagation();
-                if (!this.cfg.iteration.top)
-                    this.current = evt.target;
-                this.toggle_cloze(evt.target);
-                this.scroll_to({ scroll: this.cfg.scroll.click, cloze: evt.target });
+                if (!document.getSelection()?.toString()) {
+                    if (!this.cfg.iteration.top)
+                        this.current = target;
+                    this.toggle_cloze(target);
+                    this.scroll_to({ scroll: this.cfg.scroll.click, cloze: target });
+                }
             }
-            else if (target.classList.contains('additional-header'))
-                this.toggle_field(target.nextElementSibling);
-            else if (target.classList.contains('additional-content'))
-                this.toggle_field(evt.target);
-            else if (target.id === 'fc2-show-all-btn') {
-                this.toggle_all()
-                    ? this.search.show()
-                    : this.search.hide();
+            else if (classes.contains('additional-header') || classes.contains('additional-content')) {
+                if (!document.getSelection()?.toString())
+                    this.toggle_field(target);
             }
-            else if (target.id === 'nav-toggle-all') {
-                this.toggle_all()
-                    ? this.search.show()
-                    : this.search.hide();
-            }
+            else if (target.id === 'fc2-show-all-btn')
+                this.search.hidden = !this.toggle_all();
+            else if (target.id === 'nav-toggle-all')
+                this.search.hidden = !this.toggle_all();
             else if (target.id === 'nav-prev-cloze')
                 this.iter(false);
             else if (target.id === 'nav-next-cloze')
                 this.iter(true);
         }
         keyboard(evt) {
+            this.log('keyboard event');
             if (evt.key === 'Escape' && !this.search.panel.hidden) {
-                this.search.hide();
+                this.search.hidden = true;
                 evt.stopImmediatePropagation();
-                evt.preventDefault();
             }
             else if (evt.key === this.cfg.shortcuts.next)
                 this.iter(true);
             else if (evt.key === this.cfg.shortcuts.previous)
                 this.iter(false);
             else if (evt.key === this.cfg.shortcuts.toggle_all)
-                this.toggle_all()
-                    ? this.search.show()
-                    : this.search.hide();
+                this.toggle_all();
             else if (evt.key === 'f' && evt.ctrlKey && !evt.metaKey) {
-                if (this.search.panel.hidden) {
+                if (this.search.hidden)
                     this.toggle_all(true);
-                    this.search.show();
-                }
-                else
-                    this.search.field.focus();
+                this.search.focus();
             }
+            else
+                return;
+            evt.stopPropagation();
+            evt.preventDefault();
         }
     }
 

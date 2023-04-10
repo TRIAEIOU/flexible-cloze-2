@@ -1,25 +1,24 @@
 /*-- FUNCTIONALITY BEGIN --*/
-.card {position: fixed !important; top: 0; bottom: 0; left: 0; right: 0; display: flex;}
+div[hidden], span[hidden] {display: none !important;}
 
+.card {position: fixed !important; top: 0; bottom: 0; left: 0; right: 0; display: flex;}
 #qa, #content {flex: 1 1; display: flex; flex-flow: column nowrap; overflow: auto; margin: 0px;}
 
 #fc2-title, #title {flex: 0 0; }
-#fc2-scroll-area {flex: 1 1; display: flex; flex-flow: column nowrap; overflow: auto;}
-    #fc2-content {flex: 1 1; display: none; position: relative}
+#fc2-scroll-area {flex: 1 1; display: flex; flex-flow: column nowrap; overflow: auto; position: relative;}
+    #fc2-content {flex: 1 1; display: none;}
     #fc2-content-placeholder {flex: 1 1;}
     #fc2-additional {flex: 0 0; display: flex; flex-flow: column nowrap;}
         .additional-header {cursor: pointer; display: block;}
         .additional-content {display: block;}
-        .additional-content.hide {display: none;}
+        .additional-content * {pointer-events: none;}
 #search-panel {z-index: 3; display: flex; flex-flow: row nowrap; margin: 2px; border-top: 1px solid var(--fg); padding: 2px;}
-#search-panel[hidden] {display: none;}
     #search-field {flex: 1 1; height: 20px;}
     #search-btn {flex: 0 0; margin-left: 5px; padding-left: 2px; padding-right: 2px; padding-top: 1px; padding-bottom: 1px; border: 1px solid var(--fg); border-radius: 5px; font-size: 12px; line-height: 20px; background-color: var(--button-bg);}
     #search-btn:active {background-color: var(--fg-faint);}
 #log-panel {z-index: 3; flex: initial; display: flex; flex-flow: column nowrap; height: 100px;
     font-size: 10px; background-color: #ff8886; color: #000000; word-wrap: break-word;
     white-space: pre-wrap; overflow: auto; margin: 0px;}
-#log-panel[hidden] {display: none;}
 #fc2-show-all {z-index: 3; flex: 0 0; cursor: pointer;}
 
 #fc2-footer {z-index: 3; flex: 0 0;}

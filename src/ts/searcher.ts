@@ -4,8 +4,7 @@ import type {Logger} from './logger'
  * Credit Julien Grégoire: https://stackoverflow.com/questions/58553501/how-to-highlight-search-text-from-string-of-html-content-without-breaking
  */
 export class Searcher {
-  scroll!: HTMLElement
-  content!: HTMLElement
+  element!: HTMLElement
   panel!: HTMLElement
   field!: HTMLInputElement
   button!: HTMLElement
@@ -14,11 +13,31 @@ export class Searcher {
   index!: number
   log!: Logger
 
-  constructor(scroll: HTMLElement, content: HTMLElement, logger: Logger = ((() => {}) as any)) {
+  constructor(element: HTMLElement, logger: Logger = ((() => {}) as any)) {
     logger('searcher.constructor()')
-    this.scroll = scroll
-    this.content = content
-    this.log = logger
+    this.element = element, this.log = logger
+    this.matches = [], this.index = -1, this.sstr = ''
+
+    // Setup panel
+    const panel = document.createElement('div')
+    panel.id = 'search-panel'
+    panel.hidden = true
+    panel.innerHTML = '<input type="text" id="search-field" placeholder="Search for text"/><div id="search-btn" tabindex="0">Search</div>'
+    this.panel = element.parentElement!.insertBefore(panel, this.element.nextElementSibling)
+    this.field = document.getElementById('search-field') as HTMLInputElement
+    this.field.addEventListener('keydown', (evt) => {
+      if (evt.key === 'Enter') {
+        this.search()
+        // For some reason keyboard input is lost on Desktop so we need to reset it
+        this.button.focus() // On mobile we want to hide keyboard and use button
+        if (!document.documentElement.classList.contains('mobile')) this.field.focus()
+      } else if (evt.key === 'Escape') return
+      evt.stopPropagation()
+    })
+    this.button = document.getElementById('search-btn') as HTMLDivElement
+    this.button.onclick = (evt) => {this.search()} // "bind" to Searcher instance
+    this.field.onfocus = (evt) => {this.field.select()} // "bind" to Searcher instance
+
   }
 
   search() {
@@ -52,23 +71,23 @@ export class Searcher {
 
   highlight(re: RegExp) {
     this.log('searcher.highlight')
-    const txt = this.content.textContent!
-    const rct = this.scroll.getBoundingClientRect()
-    const stl = getComputedStyle(this.content)
+    const txt = this.element.textContent!
+    const rct = this.element.getBoundingClientRect()
+    const stl = getComputedStyle(this.element)
+
     const offset = {
-      top: this.scroll.scrollTop - rct.top - parseFloat(stl.marginTop),
-      left: this.scroll.scrollLeft - rct.left - parseFloat(stl.marginLeft)
+      top: this.element.scrollTop - rct.top - parseFloat(stl.marginTop),
+      left: this.element.scrollLeft - rct.left - parseFloat(stl.marginLeft)
     }
-    let match, sstr = this.field.value
     const sel = window.getSelection()!
     sel.removeAllRanges()
+    let match, sstr = this.field.value
     // to handle multiple result you need to go through all matches
     while (match = re.exec(txt)) {
-      const itr = nd_itr(this.content)
+      const itr = nd_itr(this.element)
       let index = 0
       // the result is the text node, so you can iterate and compare the index you are searching to all text nodes length
       let res = itr.next()
-
       while (!res.done) {
         let rng
         if (match.index >= index && match.index < index + res.value.length) {
@@ -78,7 +97,8 @@ export class Searcher {
         }
         if (
           match.index + sstr.length >= index &&
-          match.index + sstr.length < index + res.value.length
+          match.index + sstr.length < index + res.value.length &&
+          rng
         ) {
           // when we find the end node, we can set the range end
           rng.setEnd(res.value, match.index + sstr.length - index)
@@ -87,7 +107,7 @@ export class Searcher {
           for (const rect of rng.getClientRects()) {
             const light = document.createElement('DIV')
             light.innerText = rng.toString()
-            this.content.appendChild(light)
+            this.element.appendChild(light)
             light.classList.add('search-matches')
             light.style.top = rect.y + offset.top + 'px'
             light.style.left = rect.x  + offset.left + 'px'
@@ -117,16 +137,12 @@ export class Searcher {
     this.index = -1, this.sstr = '', this.matches = []
   }
 
-  show() {
-    this.log('searcher.show')
-    this.panel.hidden = false
-    this.field.select()
+  focus() {
+    this.log('searcher.focus')
+    this.hidden = false
     this.field.focus()
   }
 
-  hide() {
-    this.log('searcher.hide')
-    this.clear()
-    this.panel.hidden = true
-  }
+  get hidden() {return this.panel.hidden}
+  set hidden(hide: boolean) {if (this.panel.hidden = hide) this.clear()}
 }

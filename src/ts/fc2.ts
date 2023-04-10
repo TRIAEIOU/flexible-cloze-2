@@ -12,6 +12,7 @@ export class FC2 {
   viewport!: HTMLElement
   current!: HTMLElement
   ordinal!: number
+  listeners = false
 
   /** Load/parse (done on each card/side) */
   load(config: Configuration, side: 'front'|'back') {
@@ -34,7 +35,7 @@ export class FC2 {
     // Check backend version
     if (this.current.dataset.ordinal === undefined) return
 
-    this.search = new Searcher(this.viewport, this.content, this.log)
+    this.search = new Searcher(this.viewport, this.log)
 
     this.ordinal ||= parseInt(this.current.dataset.ordinal!)
     this.expose = this.generate_expose()
@@ -74,24 +75,28 @@ export class FC2 {
     // Show additional fields per default depending on config
     if (!this.cfg.show.additional)
       this.viewport.querySelectorAll(':not(#info).additional-content')
-        .forEach(nd => this.hide(nd as HTMLElement))
+        .forEach(nd => (nd as HTMLElement).hidden = true)
 
     // Show info field per default depending on config
     if (!this.cfg.show.info)
-      this.hide(document.querySelector('#info.additional-content') as HTMLElement)
+      (document.querySelector('#info.additional-content') as HTMLElement).hidden = true
 
     // Track scrolling on front, on unload would be more efficient
     if (this.cfg.front) this.viewport.onscroll = (_evt) =>
         sessionStorage.setItem('fc2_scroll_top', this.viewport.scrollTop.toString())
 
-    // Setup document level event handlers - should not be added if already there
+    // Setup document level event handlers - should not be added if already there -
+    // Desktop reuses same window/FC2 instance, Droid a new window/FC2 so track when added
     // Note: bind to FC2 this instance, otherwise called with window as this
-    document.addEventListener("click", this.mouse.bind(this))
-    document.addEventListener("keydown", this.keyboard.bind(this))
+    if (!this.listeners) {
+      document.addEventListener("click", this.mouse.bind(this))
+      document.addEventListener("keydown", this.keyboard.bind(this))
+      this.listeners = true
+    }
 
-    // Reveal finished content, hide placeholder and scroll to first active cloze
+    // Reveal finished content, remove placeholder and scroll to first active cloze
     this.content.style.display = 'block'
-    document.getElementById('fc2-content-placeholder')!.style.display = 'none'
+    document.getElementById('fc2-content-placeholder')!.remove()
     // Stacked requests as AnkiDroid takes a few frames to finish layout
     window.requestAnimationFrame(() =>
       window.requestAnimationFrame(() =>
@@ -142,25 +147,22 @@ export class FC2 {
     return this.cfg.expose.reverse ? (el) => { return !expose_(el) } : expose_
   }
 
-  /** Show cloze/field (and save cloze hint PRN) */
+  /** Show cloze (and save cloze hint PRN) */
   show(el: HTMLElement) {
     this.log('show', el.tagName)
     if (!el?.classList.contains('hide')) return
     el.classList.remove('hide')
-    // Done if additional field
-    if (el.classList.contains('additional-content')) return
     el.innerHTML = el.dataset.cloze!
     for (const child of el.querySelectorAll(':scope .cloze, :scope .cloze-inactive'))
       this.hide(child as HTMLElement)
   }
 
-  /** Hide cloze/field (and save cloze content PRN) */
+  /** Hide cloze (and save cloze content PRN) */
   hide(el: HTMLElement) {
-  this.log('hide')
-    if (!el || el.classList.contains('hide')) return
+    this.log('hide')
+    if (el?.classList.contains('hide')) return
     el.classList.add('hide')
-    // Done if additional field
-    if (el.classList.contains('additional-content')) return
+    if (!this.search.hidden) this.search.hidden = true
     // Store cloze content and hint PRN
     if (el.dataset.cloze === undefined) el.dataset.cloze = el.innerHTML
     // Store hint PRN and possible
@@ -196,31 +198,39 @@ export class FC2 {
   /** Toggle cloze visibility state */
   toggle_cloze(cloze: HTMLElement) {
     this.log('toggle_cloze')
-    cloze.classList.contains('hide') ? this.show(cloze) : this.hide(cloze)
+    const show = cloze.classList.contains('hide')
+    if (show) this.show(cloze)
+    else this.hide(cloze)
+    return show
   }
 
   /** Toggle field visibility state */
   toggle_field(field: HTMLElement) {
-  this.log('toggle_field')
-    field.classList.contains('hide')
-      ? field.classList.remove('hide')
-      : field.classList.add('hide')
+    this.log('toggle_field')
+    const fld = field.parentElement?.querySelector('.additional-content')! as HTMLElement
+    fld.hidden = !fld.hidden
   }
 
   /** Toggle all clozes and fields, sync towards show or force */
   toggle_all(show: boolean|undefined = undefined) {
     this.log('toggle_all')
-    if (show === true || (
-        (show === undefined) &&
-        this.content.querySelector('.cloze.hide, .cloze-inactive.hide')
-    )) {
+    if (show === true || this.search.hidden ||
+      show === undefined &&
+      this.content.querySelector('.cloze.hide, .cloze-inactive.hide, .additional-content[hidden]')
+    ) {
       this.content.querySelectorAll('.cloze.hide, .cloze-inactive.hide')
         .forEach(el => { this.show(el as HTMLElement) })
+      this.viewport.querySelectorAll('.additional-content[hidden]')
+        .forEach(el => {(el as HTMLElement).hidden = false})
+      this.search.hidden = false
       return true
     }
     else {
       this.content.querySelectorAll('.cloze:not(.hide), .cloze-inactive:not(.hide)')
         .forEach(el => { this.hide(el as HTMLElement) })
+      this.viewport.querySelectorAll('.additional-content:not([hidden])')
+        .forEach(el => {(el as HTMLElement).hidden = true})
+      this.search.hidden = true
       return false
     }
   }
@@ -249,7 +259,7 @@ export class FC2 {
     }
     const offset = this.viewport.getBoundingClientRect().top
     const line_height = (style: CSSStyleDeclaration) => {
-    this.log('line_height')
+      this.log('    line_height')
       return parseInt(style.height) + parseInt(style.marginTop) + parseInt(style.marginBottom)
         || parseInt(style.lineHeight)
         || 20
@@ -310,60 +320,58 @@ export class FC2 {
       else if (bottom > vp_height) y = bottom - vp_height
     }
 
-  this.log(`    scrolling ${opts.scroll} to`, this.viewport.scrollTop + y)
+    this.log(`    scrolling ${opts.scroll} to`, this.viewport.scrollTop + y)
     if (y) this.viewport.scrollTop += y
   }
 
   /** Handle document level mouse events */
   mouse(evt: MouseEvent) {
+    this.log('mouse event')
     const target = evt.target as HTMLElement
-    // Cloze click handling
-    if (target.classList!.contains('cloze')
-      || target.classList.contains('cloze-inactive')) {
-      evt.stopPropagation() // To avoid toggling parents
-      if (!this.cfg.iteration.top) this.current = evt.target as HTMLElement
-      this.toggle_cloze(evt.target as HTMLElement)
-      this.scroll_to({ scroll: this.cfg.scroll.click, cloze: evt.target as HTMLElement })
+    const classes = target.classList!
 
-    } // Additional content (header and actual content)
-    else if (target.classList.contains('additional-header'))
-      this.toggle_field(target.nextElementSibling as HTMLElement)
-    else if (target.classList.contains('additional-content'))
-      this.toggle_field(evt.target as HTMLElement)
-    // Toggle all button
-    else if (target.id === 'fc2-show-all-btn') {
-      this.toggle_all()
-        ? this.search.show()
-        : this.search.hide()
+    // Cloze click handling
+    if (classes.contains('cloze') || classes.contains('cloze-inactive')) {
+      evt.stopPropagation() // To avoid toggling parents
+      if (!document.getSelection()?.toString()) { // Avoid toggling when copying text
+        if (!this.cfg.iteration.top) this.current = target
+        this.toggle_cloze(target)
+        this.scroll_to({ scroll: this.cfg.scroll.click, cloze: target })
+      }
     }
-    // Nav bars
-    else if (target.id === 'nav-toggle-all') {
-      this.toggle_all()
-        ? this.search.show()
-        : this.search.hide()
+
+    // Additional content (header and actual content)
+    else if (classes.contains('additional-header') || classes.contains('additional-content')) {
+      if (!document.getSelection()?.toString()) // Avoid toggling when copying text
+        this.toggle_field(target)
     }
+    // Toggle all button and bar
+    else if (target.id === 'fc2-show-all-btn') this.search.hidden = !this.toggle_all()
+    else if (target.id === 'nav-toggle-all') this.search.hidden = !this.toggle_all()
+
+    // Iterate bars
     else if (target.id === 'nav-prev-cloze') this.iter(false)
     else if (target.id === 'nav-next-cloze') this.iter(true)
   }
 
   /** Handle document level keyboard events */
   keyboard(evt: KeyboardEvent) {
+    this.log('keyboard event')
     if (evt.key === 'Escape' && !this.search.panel.hidden) {
-      this.search.hide()
+      this.search.hidden = true
       evt.stopImmediatePropagation()
-      evt.preventDefault()
     }
     else if (evt.key === this.cfg.shortcuts.next) this.iter(true)
     else if (evt.key === this.cfg.shortcuts.previous) this.iter(false)
-    else if (evt.key === this.cfg.shortcuts.toggle_all)
-      this.toggle_all()
-        ? this.search.show()
-        : this.search.hide()
+    else if (evt.key === this.cfg.shortcuts.toggle_all) this.toggle_all()
     else if (evt.key === 'f' && evt.ctrlKey && !evt.metaKey) {
-      if (this.search.panel.hidden) {
-        this.toggle_all(true)
-        this.search.show()
-      } else this.search.field.focus()
+      if (this.search.hidden) this.toggle_all(true)
+      this.search.focus()
     }
+    else return
+
+    // All non-handled events returned above
+    evt.stopPropagation()
+    evt.preventDefault()
   }
 }
