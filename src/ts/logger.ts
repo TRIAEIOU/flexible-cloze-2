@@ -4,16 +4,12 @@ export interface Logger {
 }
 
 /** Create logging function */
-export function logger(element: HTMLElement, lvl: boolean|undefined|'error'): Logger {
-  // Initialize provided element
-  element.id = 'log-panel'
-  element.hidden = true
-
+export function logger(element: HTMLElement|null, lvl: boolean|undefined|'error'): Logger {
   // Default log function is noop
   let log: Logger = ((_) => {}) as Logger
 
   // Any debug level
-  if (lvl) {
+  if (lvl && element) {
     // If full debug replace default noop with actual output
     if (lvl === true) {
       log = ((str: string, args: any) => {
@@ -40,8 +36,10 @@ export function logger(element: HTMLElement, lvl: boolean|undefined|'error'): Lo
       return true
     }
 
-    // Store element
+    // Store and initialize provided element
     log.element = element
+    log.element.id = 'log-panel'
+    log.element.hidden = true
   }
 
   // Return newly stored instance

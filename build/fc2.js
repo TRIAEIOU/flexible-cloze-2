@@ -3,10 +3,8 @@ var fc2
     'use strict';
 
     function logger(element, lvl) {
-        element.id = 'log-panel';
-        element.hidden = true;
         let log = ((_) => { });
-        if (lvl) {
+        if (lvl && element) {
             if (lvl === true) {
                 log = ((str, args) => {
                     if (log.element.hidden)
@@ -37,6 +35,8 @@ var fc2
                 return true;
             };
             log.element = element;
+            log.element.id = 'log-panel';
+            log.element.hidden = true;
         }
         return log;
     }
@@ -164,7 +164,7 @@ var fc2
         load(config, side) {
             this.viewport = document.getElementById('fc2-scroll-area');
             let elm = document.getElementById('log-panel');
-            if (!elm) {
+            if (!elm && config.log) {
                 elm = document.createElement('pre');
                 elm.id = 'log-panel';
                 elm.hidden = true;

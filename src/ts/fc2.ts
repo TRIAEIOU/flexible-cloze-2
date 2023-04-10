@@ -20,7 +20,7 @@ export class FC2 {
 
     // Setup logging
     let elm = document.getElementById('log-panel')
-    if (!elm) {
+    if (!elm && config.log) {
       elm = document.createElement('pre')
       elm.id = 'log-panel'
       elm.hidden = true
