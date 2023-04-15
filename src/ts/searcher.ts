@@ -106,7 +106,7 @@ export class Searcher {
           // this is where we add the divs based on the client rects of the range
           for (const rect of rng.getClientRects()) {
             const light = document.createElement('DIV')
-            light.innerText = rng.toString()
+            // light.innerText = rng.toString()
             this.element.appendChild(light)
             light.classList.add('search-matches')
             light.style.top = rect.y + offset.top + 'px'

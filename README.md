@@ -8,6 +8,13 @@ Reimplementation of [Flexible cloze](https://ankiweb.net/shared/info/1632356464)
 
 ![Flexible cloze 2](https://raw.githubusercontent.com/TRIAEIOU/flexible-cloze-2/main/Screenshots/front-and-back.png){height=500px}
 
+The addon adds two note types:
+
+- `Flexible cloze 2`: Has 5 fields: `Title`, `Text`, `Notes`, `Mnemonics` and `Extra` where `Text` is the cloze field and `Title` the default sort field/shown in the card/note table.
+- `Flexible cloze 2 (min)`; Has 2 fields: `Text` and `Extra`, similar to the core Anki `cloze` note type. When reviewing the first `<h1>` found in the `Text` field will be extracted and set as title (primarily for use with Markdown notes, there is no default way of inserting `<h1>` tags in the Anki editor), failing this it will insert the deck name.
+
+The functionality, apart from what is mentioned above, is the same for both.
+
 ## iOS
 
 Please note, I have no iOS device to test on, it *should* work as it is generic javascript. If something appears broken, please let me know (with debug info, see below).
@@ -112,7 +119,37 @@ Some useful companion addons if you, like I, keep one note per subject rather th
 
 - Review in ascedning cloze ordinal order: [Asdcending cloze reviews](https://ankiweb.net/shared/info/545968093)
 - Sort cloze ordinals in ascending order while keeping learning state: [Sort clozes]()
-- If you prefer note taking in markdown: [Markdown input]()
+- If you prefer note taking in markdown: [Markdown input](https://ankiweb.net/shared/info/904999275)
+- If you want to maximize the note taking space in the browser: [Sidebar table]()
+- If you want a little more `VS Code`-y interface, consider [CSS Injector - Change default editor styles](https://ankiweb.net/shared/info/181103283) with something like (dark mode):
+
+  ```css
+    /* editor.css */
+    body.night_mode {
+      --fg: #858585;
+      --canvas: #1e1e1e;
+      --canvas-elevated: #1e1e1e;
+      --border: #474747;
+      --border-focus: 1px solid #3794ff;
+    }
+    .night_mode .editor-field {
+      border-radius: unset;
+      border: none;
+      padding-left: 20px;
+      padding-right: 20px;
+      padding-bottom: 10px;
+      --fg: #d4d4d4;
+      --selected-bg: #ADD6FF26;
+    }
+    .night_mode .field-container {
+      border-top: 1px solid var(--border);
+    }
+
+    .night_mode .editor-toolbar {
+      border: none;
+      padding: 2px 0 0 0;
+    }
+  ```
 
 ## Regarding styling
 
@@ -183,4 +220,4 @@ There is effectively no add-on, it's all JavaScript (and HTML/CSS) and runs 100%
 - 2023-02-07: Adapt JS to AnkiDroid behaviour, fix [expose bug](https://github.com/TRIAEIOU/flexible-cloze-2/issues/4).
 - 2023-02-10: Fix hint bug.
 - 2023-02-18: Fix scroll and hint bugs.
-- 2023-03-26: Refactor, add `context-top` and `context-bottom`, add note specific config through tags, add debug option/info, add search function.
+- 2023-03-26: Refactor, add `context-top` and `context-bottom`, add note specific config through tags, add debug option/info, add search function, add `Flexible Cloze 2 (min)` template which only has `Text` and `Extra` fields.

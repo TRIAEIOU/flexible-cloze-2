@@ -44,10 +44,10 @@ export class FC2 {
     this.content.parentElement!.classList.remove(this.cfg.front ? 'back' : 'front')
     this.content.parentElement!.classList.add(this.cfg.front ? 'front' : 'back')
 
-    // Parse note specific config from tags
-    const tag_el = document.querySelector('#fc2-additional #tags') as HTMLElement
-    if (tag_el) {
-      for (const tag of tag_el.innerText.split(' ').slice(1)) {
+    // Tag parsing and title setting is dependent on user not having removed the title
+    const title = document.querySelector('#fc2-title') as HTMLElement
+    if (title) {
+      for (const tag of title.classList) {
         if (!tag.startsWith('fc2.cfg.')) continue
         const parts = tag.slice(8).split('.')
         const tag_side = ['front', 'back'].includes(parts[0]) ? parts.shift() : undefined
@@ -56,6 +56,22 @@ export class FC2 {
         typeof(this.cfg[parts[0]][parts[1]]) === 'boolean'
           ? parts[2] === 'true'
           : parts.slice(2)
+      }
+
+      // Setup title for min version - MODEL SPECIFIC CODE
+      if (!title.innerText) {
+        // Use first `<h1>` as title
+        const h1 = this.content.querySelector('h1')
+        if (h1) {
+          title.innerText = h1.innerText
+          h1.remove()
+        }
+        // Otherwise use deck name if we can find it
+        else {
+          const ttxt = document.getElementById('deck')?.innerText.split('::').pop()
+          if (ttxt) title.innerText = ttxt
+          else title.remove()
+        }
       }
     }
 
@@ -78,8 +94,10 @@ export class FC2 {
         .forEach(nd => (nd as HTMLElement).hidden = true)
 
     // Show info field per default depending on config
-    if (!this.cfg.show.info)
-      (document.querySelector('#info.additional-content') as HTMLElement).hidden = true
+    if (!this.cfg.show.info) {
+      const el = document.querySelector('#info.additional-content') as HTMLElement
+      if (el) el.hidden = true
+    }
 
     // Track scrolling on front, on unload would be more efficient
     if (this.cfg.front) this.viewport.onscroll = (_evt) =>

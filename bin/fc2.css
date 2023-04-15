@@ -12,28 +12,26 @@ div[hidden], span[hidden] {display: none !important;}
         .additional-header {cursor: pointer; display: block;}
         .additional-content {display: block;}
         .additional-content * {pointer-events: none;}
-#search-panel {z-index: 3; display: flex; flex-flow: row nowrap; margin: 2px; border-top: 1px solid var(--fg); padding: 2px;}
+#search-panel {z-index: 3; display: flex; flex-flow: row nowrap; margin: 2px; border-top: 1px solid var(--border); padding: 2px;}
     #search-field {flex: 1 1; height: 20px;}
-    #search-btn {flex: 0 0; margin-left: 5px; padding-left: 2px; padding-right: 2px; padding-top: 1px; padding-bottom: 1px; border: 1px solid var(--fg); border-radius: 5px; font-size: 12px; line-height: 20px; background-color: var(--button-bg);}
+    #search-btn {flex: 0 0; margin-left: 5px; padding: 2px; border: 1px solid var(--border); border-radius: 5px; font-size: 12px; line-height: 20px; background-color: var(--button-bg);}
     #search-btn:active {background-color: var(--fg-faint);}
 #log-panel {z-index: 3; flex: initial; display: flex; flex-flow: column nowrap; height: 100px;
-    font-size: 10px; background-color: #ff8886; color: #000000; word-wrap: break-word;
+    font-size: 10px; background-color: #80000080; word-wrap: break-word;
     white-space: pre-wrap; overflow: auto; margin: 0px;}
 #fc2-show-all {z-index: 3; flex: 0 0; cursor: pointer;}
 
 #fc2-footer {z-index: 3; flex: 0 0;}
 	#fc2-legend-footer {display: flex; flex-flow: row nowrap;}
-		.fc2-legend-entry, #fc2-legent-entry {flex: 1 1;}
+		.fc2-legend-entry, #fc2-legend-entry {flex: 1 1;}
 	#fc2-flag-footer {display: flex; flex-flow: row nowrap}
 		.fc2-flag {flex: 1 1 100%;}
 
 #nav-toggle-all {position: fixed; z-index: 2; top: 0; left: 0; right: 0;}
 #nav-prev-cloze {position: fixed; z-index: 2; top: 0; left: 0; bottom: 0;}
 #nav-next-cloze {position: fixed; z-index: 2; top: 0; right: 0; bottom: 0;}
-.search-matches {position: absolute; z-index: 1; background-color: #768A95;
-    color: black; vertical-align: top;}
-.search-match {position: absolute; z-index: 1; background-color: #465A65;
-    color: white; vertical-align: top;}
+.search-matches {position: absolute; z-index: 1; vertical-align: top;}
+.search-match {position: absolute; z-index: 1; vertical-align: top;}
 /*-- FUNCTIONALITY END --*/
 
 /*-- CONFIGURATION BEGIN --*/
@@ -52,12 +50,12 @@ Top bar navigation area configuration, increase size by increasing height */
 
 /* CARD GENERAL STYLING =========================================== */
 .card
-{ font-family: Arial; font-size: 20px;  color: black; background-color: white; margin: 0px; }
+{ font-family: Arial; font-size: 20px;  color: var(--fg); background-color: var(--canvas-elevated); margin: 0px; }
 
 
 /* TITLE FIELD STYLING ============================================= */
 #fc2-title
-{ border-bottom: solid black 3px; text-transform: uppercase; font-weight: bold; margin: 10px 10px 0px 10px; }
+{ border-bottom: solid var(--fg) 3px; text-transform: uppercase; font-weight: bold; margin: 10px 10px 0px 10px; }
 
 
 /* TEXT FIELD STYLING ============================================= */
@@ -69,7 +67,7 @@ Top bar navigation area configuration, increase size by increasing height */
 /* Clozes base look and feel, valid on front and back */
 span.cloze, span.cloze-inactive
 { margin: 1px; padding : 5px; vertical-align: middle; min-width: 100px; min-height: 0.5em;
-border-color: black; border-width: 2px; border-style: solid; display: block; }
+border: 1px solid var(--border-subtle); display: block; }
 
 /* Display form and style of hide-state clozes (front and back), change to "inline" for a continuous line */
 span.cloze.hide, span.cloze-inactive.hide
@@ -77,34 +75,40 @@ span.cloze.hide, span.cloze-inactive.hide
 
 /* Display form and style of active clozes on front */
 .front span.cloze
-{ background-color: #FA8072; color: black; }
+{ background-color: #d8555580; }
 
 /* Display form and style of active clozes on back */
 .back span.cloze
-{ background-color: #D0F0C0; color: black; }
+{ background-color: #76b69d80; }
 
 /* Display form and style of inactive clozes on front and back */
 .front span.cloze-inactive, .back span.cloze-inactive
-{ background-color: #F0F0F0; color: black;}
+{ background-color: var(--canvas); }
+
+/* SEARCH STYLING =============================================== */
+/* Style search matches */
+.search-matches {background-color: var(--selected-bg); color: var(--fg-faint);}
+.search-match {background-color: var(--selected-bg);}
 
 /* SHOW ALL BUTTON ============================================== */
 /* Show all button/bar styling (and if visible or not) */
 #fc2-show-all-btn
-{ display: none;  background-color: #465A65; color: white; text-align: center; text-transform: uppercase;
-font-size: 15px; font-weight: bold; padding: 5px; border-bottom: 1px solid white; }
+{ display: none;  background-color: var(--canvas); color: var(--fg); text-align: center;
+text-transform: uppercase; font-size: 15px; font-weight: bold; padding: 5px;
+border-bottom: 1px solid var(--fg); }
 
 /* ADDITIONAL FIELD STYLING ========================================= */
 /* Look and field of the additional field area */
 #fc2-additional
-{ border-top: 3px solid black; margin: 0px 10px 0px 10px; }
+{ border-top: 3px solid var(--fg); margin: 0px 10px 0px 10px; }
 
 /* Additional field title look and feel */
 .additional-header
-{ padding-top: 5px; font-weight: bold; text-transform: uppercase; color: black; display: block; }
+{ padding-top: 5px; font-weight: bold; text-transform: uppercase; display: block; }
 
 /* Additional field content look and feel */
 .additional-content
-{ margin-bottom: 10px; border: 1px solid; background-color: #F0F0F0; padding: 5px; }
+{ margin-bottom: 10px; border: 1px solid; background-color: var(--canvas); padding: 5px; }
 
 
 /* SYMBOL LEGEND FOOTER STYLING ===================================== */
@@ -124,11 +128,12 @@ font-size: 15px; font-weight: bold; padding: 5px; border-bottom: 1px solid white
 /* FLAG LEGEND FOOTER STYLING ======================================= */
 /* Flag legend general look and feel */
 #fc2-flag-footer
-{text-align: center; text-transform: uppercase; font-size: 10px; font-weight: bold; }
+{text-align: center; text-transform: uppercase; font-size: 10px; font-weight: bold;
+color: black;}
 
 /* Red flag legend look and feel, set content to whatever value that should be displayed */
 #fc2-flag-red, #fc2-flag-red::before
-{ background-color: #FD7C6E; content: "Incorrect"; }
+{ background-color: #FD7C6E; color: black; content: "Incorrect"; }
 
 /* Orange flag legend look and feel, set content to whatever value that should be displayed */
 #fc2-flag-orange, #fc2-flag-orange::before
@@ -159,7 +164,7 @@ font-size: 15px; font-weight: bold; padding: 5px; border-bottom: 1px solid white
 /* MISCELLANEOUS STYLING, HAS NOTHING TO DO WITH FLEXIBLE CLOZE ============== */
 /* Highlight other text runs */
 code, kbd, var, samp, tt
-{ background-color: #F0F0F0; }
+{ background-color: #80808080; }
 
 /* reduce whitespace and indents for lists */
 li
@@ -180,7 +185,7 @@ td ul, td ol, td ul ul, td ol ol, td ul ul ul, td ol ol ol
 
 /* Default table formating */
 table:not([class]) { border-collapse: collapse; width: 100%; margin-bottom: 20px; margin-top: 5px; }
-th:not([class]) { border: 1px solid black; font-weight: bold; text-transform: uppercase; background-color: lightgray; }
+th:not([class]) { border: 1px solid black; font-weight: bold; text-transform: uppercase; background-color: #80808080; }
 td:not([class]) { border: 1px solid black; }
 
 /* Default header formating */

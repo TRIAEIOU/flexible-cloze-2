@@ -25,7 +25,7 @@ export interface Configuration {
     inactive: boolean   // Inactive clozes
     additional: boolean // Additional fields (Note, Mnemonics etc.)
     info: boolean       // Information field
-  }
+  },
   log: undefined|boolean|'error'    // Logging level (`false`, `'error'` or `true`)
   front?: boolean                   // Front or back side
 }

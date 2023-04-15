@@ -277,9 +277,9 @@ var fc2
             this.expose = this.generate_expose();
             this.content.parentElement.classList.remove(this.cfg.front ? 'back' : 'front');
             this.content.parentElement.classList.add(this.cfg.front ? 'front' : 'back');
-            const tag_el = document.querySelector('#fc2-additional #tags');
-            if (tag_el) {
-                for (const tag of tag_el.innerText.split(' ').slice(1)) {
+            const title = document.querySelector('#fc2-title');
+            if (title) {
+                for (const tag of title.classList) {
                     if (!tag.startsWith('fc2.cfg.'))
                         continue;
                     const parts = tag.slice(8).split('.');
@@ -289,6 +289,20 @@ var fc2
                     typeof (this.cfg[parts[0]][parts[1]]) === 'boolean'
                         ? parts[2] === 'true'
                         : parts.slice(2);
+                }
+                if (!title.innerText) {
+                    const h1 = this.content.querySelector('h1');
+                    if (h1) {
+                        title.innerText = h1.innerText;
+                        h1.remove();
+                    }
+                    else {
+                        const ttxt = document.getElementById('deck')?.innerText.split('::').pop();
+                        if (ttxt)
+                            title.innerText = ttxt;
+                        else
+                            title.remove();
+                    }
                 }
             }
             this.content.querySelectorAll('.cloze').forEach(((cloze) => {
@@ -305,8 +319,11 @@ var fc2
             if (!this.cfg.show.additional)
                 this.viewport.querySelectorAll(':not(#info).additional-content')
                     .forEach(nd => nd.hidden = true);
-            if (!this.cfg.show.info)
-                document.querySelector('#info.additional-content').hidden = true;
+            if (!this.cfg.show.info) {
+                const el = document.querySelector('#info.additional-content');
+                if (el)
+                    el.hidden = true;
+            }
             if (this.cfg.front)
                 this.viewport.onscroll = (_evt) => sessionStorage.setItem('fc2_scroll_top', this.viewport.scrollTop.toString());
             if (!this.listeners) {

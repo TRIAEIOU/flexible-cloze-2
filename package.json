@@ -16,7 +16,7 @@
     "build-clean": "shx rm -rf ./build/* ./dist/* ./bin/*",
     "build-template": "rollup -c",
     "build-py": "shx cp ./src/py/*.py ./bin",
-    "build-cfg": "shx cp ./src/html/*.css ./bin",
+    "build-cfg": "shx cp ./src/html/fc2.css ./bin/ && shx cp ./src/html/fc2.css ./bin/fc2m.css",
     "build-doc": "shx cp ./LICENSE ./README.md ./bin",
     "build": "npm run build-clean && npm run build-template && npm run build-py && npm run build-cfg && npm run build-doc",
     "pack": "zip-build \"./bin\" \"./dist\" -o -t \"update.zip\" && cross-env-shell pandoc -t $CODEPATH/pandoc/anki-addon.lua --abbreviations=$CODEPATH/pandoc/empty ./README.md -o ./dist/update.txt"

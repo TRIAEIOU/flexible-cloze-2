@@ -1,5 +1,5 @@
 <!-- Title field at top of page -->
-<div id="fc2-title" class="{{Tags}} title">{{Title}}</div>
+<div id="fc2-title" class="{{Tags}} title"></div>
 
 <!-- Main scrollable area of the screen -->
 <div id="fc2-scroll-area" class="fc2-scroll-area">
@@ -10,20 +10,12 @@
 
     <!-- Additional fields, delete the divs to remove from the card -->
     <div id="fc2-additional">
-        {{#Note}}
-            <div id="note-header" class="additional-header">Note</div>
-            <div id="note" class="additional-content">{{Note}}</div>
-        {{/Note}}
-        {{#Mnemonics}}
-            <div id="mnemonics-header" class="additional-header">Mnemonics</div>
-            <div id="mnemonics" class="additional-content">{{Mnemonics}}</div>
-        {{/Mnemonics}}
-        {{#Extra}}
-            <div id="extra-header" class="additional-header">Extra</div>
-            <div id="extra" class="additional-content">{{Extra}}</div>
-        {{/Extra}}
-        <div id="info-header" class="additional-header"> Information</div>
-        <div id="info" class="additional-content">
+        <div id="extra-header" class="additional-header">Extra</div>
+        <div id="extra" class="additional-content">
+            {{#Extra}}
+                {{Extra}}
+                <hr>
+            {{/Extra}}
             <div id="deck"><b>Deck</b>: {{Deck}}</div>
             {{#Tags}}<div id="tags"><b>Tags</b>: {{Tags}}</div>{{/Tags}}
         </div>
