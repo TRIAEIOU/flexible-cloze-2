@@ -24,8 +24,13 @@ export interface Configuration {
   show: {                 // `false` means initially collapsed/hidden
     inactive: boolean   // Inactive clozes
     additional: boolean // Additional fields (Note, Mnemonics etc.)
-    info: boolean       // Information field
   },
-  log: undefined|boolean|'error'    // Logging level (`false`, `'error'` or `true`)
+  fields: {
+    title: boolean|undefined
+    legend: string[]|undefined
+    flags: {text: string, color: string}[]|undefined
+    show_all_button: boolean|undefined
+    log: undefined|boolean|'error'    // Logging level (`false`, `'error'` or `true`)
+  }|undefined
   front?: boolean                   // Front or back side
 }

@@ -23,8 +23,47 @@ var config = {
     },
     show: {                     // `false` means initially collapsed/hidden
         inactive: false,        // Inactive clozes
-        additional: false,      // Additional fields (Note, Mnemonics etc.)
-        info: false             // Information field
+        additional: false       // Additional fields (Note, Mnemonics etc.)
     },
-    log: true                 // Debug information level (`false`, `'error'` or `true`)
+    fields: {
+        title: true,                // Title area
+        legend: [                   // Configurable legend at bottom
+            '<span style="font-size: 150%;">&#8594;</span> Becomes',
+            '<span style="font-size: 150%;">&#8658;</span> Leads to',
+            '<span style="font-size: 150%;">&#10521;</span> Excite/activate',
+            '<span style="font-size: 150%;">&#10979;</span> Inhibit/deactivate'
+        ],
+        flags: [                    // Configurable flag legend at bottom
+            {
+                text: "Incorrect",
+                color: "#FD7C6E",
+            },
+            {
+                text: "Duplicate",
+                color: "#FAA76C",
+            },
+            {
+                text: "Formating",
+                color: "#81A984",
+            },
+            {
+                text: "Rephrase",
+                color: "#ADB9CA",
+            },
+            {
+                text: "Discard",
+                color: "#D89B9B",
+            },
+            {
+                text: "Consolidate",
+                color: "#33B3A6",
+            },
+            {
+                text: "Mark",
+                color: "#A64CA6",
+            }
+        ],
+        show_all_button: false, // Optional "show all" button at bottom of page
+        log: true               // Debug information level (`false`, `'error'` or `true`)
+    }
 }

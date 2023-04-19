@@ -38,7 +38,6 @@ export function logger(element: HTMLElement|null, lvl: boolean|undefined|'error'
 
     // Store and initialize provided element
     log.element = element
-    log.element.id = 'log-panel'
     log.element.hidden = true
   }
 

@@ -111,8 +111,8 @@ Configuration is made in the note template, configuration is made between `/*-- 
 Some useful companion addons if you, like I, keep one note per subject rather than per question:
 
 - Review in ascedning cloze ordinal order: [Asdcending cloze reviews](https://ankiweb.net/shared/info/545968093)
-- Sort cloze ordinals in ascending order while keeping learning state: [Sort clozes]()
-- If you prefer note taking in markdown: [Markdown input]()
+- Sort cloze ordinals in ascending order while keeping learning state: [Sort clozes](https://ankiweb.net/shared/info/157021113)
+- If you prefer note taking in markdown: [Markdown input](https://ankiweb.net/shared/info/904999275)
 
 ## Regarding styling
 

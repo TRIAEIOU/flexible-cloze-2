@@ -2,6 +2,7 @@ import {logger} from './logger'
 import type { Logger } from './logger'
 import {Searcher} from './searcher'
 import type { Configuration } from './configuration'
+import { ancestor } from './utils'
 
 export class FC2 {
   cfg!: Configuration
@@ -16,17 +17,17 @@ export class FC2 {
 
   /** Load/parse (done on each card/side) */
   load(config: Configuration, side: 'front'|'back') {
-    this.viewport = document.getElementById('fc2-scroll-area')!
+    this.viewport = document.getElementById('fc2-viewport')!
 
     // Setup logging
-    let elm = document.getElementById('log-panel')
-    if (!elm && config.log) {
+    let elm = document.getElementById('fc2-log-panel')
+    if (!elm && config.fields?.log) {
       elm = document.createElement('pre')
-      elm.id = 'log-panel'
+      elm.id = 'fc2-log-panel'
       elm.hidden = true
       elm = this.viewport.parentElement!.appendChild(elm)
     }
-    this.log = logger(elm, config.log)
+    this.log = logger(elm, config.fields?.log)
 
     this.cfg = config
     this.cfg.front = side === 'front'
@@ -35,7 +36,7 @@ export class FC2 {
     // Check backend version
     if (this.current.dataset.ordinal === undefined) return
 
-    this.search = new Searcher(this.viewport, this.log)
+    this.search = new Searcher(this.viewport, 'fc2-', this.log)
 
     this.ordinal ||= parseInt(this.current.dataset.ordinal!)
     this.expose = this.generate_expose()
@@ -44,36 +45,44 @@ export class FC2 {
     this.content.parentElement!.classList.remove(this.cfg.front ? 'back' : 'front')
     this.content.parentElement!.classList.add(this.cfg.front ? 'front' : 'back')
 
-    // Tag parsing and title setting is dependent on user not having removed the title
-    const title = document.querySelector('#fc2-title') as HTMLElement
-    if (title) {
-      for (const tag of title.classList) {
-        if (!tag.startsWith('fc2.cfg.')) continue
-        const parts = tag.slice(8).split('.')
-        const tag_side = ['front', 'back'].includes(parts[0]) ? parts.shift() : undefined
-        if (tag_side && tag_side !== side || this.cfg[parts[0]]?.[parts[1]] === undefined)
-          continue
-        typeof(this.cfg[parts[0]][parts[1]]) === 'boolean'
+    // Setup configuration tag overrides
+    const tags = document.getElementById('fc2-meta-tags')!.innerText.split(' ')
+    for (const tag of tags) {
+      if (!tag.startsWith('fc2.cfg.')) continue
+      const parts = tag.slice(8).split('.')
+      const tag_side = ['front', 'back'].includes(parts[0]) ? parts.shift() : undefined
+      if (tag_side && tag_side !== side || this.cfg[parts[0]]?.[parts[1]] === undefined)
+        continue
+        this.cfg[parts[0]][parts[1]] = typeof(this.cfg[parts[0]][parts[1]]) === 'boolean'
           ? parts[2] === 'true'
           : parts.slice(2)
-      }
+    }
 
-      // Setup title for min version - MODEL SPECIFIC CODE
-      if (!title.innerText) {
-        // Use first `<h1>` as title
-        const h1 = this.content.querySelector('h1')
-        if (h1) {
-          title.innerText = h1.innerText
-          h1.remove()
-        }
-        // Otherwise use deck name if we can find it
-        else {
-          const ttxt = document.getElementById('deck')?.innerText.split('::').pop()
-          if (ttxt) title.innerText = ttxt
-          else title.remove()
+    // Setup title
+    let title = document.getElementById('fc2-title')
+    if (this.cfg.fields?.title) {
+      if (!title) {
+        title = document.createElement('div')
+        title.id = 'fc2-title'
+        this.viewport.insertAdjacentElement('beforebegin', title)
+        // Setup title for min version - MODEL SPECIFIC CODE
+        if (!title.innerText) {
+          // Use first `<h1>` as title
+          const h1 = this.content.querySelector('h1')
+          if (h1) {
+            title.innerText = h1.innerText
+            h1.remove()
+          }
+          // Otherwise use deck name if we can find it
+          else {
+            const ttxt = document.getElementById('deck')?.innerText.split('::').pop()
+            if (ttxt) title.innerText = ttxt
+            else title.remove()
+          }
         }
       }
     }
+    else if (title) title.remove()
 
     // Strip expose char from active clozes and hide if front
     this.content.querySelectorAll('.cloze').forEach(((cloze: HTMLElement) => {
@@ -90,13 +99,49 @@ export class FC2 {
 
     // Show additional fields per default depending on config
     if (!this.cfg.show.additional)
-      this.viewport.querySelectorAll(':not(#info).additional-content')
+      this.viewport.querySelectorAll('.fc2-additional-content')
         .forEach(nd => (nd as HTMLElement).hidden = true)
 
-    // Show info field per default depending on config
-    if (!this.cfg.show.info) {
-      const el = document.querySelector('#info.additional-content') as HTMLElement
-      if (el) el.hidden = true
+    // Setup footers
+    if (this.cfg.fields?.legend?.length || this.cfg.fields?.flags?.length) {
+      const footer = document.createElement('div')
+      footer.id = 'fc2-footer'
+      this.viewport.insertAdjacentElement('afterend', footer)
+
+      // Legend
+      if (this.cfg.fields.legend?.length) {
+        const itms = document.createElement('div')
+        itms.id = 'fc2-legends'
+        footer.appendChild(itms)
+        for (const legend of this.cfg.fields.legend) {
+          const itm = document.createElement('div')
+          itm.className = 'fc2-legend'
+          itm.innerHTML = legend
+          itms.appendChild(itm)
+        }
+      }
+
+      // Flags
+      if (this.cfg.fields.flags?.length) {
+        const itms = document.createElement('div')
+        itms.id = 'fc2-flags'
+        footer.appendChild(itms)
+        for (const flag of this.cfg.fields.flags) {
+          const itm = document.createElement('div')
+          itm.className = 'fc2-flag'
+          itm.innerHTML = flag.text
+          itm.style.backgroundColor = flag.color
+          itms.appendChild(itm)
+        }
+      }
+    }
+
+    // "Show all" button
+    if (this.cfg.fields?.show_all_button) {
+      const btn = document.createElement('button')
+      btn.id = "fc2-show-all-btn"
+      btn.innerText = "Show all"
+      this.viewport.insertAdjacentElement('afterend', btn)
     }
 
     // Track scrolling on front, on unload would be more efficient
@@ -225,7 +270,7 @@ export class FC2 {
   /** Toggle field visibility state */
   toggle_field(field: HTMLElement) {
     this.log('toggle_field')
-    const fld = field.parentElement?.querySelector('.additional-content')! as HTMLElement
+    const fld = field.parentElement?.querySelector('.fc2-additional-content')! as HTMLElement
     fld.hidden = !fld.hidden
   }
 
@@ -234,11 +279,11 @@ export class FC2 {
     this.log('toggle_all')
     if (show === true || this.search.hidden ||
       show === undefined &&
-      this.content.querySelector('.cloze.hide, .cloze-inactive.hide, .additional-content[hidden]')
+      this.content.querySelector('.cloze.hide, .cloze-inactive.hide, .fc2-additional-content[hidden]')
     ) {
       this.content.querySelectorAll('.cloze.hide, .cloze-inactive.hide')
         .forEach(el => { this.show(el as HTMLElement) })
-      this.viewport.querySelectorAll('.additional-content[hidden]')
+      this.viewport.querySelectorAll('.fc2-additional-content[hidden]')
         .forEach(el => {(el as HTMLElement).hidden = false})
       this.search.hidden = false
       return true
@@ -246,7 +291,7 @@ export class FC2 {
     else {
       this.content.querySelectorAll('.cloze:not(.hide), .cloze-inactive:not(.hide)')
         .forEach(el => { this.hide(el as HTMLElement) })
-      this.viewport.querySelectorAll('.additional-content:not([hidden])')
+      this.viewport.querySelectorAll('.fc2-additional-content:not([hidden])')
         .forEach(el => {(el as HTMLElement).hidden = true})
       this.search.hidden = true
       return false
@@ -345,11 +390,11 @@ export class FC2 {
   /** Handle document level mouse events */
   mouse(evt: MouseEvent) {
     this.log('mouse event')
-    const target = evt.target as HTMLElement
-    const classes = target.classList!
+    const el = evt.target as HTMLElement
+    let target
 
     // Cloze click handling
-    if (classes.contains('cloze') || classes.contains('cloze-inactive')) {
+    if (target = ancestor(el, '.cloze, .cloze-inactive')) {
       evt.stopPropagation() // To avoid toggling parents
       if (!document.getSelection()?.toString()) { // Avoid toggling when copying text
         if (!this.cfg.iteration.top) this.current = target
@@ -359,17 +404,17 @@ export class FC2 {
     }
 
     // Additional content (header and actual content)
-    else if (classes.contains('additional-header') || classes.contains('additional-content')) {
+    else if (target = ancestor(el, '.fc2-additional-header, .fc2-additional-content')) {
       if (!document.getSelection()?.toString()) // Avoid toggling when copying text
         this.toggle_field(target)
     }
     // Toggle all button and bar
-    else if (target.id === 'fc2-show-all-btn') this.search.hidden = !this.toggle_all()
-    else if (target.id === 'nav-toggle-all') this.search.hidden = !this.toggle_all()
+    else if (['fc2-show-all-btn', 'fc2-nav-toggle-all'].includes(el.id))
+      this.search.hidden = !this.toggle_all()
 
     // Iterate bars
-    else if (target.id === 'nav-prev-cloze') this.iter(false)
-    else if (target.id === 'nav-next-cloze') this.iter(true)
+    else if (el.id === 'fc2-nav-prev-cloze') this.iter(false)
+    else if (el.id === 'fc2-nav-next-cloze') this.iter(true)
   }
 
   /** Handle document level keyboard events */

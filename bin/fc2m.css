@@ -1,37 +1,166 @@
 /*-- FUNCTIONALITY BEGIN --*/
-div[hidden], span[hidden] {display: none !important;}
+div[hidden], span[hidden], pre[hidden], [id^=fc2-meta-] { display: none !important; }
 
-.card {position: fixed !important; top: 0; bottom: 0; left: 0; right: 0; display: flex;}
-#qa, #content {flex: 1 1; display: flex; flex-flow: column nowrap; overflow: auto; margin: 0px;}
+.mobile .card {
+    --canvas: #f5f5f5;
+    --canvas-elevated: white;
+    --fg: #020202;
+    --border-focus: #3b82f6;
+    --border: #c4c4c4;
+    --button-bg:#fcfcfc;
+    --fg-faint: #afafaf;
+    --selected-bg: rgba(214, 214, 214, 0.5);
+}
+.mobile .card.night_mode {
+    --canvas: #2c2c2c;
+    --canvas-elevated: #1e1e1e;
+    --fg: #d4d4d4;
+    --border-focus: #3b82f6;
+    --border: #202020;
+    --button-bg:#404040;
+    --fg-faint: #545454;
+    --selected-bg: rgba(147, 197, 253, 0.5);
+}
 
-#fc2-title, #title {flex: 0 0; }
-#fc2-scroll-area {flex: 1 1; display: flex; flex-flow: column nowrap; overflow: auto; position: relative;}
-    #fc2-content {flex: 1 1; display: none;}
-    #fc2-content-placeholder {flex: 1 1;}
-    #fc2-additional {flex: 0 0; display: flex; flex-flow: column nowrap;}
-        .additional-header {cursor: pointer; display: block;}
-        .additional-content {display: block;}
-        .additional-content * {pointer-events: none;}
-#search-panel {z-index: 3; display: flex; flex-flow: row nowrap; margin: 2px; border-top: 1px solid var(--border); padding: 2px;}
-    #search-field {flex: 1 1; height: 20px;}
-    #search-btn {flex: 0 0; margin-left: 5px; padding: 2px; border: 1px solid var(--border); border-radius: 5px; font-size: 12px; line-height: 20px; background-color: var(--button-bg);}
-    #search-btn:active {background-color: var(--fg-faint);}
-#log-panel {z-index: 3; flex: initial; display: flex; flex-flow: column nowrap; height: 100px;
-    font-size: 10px; background-color: #80000080; word-wrap: break-word;
-    white-space: pre-wrap; overflow: auto; margin: 0px;}
-#fc2-show-all {z-index: 3; flex: 0 0; cursor: pointer;}
+.card, .card.night_mode {
+    display: flex;
+    position: fixed !important; top: 0; bottom: 0; left: 0; right: 0;
+    margin: 0px;
+    font-family: Arial; font-size: 20px;
+    color: var(--fg); background-color: var(--canvas-elevated);
+}
+.card.night_mode {
+    --canvas-elevated: #1e1e1e;
+    --fg: #d4d4d4;
+}
+
+#qa, #content {
+    display: flex; flex: 1 1; flex-flow: column nowrap;
+    overflow: auto;
+    margin: 0px;
+}
+
+#fc2-title {
+    flex: 0 0;
+    margin: 10px 10px 0px 10px;
+    border-bottom: solid var(--fg) 2px;
+    text-transform: uppercase; font-weight: bold;
+}
+#fc2-viewport {
+    display: flex; flex: 1 1; flex-flow: column nowrap;
+    overflow: auto;
+    position: relative;
+}
+    #fc2-content {
+        display: none; flex: 1 1;
+        margin: 10px;
+    }
+        span.cloze, span.cloze-inactive {
+            display: block;
+            min-width: 100px; min-height: 0.5em;
+            margin: 1px; padding : 5px;
+            vertical-align: middle;
+            border: 2px solid var(--border);
+        }
+        span.cloze.hide, span.cloze-inactive.hide {
+            display: inline-block;
+        }
+        span.cloze { border: 2px solid var(--border-focus) }
+        .front span.cloze { background-color: var(--canvas); }
+        .back span.cloze { background-color: var(--canvas-elevated); }
+        span.cloze-inactive { background-color: var(--canvas); }
+
+    #fc2-content-placeholder { flex: 1 1; }
+    #fc2-additional {
+        display: flex; flex: 0 0; flex-flow: column nowrap;
+        border-top: 2px solid var(--fg);
+        margin: 0px 10px 0px 10px;
+    }
+        .fc2-additional-header {
+            display: block;
+            cursor: pointer;
+            padding-top: 5px;
+            font-weight: bold; text-transform: uppercase;
+        }
+        .fc2-additional-content {
+            display: block;
+            margin-bottom: 10px; padding: 5px;
+            border: 1px solid var(--border);
+            background-color: var(--canvas);
+        }
+        .fc2-additional-content * { pointer-events: none; }
+#fc2-search-panel {
+    display: flex; flex-flow: row nowrap;
+    z-index: 3;
+    border-top: 1px solid var(--border);
+    margin: 2px; padding: 2px;
+}
+    #fc2-search-field {flex: 1 1; height: 20px;}
+    #fc2-search-btn {
+        flex: 0 0;
+        margin-left: 5px; padding: 2px;
+        border: 1px solid var(--border); border-radius: 5px;
+        font-size: 12px; line-height: 20px;
+        background-color: var(--button-bg);
+    }
+    #fc2-search-btn:active {background-color: var(--fg-faint);}
+    .fc2-search-matches {
+        position: absolute; z-index: 1;
+        vertical-align: top;
+        background-color: var(--selected-bg); color: var(--fg-faint);
+    }
+    .fc2-search-match {
+        position: absolute; z-index: 1;
+        vertical-align: top;
+        background-color: var(--selected-bg);
+    }
+#fc2-log-panel {
+    display: flex; flex: initial; flex-flow: column nowrap;
+    z-index: 3;
+    height: 100px; overflow: auto;
+    margin: 0px;
+    font-size: 10px; word-wrap: break-word; white-space: pre-wrap;
+    background-color: #80000080;
+}
+#fc2-show-all {
+    flex: 0 0;
+    z-index: 3;
+    padding: 5px;
+    text-align: center; text-transform: uppercase; font-size: 15px; font-weight: bold;
+    background-color: var(--canvas); color: var(--fg);
+    border-bottom: 1px solid var(--fg);
+    cursor: pointer;
+}
 
 #fc2-footer {z-index: 3; flex: 0 0;}
-	#fc2-legend-footer {display: flex; flex-flow: row nowrap;}
-		.fc2-legend-entry, #fc2-legend-entry {flex: 1 1;}
-	#fc2-flag-footer {display: flex; flex-flow: row nowrap}
-		.fc2-flag {flex: 1 1 100%;}
+	#fc2-legends {display: flex; flex-flow: row nowrap;}
+		.fc2-legend {
+            flex: 1 1;
+            vertical-align: center; text-align: center;
+            text-transform: uppercase; font-size: 10px; font-weight: bold;
+            background-color: #465A65; color: white;
+        }
+        .fc2-legend:not(:first-child) {border-left: 1px solid white;}
+	#fc2-flags {display: flex; flex-flow: row nowrap}
+		.fc2-flag {
+            flex: 1 1 100%;
+            font-size: 10px; text-transform: uppercase; text-align: center;
+            color: black;
+        }
 
-#nav-toggle-all {position: fixed; z-index: 2; top: 0; left: 0; right: 0;}
-#nav-prev-cloze {position: fixed; z-index: 2; top: 0; left: 0; bottom: 0;}
-#nav-next-cloze {position: fixed; z-index: 2; top: 0; right: 0; bottom: 0;}
-.search-matches {position: absolute; z-index: 1; vertical-align: top;}
-.search-match {position: absolute; z-index: 1; vertical-align: top;}
+#fc2-nav-toggle-all {position: fixed; z-index: 2; top: 0; left: 0; right: 0; height: 30px;}
+#fc2-nav-prev-cloze {position: fixed; z-index: 2; top: 0; left: 0; bottom: 0; width: 30px;}
+#fc2-nav-next-cloze {position: fixed; z-index: 2; top: 0; right: 0; bottom: 0; width: 30px;}
+.fc2-nav-area-top {
+    height: 30px;
+    cursor: pointer;
+    background-color: transparent;
+}
+.fc2-nav-area-side {
+    width: 30px;
+    cursor: pointer;
+    background-color: transparent;
+}
 /*-- FUNCTIONALITY END --*/
 
 /*-- CONFIGURATION BEGIN --*/
@@ -40,128 +169,62 @@ Look and feel configurations, changing/deleting will not break functionality (al
 ========================================================= */
 
 /* NAVIGATION AREA CONFIGURATION ======================================
-Top bar navigation area configuration, increase size by increasing height */
-.nav-area-top
-{ height: 30px; cursor: pointer; background-color: transparent; }
-
-/* Top bar navigation area configuration, increase size by increasing width */
-.nav-area-side
-{ width: 30px; cursor: pointer; background-color: transparent; }
+Top and side navigation area configuration, change size by increasing height/width
+.fc2-nav-area-top
+.fc2-nav-area-side
+*/
 
 /* CARD GENERAL STYLING =========================================== */
-.card.night_mode
-{--canvas-elevated: #1e1e1e; --fg: #d4d4d4;}
-.card, .card.night_mode
-{ font-family: Arial; font-size: 20px;  color: var(--fg); background-color: var(--canvas-elevated); margin: 0px; }
-
+/* General card tyling
+.card
+.card.night_mode note: for night_mode .night_mode must be explicitly
+                 stated as Anki otherwise overrides user settings
+#fc2-content
+*/
 
 /* TITLE FIELD STYLING ============================================= */
+/* Style the optional title field
 #fc2-title
-{ border-bottom: solid var(--fg) 2px; text-transform: uppercase; font-weight: bold; margin: 10px 10px 0px 10px; }
+*/
 
 
 /* TEXT FIELD STYLING ============================================= */
-#fc2-content
-{ margin: 10px; }
-
+/* General card styling
+*/
 
 /* CLOZE STYLING =============================================== */
-/* Clozes base look and feel, valid on front and back */
-span.cloze, span.cloze-inactive
-{ margin: 1px; padding : 5px; vertical-align: middle; min-width: 100px; min-height: 0.5em;
-border: 1px solid var(--border-subtle); display: block; }
-
-/* Display form and style of hide-state clozes (front and back), change to "inline" for a continuous line */
-span.cloze.hide, span.cloze-inactive.hide
-{ display: inline-block; }
-
-/* Display form and style of active clozes on front */
-.front span.cloze
-{ background-color: var(--canvas); border: 1px solid var(--border-focus) }
-
-/* Display form and style of active clozes on back */
-.back span.cloze
-{ background-color: var(--canvas-elevated); border: 1px solid var(--border-focus) }
-
-/* Display form and style of inactive clozes on front and back */
-.front span.cloze-inactive, .back span.cloze-inactive
-{ background-color: var(--canvas); }
+/* Style active and inactive clozes on front and back
+span.cloze / span.cloze-inactive
+.front / .back
+.hide
+ */
 
 /* SEARCH STYLING =============================================== */
-/* Style search matches */
-.search-matches {background-color: var(--selected-bg); color: var(--fg-faint);}
-.search-match {background-color: var(--selected-bg);}
+/* Style search matches
+.search-matches
+.search-match
+*/
 
 /* SHOW ALL BUTTON ============================================== */
-/* Show all button/bar styling (and if visible or not) */
+/* Style the optional "show all" button
 #fc2-show-all-btn
-{ display: none;  background-color: var(--canvas); color: var(--fg); text-align: center;
-text-transform: uppercase; font-size: 15px; font-weight: bold; padding: 5px;
-border-bottom: 1px solid var(--fg); }
+*/
 
 /* ADDITIONAL FIELD STYLING ========================================= */
-/* Look and field of the additional field area */
+/* Style the optional additional fields
 #fc2-additional
-{ border-top: 2px solid var(--fg); margin: 0px 10px 0px 10px; }
-
-/* Additional field title look and feel */
 .additional-header
-{ padding-top: 5px; font-weight: bold; text-transform: uppercase; display: block; }
-
-/* Additional field content look and feel */
 .additional-content
-{ margin-bottom: 10px; border: 1px solid var(--border); background-color: var(--canvas); padding: 5px; }
+*/
 
-
-/* SYMBOL LEGEND FOOTER STYLING ===================================== */
-/* Base symbol legend look and feel */
-.fc2-legend-entry
-{text-align: center; text-transform: uppercase; font-size: 10px; font-weight: bold; vertical-align: center; background-color: #465A65; color: white; border-left: 1px solid white;}
-
-/* Specific styling of first entry/div (to avaid a white border on left in default styling) */
-.fc2-legend-entry:first-child
-{ border-left: unset; }
-
-/* Specific styling of first letter in each entry (make symbol bigger) */
-.fc2-legend-entry:first-letter
-{ font-size: 150%; }
-
-
-/* FLAG LEGEND FOOTER STYLING ======================================= */
-/* Flag legend general look and feel */
-#fc2-flag-footer
-{text-align: center; text-transform: uppercase; font-size: 10px; font-weight: bold;
-color: black;}
-
-/* Red flag legend look and feel, set content to whatever value that should be displayed */
-#fc2-flag-red, #fc2-flag-red::before
-{ background-color: #FD7C6E; color: black; content: "Incorrect"; }
-
-/* Orange flag legend look and feel, set content to whatever value that should be displayed */
-#fc2-flag-orange, #fc2-flag-orange::before
-{ background-color: #FAA76C; content: "Duplicate"; }
-
-/* Green flag legend look and feel, set content to whatever value that should be displayed */
-#fc2-flag-green, #fc2-flag-green::before
-{background-color: #81A984; content: "Formating"; }
-
-/* Blue flag legend look and feel, set content to whatever value that should be displayed */
-#fc2-flag-blue, #fc2-flag-blue::before
-{ background-color: #ADB9CA; content: "Rephrase"; }
-
-/* Pink flag legend look and feel, set content to whatever value that should be displayed */
-#fc2-flag-pink, #fc2-flag-pink::before
-{ background-color: #D89B9B; content: "Discard"; }
-
-/* Turquoise flag legend look and feel, set content to whatever value that should be displayed */
-#fc2-flag-turquoise, #fc2-flag-turquoise::before
-{ background-color: #33B3A6; content: "Consolidate"; }
-
-/* Purple flag legend look and feel, set content to whatever value that should be displayed */
-#fc2-flag-purple, #fc2-flag-purple::before
-{ background-color: #A64CA6; content: "Mark"; }
-/*-- CONFIGURATION END --*/
-
+/* SYMBOL LEGEND AND FLAGS FOOTER STYLING =========================== */
+/* Style the optional legend
+#fc2-footer
+#fc2-legends (the containing div)
+.fc2-legend (the individual legend entries)
+#fc2-flags (the containing div)
+.fc2-flag (the individual flag entries)
+*/
 
 /* MISCELLANEOUS STYLING, HAS NOTHING TO DO WITH FLEXIBLE CLOZE ============== */
 /* Highlight other text runs */

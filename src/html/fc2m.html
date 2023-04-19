@@ -1,61 +1,23 @@
-<!-- Title field at top of page -->
-<div id="fc2-title" class="{{Tags}} title"></div>
+<!-- CONFIGURATION BEGIN -->
+<script type="application/javascript">
+/*--###CFG###--*/
+</script>
+<!-- CONFIGURATION END -->
 
-<!-- Main scrollable area of the screen -->
-<div id="fc2-scroll-area" class="fc2-scroll-area">
-
-    <!-- Main content field, has to be present but can be styled/layouted differently -->
+<!-- Scrollable area of the screen, required but can be styled/layouted differently -->
+<div id="fc2-viewport">
+    <!-- Main content field, required but can be styled/layouted differently -->
     <div id="fc2-content">{{cloze:Text}}</div>
     <div id="fc2-content-placeholder">This note type requires <code>nested cloze support</code> and <code>increased meta data</code> features from the Anki 2.1.56+ backend (Anki desktop 2.1.56+, AnkiDroid 2.16alpha93+ with `Use new backend` enabled and AnkiMobile 2.0.88+).</div>
 
-    <!-- Additional fields, delete the divs to remove from the card -->
     <div id="fc2-additional">
-        <div id="extra-header" class="additional-header">Extra</div>
-        <div id="extra" class="additional-content">
-            {{#Extra}}
-                {{Extra}}
-                <hr>
-            {{/Extra}}
-            <div id="deck"><b>Deck</b>: {{Deck}}</div>
-            {{#Tags}}<div id="tags"><b>Tags</b>: {{Tags}}</div>{{/Tags}}
+        <div id="fc2-extra-header" class="fc2-additional-header">Extra</div>
+        <div id="fc2-extra-content" class="fc2-additional-content">
+            {{#Extra}}{{Extra}}<hr>{{/Extra}}
+            <div id="fc2-deck"><b>Deck</b>: {{Deck}}</div>
+            {{#Tags}}<div id="fc2-tags"><b>Tags</b>: {{Tags}}</div>{{/Tags}}
         </div>
     </div>
 </div>
 
-<!-- Optional "show all button" -->
-<div id="fc2-show-all-btn">Show all</div>
-
-<!-- Footer at the bottom of the screen, delete to remove or modify/add to change -->
-<div id="fc2-footer">
-    <!-- Symbol legend, delete divs to remove or modify number and content of child divs -->
-    <div id="fc2-legend-footer">
-        <div class="fc2-legend-entry">&#8594; Becomes</div>
-        <div class="fc2-legend-entry">&#8658; Leads to</div>
-        <div class="fc2-legend-entry">&#10521; Excite/activate</div>
-        <div class="fc2-legend-entry">&#10979; Inhibit/deactivate</div>
-    </div>
-    <!-- Flag legend, delete divs to remove, text and color can be set on "Styles" page -->
-    <div id="fc2-flag-footer">
-        <div id="fc2-flag-red" class="fc2-flag"></div>
-        <div id="fc2-flag-orange" class="fc2-flag"></div>
-        <div id="fc2-flag-green" class="fc2-flag"></div>
-        <div id="fc2-flag-blue" class="fc2-flag"></div>
-        <div id="fc2-flag-pink" class="fc2-flag"></div>
-        <div id="fc2-flag-turquoise" class="fc2-flag"></div>
-        <div id="fc2-flag-purple" class="fc2-flag"></div>
-    </div>
-</div>
-
-<!-- Screen edge navigation controls, delete the divs to remove -->
-<div id="nav-toggle-all" class="nav-area-top"></div>
-<div id="nav-prev-cloze" class="nav-area-side"></div>
-<div id="nav-next-cloze" class="nav-area-side"></div>
-
-<script type="application/javascript">
-/*-- CONFIGURATION BEGIN --*/
-/*--###CFG###--*/
-/*-- CONFIGURATION END --*/
-/*-- FUNCTIONALITY BEGIN --*/
-/*--###FUNC###--*/
-/*-- FUNCTIONALITY END --*/
-</script>
+<!-- FC2 FUNCTIONALITY - DO NOT EDIT BELOW THIS POINT -->

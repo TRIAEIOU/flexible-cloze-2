@@ -8,23 +8,28 @@ export class Searcher {
   panel!: HTMLElement
   field!: HTMLInputElement
   button!: HTMLElement
+  class_: {match: string, matches: string}
   sstr!: string
   matches!: HTMLElement[]
   index!: number
   log!: Logger
 
-  constructor(element: HTMLElement, logger: Logger = ((() => {}) as any)) {
+  constructor(element: HTMLElement, prefix: string, logger: Logger = ((() => {}) as any)) {
     logger('searcher.constructor()')
     this.element = element, this.log = logger
     this.matches = [], this.index = -1, this.sstr = ''
+    this.class_ = {
+      match: prefix + 'search-match',
+      matches: prefix + 'search-matches'
+    }
 
     // Setup panel
     const panel = document.createElement('div')
-    panel.id = 'search-panel'
+    panel.id = `${prefix}search-panel`
     panel.hidden = true
-    panel.innerHTML = '<input type="text" id="search-field" placeholder="Search for text"/><div id="search-btn" tabindex="0">Search</div>'
+    panel.innerHTML = `<input type="text" id="${prefix}search-field" placeholder="Search for text"/><div id="${prefix}search-btn" tabindex="0">Search</div>`
     this.panel = element.parentElement!.insertBefore(panel, this.element.nextElementSibling)
-    this.field = document.getElementById('search-field') as HTMLInputElement
+    this.field = document.getElementById(`${prefix}search-field`) as HTMLInputElement
     this.field.addEventListener('keydown', (evt) => {
       if (evt.key === 'Enter') {
         this.search()
@@ -34,7 +39,7 @@ export class Searcher {
       } else if (evt.key === 'Escape') return
       evt.stopPropagation()
     })
-    this.button = document.getElementById('search-btn') as HTMLDivElement
+    this.button = document.getElementById(`${prefix}search-btn`) as HTMLDivElement
     this.button.onclick = (evt) => {this.search()} // "bind" to Searcher instance
     this.field.onfocus = (evt) => {this.field.select()} // "bind" to Searcher instance
 
@@ -58,11 +63,11 @@ export class Searcher {
     // If we have matches, clear previous highlight, highlight next and scroll
     if (this.matches?.length) {
       if (this.index >= 0)
-        this.matches[this.index].classList.replace('search-match', 'search-matches')
+        this.matches[this.index].classList.replace(this.class_.match, this.class_.matches)
       this.index = this.index < this.matches.length - 1
         ? this.index + 1
         : 0
-      this.matches[this.index].classList.replace('search-matches', 'search-match')
+      this.matches[this.index].classList.replace(this.class_.matches, this.class_.match)
       this.matches[this.index].scrollIntoView(
         {behavior: 'auto', block: 'center', inline: 'nearest'}
       )
@@ -108,7 +113,7 @@ export class Searcher {
             const light = document.createElement('DIV')
             // light.innerText = rng.toString()
             this.element.appendChild(light)
-            light.classList.add('search-matches')
+            light.classList.add(this.class_.matches)
             light.style.top = rect.y + offset.top + 'px'
             light.style.left = rect.x  + offset.left + 'px'
             light.style.height = rect.height + 'px'

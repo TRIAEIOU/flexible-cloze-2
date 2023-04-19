@@ -35,23 +35,26 @@ var fc2
                 return true;
             };
             log.element = element;
-            log.element.id = 'log-panel';
             log.element.hidden = true;
         }
         return log;
     }
 
     class Searcher {
-        constructor(element, logger = (() => { })) {
+        constructor(element, prefix, logger = (() => { })) {
             logger('searcher.constructor()');
             this.element = element, this.log = logger;
             this.matches = [], this.index = -1, this.sstr = '';
+            this.class_ = {
+                match: prefix + 'search-match',
+                matches: prefix + 'search-matches'
+            };
             const panel = document.createElement('div');
-            panel.id = 'search-panel';
+            panel.id = `${prefix}search-panel`;
             panel.hidden = true;
-            panel.innerHTML = '<input type="text" id="search-field" placeholder="Search for text"/><div id="search-btn" tabindex="0">Search</div>';
+            panel.innerHTML = `<input type="text" id="${prefix}search-field" placeholder="Search for text"/><div id="${prefix}search-btn" tabindex="0">Search</div>`;
             this.panel = element.parentElement.insertBefore(panel, this.element.nextElementSibling);
-            this.field = document.getElementById('search-field');
+            this.field = document.getElementById(`${prefix}search-field`);
             this.field.addEventListener('keydown', (evt) => {
                 if (evt.key === 'Enter') {
                     this.search();
@@ -63,7 +66,7 @@ var fc2
                     return;
                 evt.stopPropagation();
             });
-            this.button = document.getElementById('search-btn');
+            this.button = document.getElementById(`${prefix}search-btn`);
             this.button.onclick = (evt) => { this.search(); };
             this.field.onfocus = (evt) => { this.field.select(); };
         }
@@ -80,11 +83,11 @@ var fc2
             }
             if (this.matches?.length) {
                 if (this.index >= 0)
-                    this.matches[this.index].classList.replace('search-match', 'search-matches');
+                    this.matches[this.index].classList.replace(this.class_.match, this.class_.matches);
                 this.index = this.index < this.matches.length - 1
                     ? this.index + 1
                     : 0;
-                this.matches[this.index].classList.replace('search-matches', 'search-match');
+                this.matches[this.index].classList.replace(this.class_.matches, this.class_.match);
                 this.matches[this.index].scrollIntoView({ behavior: 'auto', block: 'center', inline: 'nearest' });
             }
         }
@@ -117,9 +120,8 @@ var fc2
                         sel.addRange(rng);
                         for (const rect of rng.getClientRects()) {
                             const light = document.createElement('DIV');
-                            light.innerText = rng.toString();
                             this.element.appendChild(light);
-                            light.classList.add('search-matches');
+                            light.classList.add(this.class_.matches);
                             light.style.top = rect.y + offset.top + 'px';
                             light.style.left = rect.x + offset.left + 'px';
                             light.style.height = rect.height + 'px';
@@ -157,59 +159,73 @@ var fc2
             this.clear(); }
     }
 
+    function ancestor(descendant, selector) {
+        while (descendant && !descendant.matches(selector))
+            descendant = descendant.parentElement;
+        return descendant;
+    }
+
     class FC2 {
         constructor() {
             this.listeners = false;
         }
         load(config, side) {
-            this.viewport = document.getElementById('fc2-scroll-area');
-            let elm = document.getElementById('log-panel');
-            if (!elm && config.log) {
+            this.viewport = document.getElementById('fc2-viewport');
+            let elm = document.getElementById('fc2-log-panel');
+            if (!elm && config.fields?.log) {
                 elm = document.createElement('pre');
-                elm.id = 'log-panel';
+                elm.id = 'fc2-log-panel';
                 elm.hidden = true;
                 elm = this.viewport.parentElement.appendChild(elm);
             }
-            this.log = logger(elm, config.log);
+            this.log = logger(elm, config.fields?.log);
             this.cfg = config;
             this.cfg.front = side === 'front';
             this.content = document.getElementById('fc2-content');
             this.current = this.content.querySelector('.cloze');
             if (this.current.dataset.ordinal === undefined)
                 return;
-            this.search = new Searcher(this.viewport, this.log);
+            this.search = new Searcher(this.viewport, 'fc2-', this.log);
             this.ordinal || (this.ordinal = parseInt(this.current.dataset.ordinal));
             this.expose = this.generate_expose();
             this.content.parentElement.classList.remove(this.cfg.front ? 'back' : 'front');
             this.content.parentElement.classList.add(this.cfg.front ? 'front' : 'back');
-            const title = document.querySelector('#fc2-title');
-            if (title) {
-                for (const tag of title.classList) {
-                    if (!tag.startsWith('fc2.cfg.'))
-                        continue;
-                    const parts = tag.slice(8).split('.');
-                    const tag_side = ['front', 'back'].includes(parts[0]) ? parts.shift() : undefined;
-                    if (tag_side && tag_side !== side || this.cfg[parts[0]]?.[parts[1]] === undefined)
-                        continue;
-                    typeof (this.cfg[parts[0]][parts[1]]) === 'boolean'
-                        ? parts[2] === 'true'
-                        : parts.slice(2);
-                }
-                if (!title.innerText) {
-                    const h1 = this.content.querySelector('h1');
-                    if (h1) {
-                        title.innerText = h1.innerText;
-                        h1.remove();
-                    }
-                    else {
-                        const ttxt = document.getElementById('deck')?.innerText.split('::').pop();
-                        if (ttxt)
-                            title.innerText = ttxt;
-                        else
-                            title.remove();
+            const tags = document.getElementById('fc2-meta-tags').innerText.split(' ');
+            for (const tag of tags) {
+                if (!tag.startsWith('fc2.cfg.'))
+                    continue;
+                const parts = tag.slice(8).split('.');
+                const tag_side = ['front', 'back'].includes(parts[0]) ? parts.shift() : undefined;
+                if (tag_side && tag_side !== side || this.cfg[parts[0]]?.[parts[1]] === undefined)
+                    continue;
+                this.cfg[parts[0]][parts[1]] = typeof (this.cfg[parts[0]][parts[1]]) === 'boolean'
+                    ? parts[2] === 'true'
+                    : parts.slice(2);
+            }
+            let title = document.getElementById('fc2-title');
+            if (this.cfg.fields?.title) {
+                if (!title) {
+                    title = document.createElement('div');
+                    title.id = 'fc2-title';
+                    this.viewport.insertAdjacentElement('beforebegin', title);
+                    if (!title.innerText) {
+                        const h1 = this.content.querySelector('h1');
+                        if (h1) {
+                            title.innerText = h1.innerText;
+                            h1.remove();
+                        }
+                        else {
+                            const ttxt = document.getElementById('deck')?.innerText.split('::').pop();
+                            if (ttxt)
+                                title.innerText = ttxt;
+                            else
+                                title.remove();
+                        }
                     }
                 }
             }
+            else if (title)
+                title.remove();
             this.content.querySelectorAll('.cloze').forEach(((cloze) => {
                 this.expose(cloze);
                 if (this.cfg.front)
@@ -222,12 +238,41 @@ var fc2
                     this.hide(cloze);
             }));
             if (!this.cfg.show.additional)
-                this.viewport.querySelectorAll(':not(#info).additional-content')
+                this.viewport.querySelectorAll('.fc2-additional-content')
                     .forEach(nd => nd.hidden = true);
-            if (!this.cfg.show.info) {
-                const el = document.querySelector('#info.additional-content');
-                if (el)
-                    el.hidden = true;
+            if (this.cfg.fields?.legend?.length || this.cfg.fields?.flags?.length) {
+                const footer = document.createElement('div');
+                footer.id = 'fc2-footer';
+                this.viewport.insertAdjacentElement('afterend', footer);
+                if (this.cfg.fields.legend?.length) {
+                    const itms = document.createElement('div');
+                    itms.id = 'fc2-legends';
+                    footer.appendChild(itms);
+                    for (const legend of this.cfg.fields.legend) {
+                        const itm = document.createElement('div');
+                        itm.className = 'fc2-legend';
+                        itm.innerHTML = legend;
+                        itms.appendChild(itm);
+                    }
+                }
+                if (this.cfg.fields.flags?.length) {
+                    const itms = document.createElement('div');
+                    itms.id = 'fc2-flags';
+                    footer.appendChild(itms);
+                    for (const flag of this.cfg.fields.flags) {
+                        const itm = document.createElement('div');
+                        itm.className = 'fc2-flag';
+                        itm.innerHTML = flag.text;
+                        itm.style.backgroundColor = flag.color;
+                        itms.appendChild(itm);
+                    }
+                }
+            }
+            if (this.cfg.fields?.show_all_button) {
+                const btn = document.createElement('button');
+                btn.id = "fc2-show-all-btn";
+                btn.innerText = "Show all";
+                this.viewport.insertAdjacentElement('afterend', btn);
             }
             if (this.cfg.front)
                 this.viewport.onscroll = (_evt) => sessionStorage.setItem('fc2_scroll_top', this.viewport.scrollTop.toString());
@@ -341,17 +386,17 @@ var fc2
         }
         toggle_field(field) {
             this.log('toggle_field');
-            const fld = field.parentElement?.querySelector('.additional-content');
+            const fld = field.parentElement?.querySelector('.fc2-additional-content');
             fld.hidden = !fld.hidden;
         }
         toggle_all(show = undefined) {
             this.log('toggle_all');
             if (show === true || this.search.hidden ||
                 show === undefined &&
-                    this.content.querySelector('.cloze.hide, .cloze-inactive.hide, .additional-content[hidden]')) {
+                    this.content.querySelector('.cloze.hide, .cloze-inactive.hide, .fc2-additional-content[hidden]')) {
                 this.content.querySelectorAll('.cloze.hide, .cloze-inactive.hide')
                     .forEach(el => { this.show(el); });
-                this.viewport.querySelectorAll('.additional-content[hidden]')
+                this.viewport.querySelectorAll('.fc2-additional-content[hidden]')
                     .forEach(el => { el.hidden = false; });
                 this.search.hidden = false;
                 return true;
@@ -359,7 +404,7 @@ var fc2
             else {
                 this.content.querySelectorAll('.cloze:not(.hide), .cloze-inactive:not(.hide)')
                     .forEach(el => { this.hide(el); });
-                this.viewport.querySelectorAll('.additional-content:not([hidden])')
+                this.viewport.querySelectorAll('.fc2-additional-content:not([hidden])')
                     .forEach(el => { el.hidden = true; });
                 this.search.hidden = true;
                 return false;
@@ -449,9 +494,9 @@ var fc2
         }
         mouse(evt) {
             this.log('mouse event');
-            const target = evt.target;
-            const classes = target.classList;
-            if (classes.contains('cloze') || classes.contains('cloze-inactive')) {
+            const el = evt.target;
+            let target;
+            if (target = ancestor(el, '.cloze, .cloze-inactive')) {
                 evt.stopPropagation();
                 if (!document.getSelection()?.toString()) {
                     if (!this.cfg.iteration.top)
@@ -460,17 +505,15 @@ var fc2
                     this.scroll_to({ scroll: this.cfg.scroll.click, cloze: target });
                 }
             }
-            else if (classes.contains('additional-header') || classes.contains('additional-content')) {
+            else if (target = ancestor(el, '.fc2-additional-header, .fc2-additional-content')) {
                 if (!document.getSelection()?.toString())
                     this.toggle_field(target);
             }
-            else if (target.id === 'fc2-show-all-btn')
+            else if (['fc2-show-all-btn', 'fc2-nav-toggle-all'].includes(el.id))
                 this.search.hidden = !this.toggle_all();
-            else if (target.id === 'nav-toggle-all')
-                this.search.hidden = !this.toggle_all();
-            else if (target.id === 'nav-prev-cloze')
+            else if (el.id === 'fc2-nav-prev-cloze')
                 this.iter(false);
-            else if (target.id === 'nav-next-cloze')
+            else if (el.id === 'fc2-nav-next-cloze')
                 this.iter(true);
         }
         keyboard(evt) {
