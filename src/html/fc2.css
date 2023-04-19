@@ -229,34 +229,36 @@ span.cloze / span.cloze-inactive
 
 /* MISCELLANEOUS STYLING, HAS NOTHING TO DO WITH FLEXIBLE CLOZE ============== */
 /* Highlight other text runs */
-code, kbd, var, samp, tt
-{ background-color: #80808080; }
+code, kbd, var, samp, tt { background-color: var(--canvas-code); }
 
 /* reduce whitespace and indents for lists */
-li
-{ margin: 0; }
-ul, ol
-{ padding: 0em 0em 0em 2em; margin-top: 0.5em; margin-bottom: 0.5em; }
+li { margin: 0; }
+ul, ol { padding: 0em 0em 0em 2em; margin-top: 0.5em; margin-bottom: 0.5em; }
 
 /* Reduce first list indent and spacing when a cloze begins with a list */
 span.cloze > ul:first-child, span.cloze-inactive > ul:first-child
 span.cloze > ol:first-child, span.cloze-inactive > ol:first-child
 span.cloze > br:first-child + ul, span.cloze-inactive > br:first-child + ul,
-span.cloze > br:first-child + ol, span.cloze-inactive > br:first-child + ol
-{ padding: 0em 0em 0em 1em; margin-top: 0em; margin-bottom: 0em; }
+span.cloze > br:first-child + ol, span.cloze-inactive > br:first-child + ol {
+    padding: 0em 0em 0em 1em; margin-top: 0em; margin-bottom: 0em;
+}
 
 /* Reduce list indents and spacing when in a table */
-td ul, td ol, td ul ul, td ol ol, td ul ul ul, td ol ol ol
-{ padding: 0em 0em 0em 1em; margin-top: 0em; margin-bottom: 0em; }
+td ul, td ol {
+    padding: 0em 0em 0em 1em; margin-top: 0em; margin-bottom: 0em;
+}
 
 /* Default table formating */
 table:not([class]) { border-collapse: collapse; width: 100%; margin-bottom: 20px; margin-top: 5px; }
-th:not([class]) { border: 1px solid black; font-weight: bold; text-transform: uppercase; background-color: #80808080; }
-td:not([class]) { border: 1px solid black; }
+th:not([class]) { border: 1px solid var(--border); font-weight: bold; text-transform: uppercase; background-color: var(--button-bg); }
+td:not([class]) { border: 1px solid var(--border); }
 
 /* Default header formating */
 h1, h2, h3, h4, h5, h6 { font-size: 20px; margin: 0px; }
-h1:not(:first-child), h2:not(:first-child), h3:not(:first-child), h4:not(:first-child), h5:not(:first-child), h6:not(:first-child) { margin-top: 20px; }
+h1:not(:first-child), h2:not(:first-child), h3:not(:first-child),
+h4:not(:first-child), h5:not(:first-child), h6:not(:first-child) {
+    margin-top: 20px;
+}
 h1 { font-weight: 900; text-transform: uppercase; }
 h2 { font-weight: 900; }
 h3 { font-weight: 900; font-style: italic; }

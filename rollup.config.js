@@ -4,6 +4,21 @@ import copy from 'rollup-plugin-copy-merge'
 import fs from 'fs-extra'
 import terser from "@rollup/plugin-terser"
 
+async function transform(contents, cfg, js, func, side) {
+  cfg = (await fs.readFile(cfg, 'utf-8'))
+    .toString()
+    .trim()
+  js = (await fs.readFile(js, 'utf-8'))
+    .toString()
+    .trim()
+    .replace('__TEMPLATE_SIDE__', `'${side}'`)
+  func = (await fs.readFile(func, 'utf-8'))
+    .toString()
+    .trim()
+    .replace('/*--###JS###--*/', js)
+  return cfg.concat('\n\n', contents.toString().trim(), '\n\n', func)
+}
+
 export default [
   {
     input: "src/ts/index.ts",
@@ -23,56 +38,36 @@ export default [
             src: 'src/html/fc2.html',
             dest: 'bin',
             rename: 'fc2-front.html',
-            transform: async (contents, fname, fpath) => {
-              const cfg = await fs.readFile('src/cfg/cfg_front.js', 'utf-8')
-              const js = await fs.readFile('build/fc2.js')
-              return contents
-                .toString()
-                .replace('/*--###CFG###--*/', cfg.toString().trim())
-                .replace('/*--###FUNC###--*/', js.toString().trim())
-                .replace('__TEMPLATE_SIDE__', "'front'")
+            transform: async (contents) => {
+              return transform(contents, 'src/cfg/cfg_front.html',
+                'build/fc2.js', 'src/html/func.html', 'front')
             }
           },
           {
             src: 'src/html/fc2.html',
             dest: 'bin',
             rename: 'fc2-back.html',
-            transform: async (contents, fname, fpath) => {
-              const cfg = await fs.readFile('src/cfg/cfg_back.js', 'utf-8')
-              const js = await fs.readFile('build/fc2.js')
-              return contents
-                .toString()
-                .replace('/*--###CFG###--*/', cfg.toString().trim())
-                .replace('/*--###FUNC###--*/', js.toString().trim())
-                .replace('__TEMPLATE_SIDE__', "'back'")
+            transform: async (contents) => {
+              return transform(contents, 'src/cfg/cfg_back.html',
+                'build/fc2.js', 'src/html/func.html', 'back')
             }
           },
           {
             src: 'src/html/fc2m.html',
             dest: 'bin',
             rename: 'fc2m-front.html',
-            transform: async (contents, fname, fpath) => {
-              const cfg = await fs.readFile('src/cfg/cfg_front.js', 'utf-8')
-              const js = await fs.readFile('build/fc2.js')
-              return contents
-                .toString()
-                .replace('/*--###CFG###--*/', cfg.toString().trim())
-                .replace('/*--###FUNC###--*/', js.toString().trim())
-                .replace('__TEMPLATE_SIDE__', "'front'")
+            transform: async (contents) => {
+              return transform(contents, 'src/cfg/cfg_front.html',
+                'build/fc2.js', 'src/html/func.html', 'front')
             }
           },
           {
             src: 'src/html/fc2m.html',
             dest: 'bin',
             rename: 'fc2m-back.html',
-            transform: async (contents, fname, fpath) => {
-              const cfg = await fs.readFile('src/cfg/cfg_back.js', 'utf-8')
-              const js = await fs.readFile('build/fc2.js')
-              return contents
-                .toString()
-                .replace('/*--###CFG###--*/', cfg.toString().trim())
-                .replace('/*--###FUNC###--*/', js.toString().trim())
-                .replace('__TEMPLATE_SIDE__', "'back'")
+            transform: async (contents) => {
+              return transform(contents, 'src/cfg/cfg_back.html',
+                'build/fc2.js', 'src/html/func.html', 'back')
             }
           }
         ]

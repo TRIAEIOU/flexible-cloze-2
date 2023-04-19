@@ -1,49 +1,5 @@
-<!-- Title field at top of page -->
-{{#Title}}<div id="fc2-title">{{Title}}</div>{{/Title}}
-
-<!-- Scrollable area of the screen, required but can be styled/layouted differently -->
-<div id="fc2-viewport">
-    <!-- Main content field, required but can be styled/layouted differently -->
-    <div id="fc2-content">{{cloze:Text}}</div>
-    <div id="fc2-content-placeholder">This note type requires <code>nested cloze support</code> and <code>increased meta data</code> features from the Anki 2.1.56+ backend (Anki desktop 2.1.56+, AnkiDroid 2.16alpha93+ with `Use new backend` enabled and AnkiMobile 2.0.88+).</div>
-
-    <!-- Additional fields, delete to remove from the cards -->
-    <div id="fc2-additional">
-        {{#Note}}
-            <div id="fc2-note-header" class="fc2-additional-header">Note</div>
-            <div id="fc2-note-content" class="fc2-additional-content">{{Note}}</div>
-        {{/Note}}
-        {{#Mnemonics}}
-            <div id="fc2-mnemonics-header" class="fc2-additional-header">Mnemonics</div>
-            <div id="fc2-mnemonics-content" class="fc2-additional-content">{{Mnemonics}}</div>
-        {{/Mnemonics}}
-        {{#Extra}}
-            <div id="fc2-extra-header" class="fc2-additional-header">Extra</div>
-            <div id="fc2-extra-content" class="fc2-additional-content">{{Extra}}</div>
-        {{/Extra}}
-        <div id="fc2-info-header" class="fc2-additional-header">Information</div>
-        <div id="fc2-info-content" class="fc2-additional-content">
-            <div id="fc2-deck"><b>Deck</b>: {{Deck}}</div>
-            {{#Tags}}<div id="fc2-tags"><b>Tags</b>: {{Tags}}</div>{{/Tags}}
-        </div>
-    </div>
-</div>
-
-<!-- Screen edge navigation controls, delete the divs to remove -->
-<div id="fc2-nav-toggle-all"></div>
-<div id="fc2-nav-prev-cloze"></div>
-<div id="fc2-nav-next-cloze"></div>
-
-<!-- Meta data, required but is invisible -->
-<div id="fc2-meta-type">{{Type}}</div>
-<div id="fc2-meta-card">{{Card}}</div>
-<div id="fc2-meta-tags">{{Tags}}</div>
-<div id="fc2-meta-deck">{{Deck}}</div>
-<div id="fc2-meta-subdeck">{{Subdeck}}</div>
-<div id="fc2-meta-flag">{{CardFlag}}</div>
-
+<!-- CONFIGURATION BEGIN -->
 <script type="application/javascript">
-/*-- CONFIGURATION BEGIN --*/
 var config = {
     prompt: '',                 // Prompt when no hint
     hint: '%h',                 // %h is replaced with hint text
@@ -113,8 +69,53 @@ var config = {
         log: true               // Debug information level (`false`, `'error'` or `true`)
     }
 }
-/*-- CONFIGURATION END --*/
-/*-- FUNCTIONALITY BEGIN --*/
+</script>
+<!-- CONFIGURATION END -->
+
+<!-- Title field at top of page -->
+{{#Title}}<div id="fc2-title">{{Title}}</div>{{/Title}}
+
+<!-- Scrollable area of the screen, required but can be styled/layouted differently -->
+<div id="fc2-viewport">
+    <!-- Main content field, required but can be styled/layouted differently -->
+    <div id="fc2-content">{{cloze:Text}}</div>
+    <div id="fc2-content-placeholder">This note type requires <code>nested cloze support</code> and <code>increased meta data</code> features from the Anki 2.1.56+ backend (Anki desktop 2.1.56+, AnkiDroid 2.16alpha93+ with `Use new backend` enabled and AnkiMobile 2.0.88+).</div>
+
+    <!-- Additional fields, delete to remove from the cards -->
+    <div id="fc2-additional">
+        {{#Note}}
+            <div id="fc2-note-header" class="fc2-additional-header">Note</div>
+            <div id="fc2-note-content" class="fc2-additional-content">{{Note}}</div>
+        {{/Note}}
+        {{#Mnemonics}}
+            <div id="fc2-mnemonics-header" class="fc2-additional-header">Mnemonics</div>
+            <div id="fc2-mnemonics-content" class="fc2-additional-content">{{Mnemonics}}</div>
+        {{/Mnemonics}}
+        {{#Extra}}
+            <div id="fc2-extra-header" class="fc2-additional-header">Extra</div>
+            <div id="fc2-extra-content" class="fc2-additional-content">{{Extra}}</div>
+        {{/Extra}}
+        <div id="fc2-info-header" class="fc2-additional-header">Information</div>
+        <div id="fc2-info-content" class="fc2-additional-content">
+            <div id="fc2-deck"><b>Deck</b>: {{Deck}}</div>
+            {{#Tags}}<div id="fc2-tags"><b>Tags</b>: {{Tags}}</div>{{/Tags}}
+        </div>
+    </div>
+</div>
+
+<!-- FC2 FUNCTIONALITY - DO NOT EDIT BELOW THIS POINT -->
+<!-- nav bars -->
+<div id="fc2-nav-toggle-all"></div>
+<div id="fc2-nav-prev-cloze"></div>
+<div id="fc2-nav-next-cloze"></div>
+<!-- card meta data -->
+<div id="fc2-meta-type">{{Type}}</div>
+<div id="fc2-meta-card">{{Card}}</div>
+<div id="fc2-meta-tags">{{Tags}}</div>
+<div id="fc2-meta-deck">{{Deck}}</div>
+<div id="fc2-meta-subdeck">{{Subdeck}}</div>
+<div id="fc2-meta-flag">{{CardFlag}}</div>
+<script type="application/javascript">
 var fc2
 (function () {
     'use strict';
@@ -196,7 +197,7 @@ var fc2
             if (this.field.value !== this.sstr) {
                 this.clear();
                 this.sstr = this.field.value;
-                this.highlight(RegExp(this.sstr.replace(/[.*+?^${}()|[\]\\]/g, "\\/*--###FUNC###--*/"), 'gi'));
+                this.highlight(RegExp(this.sstr.replace(/[.*+?^${}()|[\]\\]/g, "\\/*--###JS###--*/"), 'gi'));
             }
             if (this.matches?.length) {
                 if (this.index >= 0)
@@ -661,5 +662,4 @@ var fc2
     fc2.load(config, 'front');
 
 })();
-/*-- FUNCTIONALITY END --*/
 </script>

@@ -15,12 +15,121 @@ FNAME_MIN_FRONT = "fc2m-front.html"
 FNAME_MIN_BACK = "fc2m-back.html"
 FNAME_MIN_CSS = "fc2m.css"
 ADDON_PATH = os.path.dirname(__file__)
-TAG_CFG = ('/*-- CONFIGURATION BEGIN --*/', '/*-- CONFIGURATION END --*/')
-TAG_FUNC = ('/*-- FUNCTIONALITY BEGIN --*/', '/*-- FUNCTIONALITY END --*/')
+TAG_CFG = ('<!-- CONFIGURATION BEGIN -->', '<!-- CONFIGURATION END -->')
+TAG_FUNC = "<!-- FC2 FUNCTIONALITY - DO NOT EDIT BELOW THIS POINT -->"
 
 CVER = get_version()
-NVER = "1.1.3"
+NVER = "1.2.0"
 
+#######################################################################
+# Legacy code
+def parse_legacy_template(text: str) -> dict:
+    """`return`: dict[pre: str, mid: str, post: str, cfg: str, func: str]"""
+    TAG_CFG = ('/*-- CONFIGURATION BEGIN --*/', '/*-- CONFIGURATION END --*/')
+    TAG_FUNC = ('/*-- FUNCTIONALITY BEGIN --*/', '/*-- FUNCTIONALITY END --*/')
+
+    if m := re.match(rf'^(.*?)\s*({re.escape(TAG_CFG[0])}|{re.escape(TAG_FUNC[0])})\s*(.*?)\s*({re.escape(TAG_CFG[1])}|{re.escape(TAG_FUNC[1])})\s*(.*?)\s*({re.escape(TAG_CFG[0])}|{re.escape(TAG_FUNC[0])})\s*(.*?)\s*({re.escape(TAG_CFG[1])}|{re.escape(TAG_FUNC[1])})\s*(.*)$', text, flags=re.DOTALL):
+        return {
+            'pre': m.group(1),
+            'mid': m.group(5),
+            'post': m.group (9),
+            'cfg': m.group(3) if m.group(2) == TAG_CFG[0] else m.group(7),
+            'func': m.group(3) if m.group(2) == TAG_FUNC[0] else m.group(7)
+        }
+    return None
+
+def legacy_update_template():
+    """Convert legacy templates to new format"""
+
+
+    def render_template(template: dict, first: Literal['cfg', 'func']):
+        """`template`: dict['pre': str, 'mid': str, 'post': str, 'cfg': str, 'func': str]"""
+        return fr"""<!-- CONFIGURATION BEGIN -->
+        <script type="application/javascript">
+        {template['cfg']}
+        </script>"""
+
+
+        return template['pre'] + ONE + template['mid'] + TWO + template['post']
+
+    def update_model(col, name, files, create_model):
+        msgs = []
+
+        (nfront, nback, ncss) = read_files(files)
+        model = col.models.by_name(name)
+
+        # No existing model, create
+        if not model:
+            model = create_model(col, name, nfront, nback, ncss)
+
+        # Existing model, update
+        else:
+            # Backup previous version
+            write_files((
+                (files[0] + ".bak", model["tmpls"][0]["qfmt"]),
+                (files[1] + ".bak", model["tmpls"][0]["afmt"]),
+                (files[2] + ".bak", model["css"])
+            ))
+
+            ofront = model["tmpls"][0]["qfmt"]
+            oback = model["tmpls"][0]["afmt"]
+            ocss = model['css']
+
+            if strvercmp(CVER, '1.1.0') < 0:
+                # Fix document structure change
+                RE1 = re.compile(r'\s*<!-- FC2 BEGIN -->\s*<!-- CONFIGURATION BEGIN -->\s*<script type="application/javascript">\s*')
+                RE2 = re.compile(r'\s*</script>\s*<!-- CONFIGURATION END -->\s*<!-- FUNCTIONALITY BEGIN -->\s*<script type="application/javascript">\s*')
+                RE3 = re.compile(r'\s*</script>\s*<!-- FUNCTIONALITY END -->\s*<!-- FC2 END -->\s*')
+                def strip_htm(txt):
+                    txt = RE1.sub(f'\n\n<script type="application/javascript">\n{TAG_CFG[0]}\n', txt)
+                    txt = RE2.sub(f'\n{TAG_CFG[1]}\n\n{TAG_FUNC[0]}\n', txt)
+                    txt = RE3.sub(f'\n{TAG_FUNC[1]}\n</script>', txt)
+                    return txt.replace('chars:', 'char:')
+
+                ofront = strip_htm(ofront)
+                oback = strip_htm(oback)
+                ocss = re.sub(r'\s*\/\*-- FC2 (?:BEGIN|END) --\*\/\s*', '\n\n', ocss)
+
+            old = parse_template(ofront)
+            new =  parse_template(nfront)
+            if old and new:
+                old['func'] = new['func']
+                model["tmpls"][0]["qfmt"] = render_template(old, 'cfg')
+            else:
+                msgs.append('Failed to parse front template, manually insert template from addon directory.')
+
+            old = parse_template(oback)
+            new =  parse_template(nback)
+            if old and new:
+                old['func'] = new['func']
+                model["tmpls"][0]["afmt"] = render_template(old, 'cfg')
+            else:
+                msgs.append('Failed to parse back template, manually insert template from addon directory.')
+
+            old = parse_template(ocss)
+            new =  parse_template(ncss)
+            if old and new:
+                old['func'] = new['func']
+                model['css'] = render_template(old, 'func')
+            else:
+                msgs.append('Failed to parse styling template, manually insert template from addon directory.')
+
+            # Write
+            col.models.update(model)
+
+        return msgs
+
+    TAG_CFG = ('/*-- CONFIGURATION BEGIN --*/', '/*-- CONFIGURATION END --*/')
+    TAG_FUNC = ('/*-- FUNCTIONALITY BEGIN --*/', '/*-- FUNCTIONALITY END --*/')
+    return update_model(
+        mw.col,
+        FC2_NAME,
+        (FNAME_FRONT, FNAME_BACK, FNAME_CSS),
+        create_model
+    )
+
+#######################################################################
+# Current code base
 def read_files(files: tuple[str, ...]):
     out = []
     for file in files:
@@ -34,19 +143,82 @@ def write_files(files: tuple[str, ...]):
         with open(os.path.join(ADDON_PATH, file[0]), "w") as fh:
             fh.write(file[1])
 
-def parse_template(text: str) -> dict:
-    """`return`: dict[pre: str, mid: str, post: str, cfg: str, func: str]"""
-
-    if m := re.match(rf'^(.*?)\s*({re.escape(TAG_CFG[0])}|{re.escape(TAG_FUNC[0])})\s*(.*?)\s*({re.escape(TAG_CFG[1])}|{re.escape(TAG_FUNC[1])})\s*(.*?)\s*({re.escape(TAG_CFG[0])}|{re.escape(TAG_FUNC[0])})\s*(.*?)\s*({re.escape(TAG_CFG[1])}|{re.escape(TAG_FUNC[1])})\s*(.*)$', text, flags=re.DOTALL):
-        return {
-            'pre': m.group(1),
-            'mid': m.group(5),
-            'post': m.group (9),
-            'cfg': m.group(3) if m.group(2) == TAG_CFG[0] else m.group(7),
-            'func': m.group(3) if m.group(2) == TAG_FUNC[0] else m.group(7)
-        }
+def read_model(col, name):
+    if model := col.models.by_name(name):
+        return (model["tmpls"][0]["qfmt"], model["tmpls"][0]["afmt"], model['css'])
     return None
 
+
+def update_model(model, col, files):
+    msgs = []
+
+    (nfront, nback, ncss) = read_files(files)
+    model = col.models.by_name(name)
+
+    # Backup previous version
+    write_files((
+        (files[0] + ".bak", model["tmpls"][0]["qfmt"]),
+        (files[1] + ".bak", model["tmpls"][0]["afmt"]),
+        (files[2] + ".bak", model["css"])
+    ))
+
+    ofront = model["tmpls"][0]["qfmt"]
+    oback = model["tmpls"][0]["afmt"]
+    ocss = model['css']
+
+    if strvercmp(CVER, '1.1.0') < 0:
+        # Fix document structure change
+        RE1 = re.compile(r'\s*<!-- FC2 BEGIN -->\s*<!-- CONFIGURATION BEGIN -->\s*<script type="application/javascript">\s*')
+        RE2 = re.compile(r'\s*</script>\s*<!-- CONFIGURATION END -->\s*<!-- FUNCTIONALITY BEGIN -->\s*<script type="application/javascript">\s*')
+        RE3 = re.compile(r'\s*</script>\s*<!-- FUNCTIONALITY END -->\s*<!-- FC2 END -->\s*')
+        def strip_htm(txt):
+            txt = RE1.sub(f'\n\n<script type="application/javascript">\n{TAG_CFG[0]}\n', txt)
+            txt = RE2.sub(f'\n{TAG_CFG[1]}\n\n{TAG_FUNC[0]}\n', txt)
+            txt = RE3.sub(f'\n{TAG_FUNC[1]}\n</script>', txt)
+            return txt.replace('chars:', 'char:')
+
+        ofront = strip_htm(ofront)
+        oback = strip_htm(oback)
+        ocss = re.sub(r'\s*\/\*-- FC2 (?:BEGIN|END) --\*\/\s*', '\n\n', ocss)
+
+        old = parse_template(ofront)
+        new =  parse_template(nfront)
+        if old and new:
+            old['func'] = new['func']
+            model["tmpls"][0]["qfmt"] = render_template(old, 'cfg')
+        else:
+            msgs.append('Failed to parse front template, manually insert template from addon directory.')
+
+        old = parse_template(oback)
+        new =  parse_template(nback)
+        if old and new:
+            old['func'] = new['func']
+            model["tmpls"][0]["afmt"] = render_template(old, 'cfg')
+        else:
+            msgs.append('Failed to parse back template, manually insert template from addon directory.')
+
+        old = parse_template(ocss)
+        new =  parse_template(ncss)
+        if old and new:
+            old['func'] = new['func']
+            model['css'] = render_template(old, 'func')
+        else:
+            msgs.append('Failed to parse styling template, manually insert template from addon directory.')
+
+        # Write
+        col.models.update(model)
+
+    return msgs
+
+
+def parse_template(txt: str) -> dict:
+    """`return`: dict[pre: str, mid: str, post: str, cfg: str, func: str]"""
+
+    parts = txt.split(TAG_FUNC)
+
+    parts = re.match(
+        rf'^(.*?)\s*({re.escape(TAG_CFG[0])}.*?{re.escape(TAG_CFG[1])})\s*'
+    )
 
 def create_model(col, name, front, back, css):
     """Add regular model from parameters"""
@@ -85,106 +257,70 @@ def create_min_model(col, name, front, back, css):
     \begin{document}
     """, "latexPost": r"\end{document}", "type": 1, "id": 0, "css": css})
 
-def render_template(template: dict, first: Literal['cfg', 'func']):
-    """`template`: dict['pre': str, 'mid': str, 'post': str, 'cfg': str, 'func': str]"""
-    if template['pre']:
-        template['pre'] += '\n\n'
-    template['mid'] = f'\n\n{template["mid"]}\n\n' if template['mid'] else '\n\n'
-    if template['post']:
-        template['post'] = f'\n\n{template["post"]}'
+def upgrade_one(model, front, back, css):
+    # Front
+    prv = parse_legacy_template(model["tmpls"][0]["qfmt"])
+    nxt = front.split(TAG_CFG[1], 1)
+    model["tmpls"][0]["qfmt"] = fr"""<!-- CONFIGURATION BEGIN -->
+    <script type="application/javascript">
+    {prv['cfg'].strip()}
+    </script>
+    <!-- CONFIGURATION END -->
 
-    if first == 'cfg':
-        ONE = f'{TAG_CFG[0]}\n{template["cfg"]}\n{TAG_CFG[1]}'
-        TWO = f'{TAG_FUNC[0]}\n{template["func"]}\n{TAG_FUNC[1]}'
-    else:
-        ONE = f'{TAG_FUNC[0]}\n{template["func"]}\n{TAG_FUNC[1]}'
-        TWO = f'{TAG_CFG[0]}\n{template["cfg"]}\n{TAG_CFG[1]}'
+    {nxt[1].strip()}
+    """
+    # Back
+    prv = parse_legacy_template(model["tmpls"][0]["afmt"])
+    nxt = front.split(TAG_CFG[1], 1)
+    model["tmpls"][0]["afmt"] = fr"""<!-- CONFIGURATION BEGIN -->
+    <script type="application/javascript">
+    {prv['cfg'].strip()}
+    </script>
+    <!-- CONFIGURATION END -->
 
-    return template['pre'] + ONE + template['mid'] + TWO + template['post']
+    {nxt[1].strip()}
+    """
+    # CSS
+    prv = parse_legacy_template(model["tmpls"][0]["afmt"])
+    nxt = front.split(TAG_CFG[1], 1)
+    model["tmpls"][0]["afmt"] = fr"""<!-- CONFIGURATION BEGIN -->
+    <script type="application/javascript">
+    {prv['cfg'].strip()}
+    </script>
+    <!-- CONFIGURATION END -->
 
-def update_model(col, name, files, create_model):
-    msgs = []
+    {nxt[1].strip()}
+    """
 
-    (nfront, nback, ncss) = read_files(files)
-    model = col.models.by_name(name)
-
-    # No existing model, create
-    if not model:
-        model = create_model(col, name, nfront, nback, ncss)
-
-    # Existing model, update
-    else:
-        # Backup previous version
-        write_files((
-            (files[0] + ".bak", model["tmpls"][0]["qfmt"]),
-            (files[1] + ".bak", model["tmpls"][0]["afmt"]),
-            (files[2] + ".bak", model["css"])
-        ))
-
-        ofront = model["tmpls"][0]["qfmt"]
-        oback = model["tmpls"][0]["afmt"]
-        ocss = model['css']
-
-        # This shouldn't be here but should be ok as there were no min models < 1.1.3
-        if strvercmp(CVER, '1.1.0') < 0:
-            # Fix document structure change
-            RE1 = re.compile(r'\s*<!-- FC2 BEGIN -->\s*<!-- CONFIGURATION BEGIN -->\s*<script type="application/javascript">\s*')
-            RE2 = re.compile(r'\s*</script>\s*<!-- CONFIGURATION END -->\s*<!-- FUNCTIONALITY BEGIN -->\s*<script type="application/javascript">\s*')
-            RE3 = re.compile(r'\s*</script>\s*<!-- FUNCTIONALITY END -->\s*<!-- FC2 END -->\s*')
-            def strip_htm(txt):
-                txt = RE1.sub(f'\n\n<script type="application/javascript">\n{TAG_CFG[0]}\n', txt)
-                txt = RE2.sub(f'\n{TAG_CFG[1]}\n\n{TAG_FUNC[0]}\n', txt)
-                txt = RE3.sub(f'\n{TAG_FUNC[1]}\n</script>', txt)
-                return txt.replace('chars:', 'char:')
-
-            ofront = strip_htm(ofront)
-            oback = strip_htm(oback)
-            ocss = re.sub(r'\s*\/\*-- FC2 (?:BEGIN|END) --\*\/\s*', '\n\n', ocss)
-
-        old = parse_template(ofront)
-        new =  parse_template(nfront)
-        if old and new:
-            old['func'] = new['func']
-            model["tmpls"][0]["qfmt"] = render_template(old, 'cfg')
-        else:
-            msgs.append('Failed to parse front template, manually insert template from addon directory.')
-
-        old = parse_template(oback)
-        new =  parse_template(nback)
-        if old and new:
-            old['func'] = new['func']
-            model["tmpls"][0]["afmt"] = render_template(old, 'cfg')
-        else:
-            msgs.append('Failed to parse back template, manually insert template from addon directory.')
-
-        old = parse_template(ocss)
-        new =  parse_template(ncss)
-        if old and new:
-            old['func'] = new['func']
-            model['css'] = render_template(old, 'func')
-        else:
-            msgs.append('Failed to parse styling template, manually insert template from addon directory.')
-
-        # Write
-        col.models.update(model)
-
-    return msgs
+    oback = parse_legacy_template(model["tmpls"][0]["afmt"])
+    ocss = parse_legacy_template(model["css"])
 
 def update():
-
     msgs = []
-    msgs.extend(update_model(
-        mw.col,
-        FC2_NAME,
-        (FNAME_FRONT, FNAME_BACK, FNAME_CSS),
-        create_model)
-    )
-    msgs.extend(update_model(
-        mw.col,
-        FC2_MIN_NAME,
-        (FNAME_MIN_FRONT, FNAME_MIN_BACK, FNAME_MIN_CSS),
-        create_min_model)
-    )
+    (nfront, nback, ncss) = read_files((FNAME_FRONT, FNAME_BACK, FNAME_CSS))
+    (nmfront, nmback, nmcss) = read_files((FNAME_MIN_FRONT, FNAME_MIN_BACK, FNAME_MIN_CSS))
+
+    if strvercmp(CVER, '0.0.0') > 0: # Model(s) exist
+        if strvercmp(CVER, '1.2.0') >= 0: # New template format
+            # read old template
+                # split
+                # join
+            # or new
+            pass
+        elif model := mw.col.models.by_name(FC2_NAME): # Old template format
+            upgrade_one(model)
+
+            # read old template
+            # get old config
+            # write new normal model
+            create_min_model(mw.col, FC2_MIN_NAME, nmfront, nmback, nmcss)
+            re.match(rf'^(.*?)\s*({re.escape(TAG_CFG[0])}|{re.escape(TAG_FUNC[0])})\s*(.*?)\s*({re.escape(TAG_CFG[1])}|{re.escape(TAG_FUNC[1])})\s*(.*?)\s*({re.escape(TAG_CFG[0])}|{re.escape(TAG_FUNC[0])})\s*(.*?)\s*({re.escape(TAG_CFG[1])}|{re.escape(TAG_FUNC[1])})\s*(.*)$', text, flags=re.DOTALL):
+            msgs.extend(legacy_update_template())
+            # manual add of new min template
+    else: # First install
+        # create both new models
+
+
 
     if CVER != '0.0.0':
         if strvercmp(CVER, '1.1.3') < 0:
