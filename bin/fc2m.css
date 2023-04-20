@@ -1,4 +1,5 @@
-/*-- FUNCTIONALITY BEGIN --*/
+/*-- FC2 FUNCTIONALITY - DO NOT MAKE ANY CHANGES UNTIL AFTER "FC2 FUNCTIONALITY END" --*/
+/* z-order: text → top-bar → clozes → searches → side-bar → footer  */
 div[hidden], span[hidden], pre[hidden], [id^=fc2-meta-] { display: none !important; }
 
 .mobile .card {
@@ -55,20 +56,21 @@ div[hidden], span[hidden], pre[hidden], [id^=fc2-meta-] { display: none !importa
         display: none; flex: 1 1;
         margin: 10px;
     }
-        span.cloze, span.cloze-inactive {
+        .cloze, .cloze-inactive {
             display: block;
+            z-index: 2;
             min-width: 100px; min-height: 0.5em;
             margin: 1px; padding : 5px;
             vertical-align: middle;
             border: 2px solid var(--border);
         }
-        span.cloze.hide, span.cloze-inactive.hide {
+        .cloze.hide, .cloze-inactive.hide {
             display: inline-block;
         }
-        span.cloze { border: 2px solid var(--border-focus) }
-        .front span.cloze { background-color: var(--canvas); }
-        .back span.cloze { background-color: var(--canvas-elevated); }
-        span.cloze-inactive { background-color: var(--canvas); }
+        .cloze { border: 2px solid var(--border-focus) }
+        .front .cloze { background-color: var(--canvas); }
+        .back .cloze { background-color: var(--canvas-elevated); }
+        .cloze-inactive { background-color: var(--canvas); }
 
     #fc2-content-placeholder { flex: 1 1; }
     #fc2-additional {
@@ -91,7 +93,7 @@ div[hidden], span[hidden], pre[hidden], [id^=fc2-meta-] { display: none !importa
         .fc2-additional-content * { pointer-events: none; }
 #fc2-search-panel {
     display: flex; flex-flow: row nowrap;
-    z-index: 3;
+    z-index: 5;
     border-top: 1px solid var(--border);
     margin: 2px; padding: 2px;
 }
@@ -105,26 +107,26 @@ div[hidden], span[hidden], pre[hidden], [id^=fc2-meta-] { display: none !importa
     }
     #fc2-search-btn:active {background-color: var(--fg-faint);}
     .fc2-search-matches {
-        position: absolute; z-index: 1;
+        position: absolute; z-index: 3;
         vertical-align: top;
         background-color: var(--selected-bg); color: var(--fg-faint);
     }
     .fc2-search-match {
-        position: absolute; z-index: 1;
+        position: absolute; z-index: 3;
         vertical-align: top;
         background-color: var(--selected-bg);
     }
 #fc2-log-panel {
     display: flex; flex: initial; flex-flow: column nowrap;
-    z-index: 3;
+    z-index: 5;
     height: 100px; overflow: auto;
     margin: 0px;
     font-size: 10px; word-wrap: break-word; white-space: pre-wrap;
     background-color: #80000080;
 }
-#fc2-show-all {
+#fc2-show-all-btn {
     flex: 0 0;
-    z-index: 3;
+    z-index: 5;
     padding: 5px;
     text-align: center; text-transform: uppercase; font-size: 15px; font-weight: bold;
     background-color: var(--canvas); color: var(--fg);
@@ -132,7 +134,7 @@ div[hidden], span[hidden], pre[hidden], [id^=fc2-meta-] { display: none !importa
     cursor: pointer;
 }
 
-#fc2-footer {z-index: 3; flex: 0 0;}
+#fc2-footer {z-index: 5; flex: 0 0;}
 	#fc2-legends {display: flex; flex-flow: row nowrap;}
 		.fc2-legend {
             flex: 1 1;
@@ -148,30 +150,30 @@ div[hidden], span[hidden], pre[hidden], [id^=fc2-meta-] { display: none !importa
             color: black;
         }
 
-#fc2-nav-toggle-all {position: fixed; z-index: 2; top: 0; left: 0; right: 0; height: 30px;}
-#fc2-nav-prev-cloze {position: fixed; z-index: 2; top: 0; left: 0; bottom: 0; width: 30px;}
-#fc2-nav-next-cloze {position: fixed; z-index: 2; top: 0; right: 0; bottom: 0; width: 30px;}
-.fc2-nav-area-top {
+#fc2-nav-toggle-all {
+    position: fixed; z-index: 1; top: 0; left: 0; right: 0; height: 30px;
     height: 30px;
     cursor: pointer;
     background-color: transparent;
 }
-.fc2-nav-area-side {
-    width: 30px;
+#fc2-nav-prev-cloze, #fc2-nav-next-cloze {
+    position: fixed; z-index: 4; top: 0; bottom: 0; width: 30px;
     cursor: pointer;
     background-color: transparent;
 }
-/*-- FUNCTIONALITY END --*/
+#fc2-nav-prev-cloze {left: 0;}
+#fc2-nav-next-cloze {right: 0;}
+/*-- FC2 FUNCTIONALITY END --*/
 
-/*-- CONFIGURATION BEGIN --*/
 /* =======================================================
 Look and feel configurations, changing/deleting will not break functionality (although incoherrent styling will make things look strange).
 ========================================================= */
 
 /* NAVIGATION AREA CONFIGURATION ======================================
 Top and side navigation area configuration, change size by increasing height/width
-.fc2-nav-area-top
-.fc2-nav-area-side
+#fc2-nav-toggle-all
+#fc2-nav-prev-cloze
+#fc2-nav-next-cloze
 */
 
 /* CARD GENERAL STYLING =========================================== */
@@ -228,34 +230,36 @@ span.cloze / span.cloze-inactive
 
 /* MISCELLANEOUS STYLING, HAS NOTHING TO DO WITH FLEXIBLE CLOZE ============== */
 /* Highlight other text runs */
-code, kbd, var, samp, tt
-{ background-color: #80808080; }
+code, kbd, var, samp, tt { background-color: var(--canvas-code); }
 
 /* reduce whitespace and indents for lists */
-li
-{ margin: 0; }
-ul, ol
-{ padding: 0em 0em 0em 2em; margin-top: 0.5em; margin-bottom: 0.5em; }
+li { margin: 0; }
+ul, ol { padding: 0em 0em 0em 2em; margin-top: 0.5em; margin-bottom: 0.5em; }
 
 /* Reduce first list indent and spacing when a cloze begins with a list */
 span.cloze > ul:first-child, span.cloze-inactive > ul:first-child
 span.cloze > ol:first-child, span.cloze-inactive > ol:first-child
 span.cloze > br:first-child + ul, span.cloze-inactive > br:first-child + ul,
-span.cloze > br:first-child + ol, span.cloze-inactive > br:first-child + ol
-{ padding: 0em 0em 0em 1em; margin-top: 0em; margin-bottom: 0em; }
+span.cloze > br:first-child + ol, span.cloze-inactive > br:first-child + ol {
+    padding: 0em 0em 0em 1em; margin-top: 0em; margin-bottom: 0em;
+}
 
 /* Reduce list indents and spacing when in a table */
-td ul, td ol, td ul ul, td ol ol, td ul ul ul, td ol ol ol
-{ padding: 0em 0em 0em 1em; margin-top: 0em; margin-bottom: 0em; }
+td ul, td ol {
+    padding: 0em 0em 0em 1em; margin-top: 0em; margin-bottom: 0em;
+}
 
 /* Default table formating */
 table:not([class]) { border-collapse: collapse; width: 100%; margin-bottom: 20px; margin-top: 5px; }
-th:not([class]) { border: 1px solid black; font-weight: bold; text-transform: uppercase; background-color: #80808080; }
-td:not([class]) { border: 1px solid black; }
+th:not([class]) { border: 1px solid var(--border); font-weight: bold; text-transform: uppercase; background-color: var(--button-bg); }
+td:not([class]) { border: 1px solid var(--border); }
 
 /* Default header formating */
 h1, h2, h3, h4, h5, h6 { font-size: 20px; margin: 0px; }
-h1:not(:first-child), h2:not(:first-child), h3:not(:first-child), h4:not(:first-child), h5:not(:first-child), h6:not(:first-child) { margin-top: 20px; }
+h1:not(:first-child), h2:not(:first-child), h3:not(:first-child),
+h4:not(:first-child), h5:not(:first-child), h6:not(:first-child) {
+    margin-top: 20px;
+}
 h1 { font-weight: 900; text-transform: uppercase; }
 h2 { font-weight: 900; }
 h3 { font-weight: 900; font-style: italic; }

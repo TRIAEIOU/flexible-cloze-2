@@ -66,7 +66,7 @@ var config = {
             }
         ],
         show_all_button: false, // Optional "show all" button at bottom of page
-        log: true               // Debug information level (`false`, `'error'` or `true`)
+        log: 'error'            // Debug information level (`false`, `'error'` or `true`)
     }
 }
 </script>
@@ -79,9 +79,9 @@ var config = {
     <div id="fc2-content-placeholder">This note type requires <code>nested cloze support</code> and <code>increased meta data</code> features from the Anki 2.1.56+ backend (Anki desktop 2.1.56+, AnkiDroid 2.16alpha93+ with `Use new backend` enabled and AnkiMobile 2.0.88+).</div>
 
     <div id="fc2-additional">
-        <div id="fc2-extra-header" class="fc2-additional-header">Extra</div>
+        <div id="fc2-extra-header" class="fc2-additional-header">Back Extra</div>
         <div id="fc2-extra-content" class="fc2-additional-content">
-            {{#Extra}}{{Extra}}<hr>{{/Extra}}
+            {{#Back Extra}}{{Back Extra}}<hr>{{/Back Extra}}
             <div id="fc2-deck"><b>Deck</b>: {{Deck}}</div>
             {{#Tags}}<div id="fc2-tags"><b>Tags</b>: {{Tags}}</div>{{/Tags}}
         </div>
