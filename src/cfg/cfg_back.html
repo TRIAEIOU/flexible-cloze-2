@@ -1,0 +1,53 @@
+<!-- CONFIGURATION BEGIN -->
+<script type="application/javascript">
+var config = {
+    prompt: '',                 // Prompt when no hint
+    hint: '%h',               // %h is replaced with hint text
+    expose: {
+        char: '!',              // Char to mark exposed cloze
+        pos: 'begin',           // Char pos: `pre`, `begin`, `end` or `post`
+        reverse: false          // If true exposed clozes are hidden, others shown
+    },
+    scroll: {                   // Valid values: `none`, `min`, `center`, `context`, `context-top` or `context-bottom`
+        initial: 'min',         // Scoll on initial show
+        click: 'min',           // Scroll on cloze click
+        iterate: 'min'          // Scroll on iteration
+    },
+    iteration: {
+        top: false,             // Always start iteration from top
+        loop: true,             // Restart from top/bottom from end
+        hide: false             // Hide cloze iterated away from
+    },
+    shortcuts: {
+        next: 'j',              // Iterate to next cloze
+        previous: 'h',          // Iterate to previous cloze
+        toggle_all: 'k'         // Toggle all clozes and fields
+    },
+    show: {                     // `false` means initially collapsed/hidden
+        inactive: false,        // Inactive clozes
+        additional: true       // Additional fields (Note, Mnemonics etc.)
+    },
+    fields: {
+        title: true,                // Title area
+        legends: [                  // Configurable legends at bottom
+        [
+                '<div style="background-color: #465A65; color: #d4d4d4; font-weight: bold;"><span style="font-size: 150%;">&#8594;</span> BECOMES</div>',
+                '<div style="background-color: #465A65; color: #d4d4d4; font-weight: bold;"><span style="font-size: 150%;">&#8658;</span> LEADS TO</div>',
+                '<div style="background-color: #465A65; color: #d4d4d4; font-weight: bold;"><span style="font-size: 150%;">&#10521;</span> EXCITE/ACTIVATE</div>',
+                '<div style="background-color: #465A65; color: #d4d4d4; font-weight: bold;"><span style="font-size: 150%;">&#10979;</span> INHIBIT/DEACTIVATE</div>'
+            ], [
+                '<div style="background-color: #FD7C6E; color: #020202; font-weight: bold;">INCORRECT</div>',
+                '<div style="background-color: #FAA76C; color: #020202; font-weight: bold;">DUPLICATE</div>',
+                '<div style="background-color: #81A984; color: #020202; font-weight: bold;">FORMATING</div>',
+                '<div style="background-color: #ADB9CA; color: #020202; font-weight: bold;">REPHRASE</div>',
+                '<div style="background-color: #D89B9B; color: #020202; font-weight: bold;">DISCARD</div>',
+                '<div style="background-color: #33B3A6; color: #020202; font-weight: bold;">CONSOLIDATE</div>',
+                '<div style="background-color: #A64CA6; color: #020202; font-weight: bold;">MARK</div>'
+            ]
+        ],
+        show_all_button: false,      // Optional "show all" button at bottom of page
+        log: 'error'                 // Debug information level (`false`, `'error'` or `true`)
+    }
+}
+</script>
+<!-- CONFIGURATION END -->

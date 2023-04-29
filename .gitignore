@@ -1,1 +1,4 @@
-/fcz.css.bak
+dist
+build
+*/**/meta.json
+bin/*.bak

@@ -64,7 +64,7 @@ div[hidden], span[hidden], pre[hidden], [id^=fc2-meta-] { display: none !importa
     display: flex;
     position: fixed !important; top: 0; bottom: 0; left: 0; right: 0;
     margin: 0px;
-    font-family: Arial; font-size: 18px;
+    font-family: Arial; font-size: 20px;
     color: var(--fc2-fg);
 }
 #qa, #content {
@@ -249,16 +249,21 @@ span.cloze / span.cloze-inactive
 code, kbd, var, samp, tt { background-color: var(--canvas-code); }
 
 /* reduce whitespace and indents for lists */
-li { margin: 0px; padding: 0px; }
-ul, ol {
-    padding: unset; padding-left: 1em;
-    margin: unset; margin-left: 0.7em; margin-block-start: 0.5em; margin-block-end: 0.5em;
+li { margin: 0; }
+ul, ol { padding: 0em 0em 0em 2em; margin-top: 0.5em; margin-bottom: 0.5em; }
+
+/* Reduce first list indent and spacing when a cloze begins with a list */
+span.cloze > ul:first-child, span.cloze-inactive > ul:first-child
+span.cloze > ol:first-child, span.cloze-inactive > ol:first-child
+span.cloze > br:first-child + ul, span.cloze-inactive > br:first-child + ul,
+span.cloze > br:first-child + ol, span.cloze-inactive > br:first-child + ol {
+    padding: 0em 0em 0em 1em; margin-top: 0em; margin-bottom: 0em;
 }
-li ul, li ol { margin-block-start: 0em; margin-block-end: 0.7em;}
 
 /* Reduce list indents and spacing when in a table */
-td ul, td ol { margin-block-start: 0em; margin-block-end: 0em; margin-left: 0em; }
-td li ul, td li ol { margin-left: 0.5em; }
+td ul, td ol {
+    padding: 0em 0em 0em 1em; margin-top: 0em; margin-bottom: 0em;
+}
 
 /* Default table formating */
 table:not([class]) { border-collapse: collapse; width: 100%; margin-bottom: 20px; margin-top: 5px; }
@@ -266,22 +271,18 @@ th:not([class]) { border: 1px solid var(--border); font-weight: bold; text-trans
 td:not([class]) { border: 1px solid var(--border); }
 
 /* Default header formating */
-h1, h2, h3, h4, h5, h6 {
-    all: unset;
-    display: block;
-    margin-block-end: 0.3em;
-}
+h1, h2, h3, h4, h5, h6 { font-size: 20px; margin: 0px; }
 h1:not(:first-child), h2:not(:first-child), h3:not(:first-child),
 h4:not(:first-child), h5:not(:first-child), h6:not(:first-child) {
-    margin-block-start: 1em;
+    margin-top: 20px;
 }
-h1:first-child { font-size: 150%; margin-block-end: 1em; }
-h1 { font-weight: bold; text-transform: uppercase; }
-h2 { font-weight: bold; text-transform: uppercase; }
-h3 { text-decoration: underline; }
-h4 { font-style: italic; text-decoration: underline; }
-h5 { font-style: italic; }
+h1 { font-weight: 900; text-transform: uppercase; }
+h2 { font-weight: 900; }
+h3 { font-weight: 900; font-style: italic; }
+h4 { text-decoration: underline; }
+h5 { font-style: italic; text-decoration: underline; }
+h6 { font-style: italic }
 
 /* Definition lists formating */
 dt { font-weight: bold; }
-dd { margin-bottom: 1em; }
+dd { margin-bottom: 10px; }
