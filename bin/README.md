@@ -8,6 +8,13 @@ Reimplementation of [Flexible cloze](https://ankiweb.net/shared/info/1632356464)
 
 ![Flexible cloze 2](https://raw.githubusercontent.com/TRIAEIOU/flexible-cloze-2/main/Screenshots/front-and-back.png){height=500px}
 
+The addon adds two note types:
+
+- `Flexible cloze 2`: Has 5 fields: `Title`, `Text`, `Notes`, `Mnemonics` and `Extra` where `Text` is the cloze field and `Title` the default sort field/shown in the card/note table.
+- `Flexible cloze 2 (min)`; Has 2 fields: `Text` and `Back Extra`, similar to the core Anki `cloze` note type. When reviewing the first `<h1>` found in the `Text` field will be extracted and set as title (primarily for use with Markdown notes, there is no default way of inserting `<h1>` tags in the Anki editor), failing this it will insert the deck name.
+
+The functionality, apart from what is mentioned above, is the same for both.
+
 ## iOS
 
 Please note, I have no iOS device to test on, it *should* work as it is generic javascript. If something appears broken, please let me know (with debug info, see below).
@@ -45,7 +52,7 @@ You can of course also use FC2 if you just want some more configurability/functi
 - Clicking an inactive cloze on the front side will cycle it between hide and show (no hint).
 - Toggle all/cycle between active and/or inactive clozes (configurable) by tapping left/right/top of screen or keyboard shortcuts.
 - Search in card from the reviewer (`Ctrl+F` or top bar) - if you, like me, have all your notes in Anki and want to be able to look something up quickly from your phone.
-- There is an optional "show all" button (styleable in class .fcz-show-all-btn). Note that he button is set to `display: none` in default configuration, you have to set it to `display: inline` on the Styling page of the cards dialog to get it to show.
+- There is an optional "show all" button (styleable with id #fcz-show-all-btn).
 
 ### Lists
 
@@ -58,17 +65,14 @@ Step 3: {{c1:someting completely different}}
 
 ```
 
-### Reviewing
-
-If using this template it may be worth using some scheduling adjustment addons ([Asdcending cloze reviews](https://ankiweb.net/shared/info/545968093), [AutoReorder](https://ankiweb.net/shared/info/757527607) or similar) to **review** the cards from a note in ascending cloze ordinal order as later clozes may use the answers from earlier clozes. For cloze order presentation of **new** cards use the the v3 scheduler and `Deck options` as follows:
-
-- `New card gather order`: `Deck`
-- `New card sort order`: `Order gathered`
-- `Bury new siblings`, `Bury review siblings` and `Bury interday learning siblings`: `off`
-
 ## Configuration
 
-Configuration is made in the note template, configuration is made between `/*-- CONFIGURATION BEGIN`/`END --*/` on the `Front`/`Back`/`Styling` template respectively. JS/CSS between `/*-- FUNCTIONALITY BEGIN`/`END --*/` tags is the actual FC2 code, not for configuration (will be overwritten on next update). The update logic is dependent on the user keeping the `/*-- CONFIGURATION/FUNCTIONALITY BEGIN/END --*/` intact.
+Configuration is made in the note template between:
+
+- At the top of `Front`/`Back` between the `<!-- CONFIGURATION BEGIN`/`END -->` tags.
+- At the bottom of `Styling` after the `/*-- FUNCTIONALITY END --*/` tag.
+
+The update logic is dependent on the user keeping these tag intact and updates will overwrite everything that is marked as "functionality".
 
 - Active cloze: Cloze(s) with the current ordinal, i.e. the cloze(s) that should be answered. To change styling of these change or override `.cloze` class in `Styling` of the card template.
 - Inactive cloze: Cloze(s) that are not the current ordinal, i.e. the cloze(s) that should not be answered. To change styling of these change or override `.cloze-inactive` class in `Styling` of the card template.
@@ -99,20 +103,75 @@ Configuration is made in the note template, configuration is made between `/*-- 
   - Always start iteration from the top (otherwise iteration will "continue" from the last clicked item): `top`
 - `show` cloze initial display behavior:
   - `inactive`: inactive clozes (setting to `true`will make FC2 behave similar to core Anki clozes).
-  - `addtional`: Additional fields (including Information field).
-  - `information`: Information field (regardless of `additional`).
-- `debug`: can be used to print debug information, useful if you have an issue and want to report it (`false` for none, `error` errors and `true` for errors and debug information).
+  - `addtional`: Additional fields.
+- `fields`: customizations of the interface
+  - `title`: (only relevant for the min version) Wether to show the note "title field" (will parse out first `<h1>` or deck name if not found).
+  - `legends`: Array of array of HTML strings that will be inserted into elements at the bottom of the page for use as symbol legend(s). The logic expects each entry to be enclosed in a `<div>`. Remove/empty to remove legend.
+  - `show_all_button`: Show "Show all" button at bottom of card. (default `false`)
+  - `log`: Level of logging, pops up a logging field at bottom of page when level is met (`false` for none, `error` errors and `true` for errors and debug information, default `error`). Please provide this information if/when reporting errors/bugs.
 - Configuration can be overridden on an individual note by using Anki `Tags`, e.g add `fc2.cfg.front.scroll.initial.context-bottom` to set the front side initial scroll of the note to `context-bottom` (leave out the side to set for both front and back, e.g. `fc2.cfg.scroll.initial.context-bottom`)
 - Styling of different elements (e.g. "I want the answer to be displayed inline rather than in a block") can easily be configured in the `Styling` section of the card template.
-- Changes will mainly be made inside `FUNCTIONALITY BEGIN`/`FUNCTIONALITY END` tags, which in turn is divided into functionality and configuration allowing the user to avoid overwriting their modification part on update.
 
 ## Recommended companion addons
 
 Some useful companion addons if you, like I, keep one note per subject rather than per question:
 
-- Review in ascedning cloze ordinal order: [Asdcending cloze reviews](https://ankiweb.net/shared/info/545968093)
+- Review in ascedning cloze ordinal order: [Asdcending cloze reviews](https://ankiweb.net/shared/info/545968093) or [AutoReorder](https://ankiweb.net/shared/info/757527607) or similar to **review** the cards from a note in ascending cloze ordinal order as later clozes may use the answers from earlier clozes.
+  - For cloze order presentation of **new** cards use the the v3 scheduler and `Deck options` as follows:
+
+    - `New card gather order`: `Deck`
+    - `New card sort order`: `Order gathered`
+    - `Bury new siblings`, `Bury review siblings` and `Bury interday learning siblings`: `off`
+
 - Sort cloze ordinals in ascending order while keeping learning state: [Sort clozes](https://ankiweb.net/shared/info/157021113)
 - If you prefer note taking in markdown: [Markdown input](https://ankiweb.net/shared/info/904999275)
+- If you want to maximize the note taking space in the browser: [Sidebar table](https://ankiweb.net/shared/info/1753198255)
+- If you want a little more `VS Code`-y interface, consider [CSS Injector - Change default editor styles](https://ankiweb.net/shared/info/181103283) with something like:
+
+  ```css
+  /* editor.css */
+  div > div.editor-field {
+    border-radius: unset;
+    border: none !important;
+    box-shadow: none !important;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-bottom: 5px;
+  }
+  div:not(:nth-child(1)) > .field-container {
+    border-top: 1px solid var(--border);
+  }
+
+  .editor-toolbar .button-toolbar {
+    border: none;
+    padding: 7px 7px 0px 7px;
+    margin: 0px;
+  }
+
+  .editor-field {
+    --fg: #3b3b3b;
+    --selected-bg: #ADD6FF80;
+  }
+  .night_mode .editor-field {
+    --fg: #d4d4d4;
+    --selected-bg: #ADD6FF26;
+  }
+
+  body {
+    --fg: #3b3b3b;
+    --canvas: #ffffff;
+    --canvas-elevated: #ffffff;
+    --border: #CECECE;
+    --border-focus: 1px solid #3794ff;
+  }
+  body.night_mode {
+    --fg: #858585;
+    --canvas: #1e1e1e;
+    --canvas-elevated: #1e1e1e;
+    --border: #474747;
+    --border-focus: 1px solid #3794ff;
+  }
+  ```
 
 ## Regarding styling
 
@@ -120,7 +179,7 @@ The default styling of the template does not look like "regular Anki clozes". Yo
 
 ### To achieve the "regular Anki cloze styling"
 
-On both `Front Template` and `Back Template` under `CONFIGURATION BEGIN` set:
+On both `Front` and `Back` (with the exception of show.additional which should be `true` on `Back`) set configuration to:
 
 ```javascript
 var config = {
@@ -149,26 +208,33 @@ var config = {
     show: {                     // `false` means initially collapsed/hidden
         inactive: true,         // Inactive clozes
         additional: false,      // Additional fields (Note, Mnemonics etc.)
-        info: false             // Information field
+    },
+    fields: {
+        title: false,           // Title area
+        legends: [],            // Configurable legends at bottom
+        show_all_button: false, // Optional "show all" button at bottom of page
+        log: 'error'            // Debug information level (`false`, `'error'` or `true`)
     }
 }
 ```
 
-In the `CLOZE STYLING` section of the `Styling` page replace all the content with:
+In the `Styling` page insert the following below `/*-- FC2 FUNCTIONALITY END --*/`:
 
 ```CSS
-span.cloze {color: blue; font-weight: bold;}
+span.cloze { all: unset; color: blue; font-weight: bold; }
+span.cloze-inactive { all: unset; }
 ```
 
 ## Main difference from the earlier mentioned add-ons
 
 There is effectively no add-on, it's all JavaScript (and HTML/CSS) and runs 100% "client side" (the only python is the update logic). The logic requires an Anki version based on the 2.15.56+ back end (i.e. Anki desktop 2.15.56+, AnkiDroid 2.16alpha93+ with `Use new backend` enabled or AnkiMobile 2.0.88+).
 
+- The note type contains a search function for if/when using the anki collection as a knowledge db and accessing it from a phone.
 - Included is my note styling and configuration (the way it functions and which fields are present are more or less a complete rip-off from RisingOrange). However, you can edit the note type however you want if you know a little HTML and CSS.
 - This allows for keeping related content on the same note facilitating note creation (no need to search through the deck to see if you already added a card with similar content). It can also help when reviewing as you can look at the other related clozes if you need to check something (e.g. "Well if it wasn't that, what was it?"). This is how I design my notes, hence the layout.
-- I would recommend keeping any note type edits outside the FC2 `FUNCTIONALITY BEGIN`/`END` marks as content inside will be overwritten if the addon is updated (assuming you still have it installed). However if you want to keep the add-on for updates but want to muck about inside the begin/end tags I would suggest you duplicate the note type and rename your version to whatever (updates are made only on the appropriately named note type).
+- I would recommend keeping any note type edits outside the "functionality" marked parts as content inside will be overwritten on addon update (I will try to respect anything outside "functionality tags" but I don't always succeed). However if you want to keep the add-on for updates but want to muck about inside the "functionality" marked parts I would suggest you duplicate the note type and rename your version to whatever (updates are made only on the appropriately named note type).
 - Since all is on the note configurations (like how the clozes look etc.) are in the template there is no configuration from the add-on pane.
-- Hardly an important difference but I use the flags for marking cards that needs to be corrected in different ways so there is a flag legend at the bottom (colors and text configurable) that takes up minimal space. Similarly there is a figure legend at the bottom (edit the front template to insert/change symbols).
+- Hardly an important difference but I use the flags for marking cards that needs to be corrected in different ways so by default there is a flag legend at the bottom (configurable) that takes up minimal space. Similarly there is a symbol legend at the bottom (configurable).
 
 ## Similarities with the above two add-ons
 
@@ -183,4 +249,4 @@ There is effectively no add-on, it's all JavaScript (and HTML/CSS) and runs 100%
 - 2023-02-07: Adapt JS to AnkiDroid behaviour, fix [expose bug](https://github.com/TRIAEIOU/flexible-cloze-2/issues/4).
 - 2023-02-10: Fix hint bug.
 - 2023-02-18: Fix scroll and hint bugs.
-- 2023-03-26: Refactor, add `context-top` and `context-bottom`, add note specific config through tags, add debug option/info, add search function.
+- 2023-03-26: Restructure code, add `context-top` and `context-bottom`, add note specific config through tags, add log option/info, add search function, add `Flexible Cloze 2 (min)` template which only has `Text` and `Back Extra` fields.

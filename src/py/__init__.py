@@ -1,6 +1,6 @@
 """Installation/update of template"""
 
-import re, os
+import os, codecs
 from aqt import mw, QPushButton, QMessageBox, gui_hooks
 from aqt.utils import *
 from aqt.qt import *
@@ -27,14 +27,14 @@ NVER = "1.2.0"
 def read_files(files: tuple[str, ...]):
     out = []
     for file in files:
-        with open(os.path.join(ADDON_PATH, file)) as fh:
+        with codecs.open(os.path.join(ADDON_PATH, file), encoding='utf-8') as fh:
             tmp = fh.read()
             out.append(tmp)
     return out
 
 def write_files(files: tuple[str, ...]):
     for file in files:
-        with open(os.path.join(ADDON_PATH, file[0]), "w") as fh:
+        with codecs.open(os.path.join(ADDON_PATH, file[0], ), mode="w", encoding='utf-8') as fh:
             fh.write(file[1])
 
 def update_model(model, col, nfront, nback, ncss):
@@ -138,7 +138,7 @@ def update():
         ))
         msgs.extend(update_model(model, mw.col, nfront, nback, ncss))
 
-    if not mmodel: # No
+    if not mmodel:
         create_min_model(mw.col, nmfront, nmback, nmcss)
     else:
         write_files((

@@ -192,9 +192,9 @@ var fc2
             this.content.parentElement.classList.add(this.cfg.front ? 'front' : 'back');
             const tags = document.getElementById('fc2-meta-tags').innerText.split(' ');
             for (const tag of tags) {
-                if (!tag.startsWith('fc2.cfg.'))
+                if (!tag.startsWith('fc2.'))
                     continue;
-                const parts = tag.slice(8).split('.');
+                const parts = tag.slice(4).split('.');
                 const tag_side = ['front', 'back'].includes(parts[0]) ? parts.shift() : undefined;
                 if (tag_side && tag_side !== side || this.cfg[parts[0]]?.[parts[1]] === undefined)
                     continue;
@@ -215,9 +215,9 @@ var fc2
                             h1.remove();
                         }
                         else {
-                            const ttxt = document.getElementById('deck')?.innerText.split('::').pop();
-                            if (ttxt)
-                                title.innerText = ttxt;
+                            const tt = document.getElementById('fc2-meta-subdeck')?.innerText;
+                            if (tt)
+                                title.innerText = tt;
                             else
                                 title.remove();
                         }
@@ -240,31 +240,22 @@ var fc2
             if (!this.cfg.show.additional)
                 this.viewport.querySelectorAll('.fc2-additional-content')
                     .forEach(nd => nd.hidden = true);
-            if (this.cfg.fields?.legend?.length || this.cfg.fields?.flags?.length) {
+            if (this.cfg.fields?.legends?.length) {
                 const footer = document.createElement('div');
                 footer.id = 'fc2-footer';
                 this.viewport.insertAdjacentElement('afterend', footer);
-                if (this.cfg.fields.legend?.length) {
-                    const itms = document.createElement('div');
-                    itms.id = 'fc2-legends';
-                    footer.appendChild(itms);
-                    for (const legend of this.cfg.fields.legend) {
-                        const itm = document.createElement('div');
-                        itm.className = 'fc2-legend';
-                        itm.innerHTML = legend;
-                        itms.appendChild(itm);
-                    }
-                }
-                if (this.cfg.fields.flags?.length) {
-                    const itms = document.createElement('div');
-                    itms.id = 'fc2-flags';
-                    footer.appendChild(itms);
-                    for (const flag of this.cfg.fields.flags) {
-                        const itm = document.createElement('div');
-                        itm.className = 'fc2-flag';
-                        itm.innerHTML = flag.text;
-                        itm.style.backgroundColor = flag.color;
-                        itms.appendChild(itm);
+                for (const legend of this.cfg.fields.legends) {
+                    const row = document.createElement('div');
+                    row.className = 'fc2-legends';
+                    footer.appendChild(row);
+                    for (const itm of legend) {
+                        let cell = document.createElement('div');
+                        cell.innerHTML = itm;
+                        cell = cell.firstElementChild;
+                        if (!cell)
+                            continue;
+                        cell.className = 'fc2-legend';
+                        row.appendChild(cell);
                     }
                 }
             }
@@ -386,8 +377,10 @@ var fc2
         }
         toggle_field(field) {
             this.log('toggle_field');
-            const fld = field.parentElement?.querySelector('.fc2-additional-content');
-            fld.hidden = !fld.hidden;
+            const fld = ancestor(field, '.fc2-additional-content') ||
+                ancestor(field, '.fc2-additional-header').nextElementSibling;
+            if (fld)
+                fld.hidden = !fld.hidden;
         }
         toggle_all(show = undefined) {
             this.log('toggle_all');

@@ -5,6 +5,7 @@
     "@rollup/plugin-terser": "^0.4.0",
     "@rollup/plugin-typescript": "^11.1.0",
     "copy-to-clipboard": "^3.3.3",
+    "cross-env": "^7.0.3",
     "fs-extra": "^11.1.1",
     "rollup": "^3.20.2",
     "rollup-plugin-copy-merge": "^1.0.0",
@@ -18,7 +19,8 @@
     "build-py": "shx cp ./src/py/*.py ./bin",
     "build-cfg": "shx cp ./src/html/fc2.css ./bin/ && shx cp ./src/html/fc2.css ./bin/fc2m.css",
     "build-doc": "shx cp ./LICENSE ./README.md ./bin",
-    "build": "npm run build-clean && npm run build-template && npm run build-py && npm run build-cfg && npm run build-doc",
-    "pack": "zip-build \"./bin\" \"./dist\" -o -t \"update.zip\" && cross-env-shell pandoc -t $CODEPATH/pandoc/anki-addon.lua --abbreviations=$CODEPATH/pandoc/empty ./README.md -o ./dist/update.txt"
+    "build": "npm run build-template && npm run build-py && npm run build-cfg && npm run build-doc",
+    "prepack": "shx cp -r ./bin ./dist/ && rm -rf ./dist/bin/meta.json ./dist/bin/__pycache__ ./dist/bin/*.bak",
+    "pack": "npm run build && npm run prepack && zip-build \"./dist/bin\" \"./dist\" -o -t \"update.zip\" && cross-env-shell pandoc -t $CODEPATH/pandoc/anki-addon.lua --abbreviations=$CODEPATH/pandoc/empty ./README.md -o ./dist/update.txt"
   }
 }

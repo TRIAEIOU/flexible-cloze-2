@@ -27,8 +27,7 @@ export interface Configuration {
   },
   fields: {
     title: boolean|undefined
-    legend: string[]|undefined
-    flags: {text: string, color: string}[]|undefined
+    legends: string[][]|undefined
     show_all_button: boolean|undefined
     log: undefined|boolean|'error'    // Logging level (`false`, `'error'` or `true`)
   }|undefined

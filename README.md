@@ -106,8 +106,7 @@ The update logic is dependent on the user keeping these tag intact and updates w
   - `addtional`: Additional fields.
 - `fields`: customizations of the interface
   - `title`: (only relevant for the min version) Wether to show the note "title field" (will parse out first `<h1>` or deck name if not found).
-  - `legend`: Array of strings (inc HTML) that will be inserted into elements at the bottom of the page for use as symbol legend. Remove/empty to remove legend.
-  - `flags`: Array of text and color codes that will be inserted at the bottom of the page for use as flag legend (each element will be colored according to the color code). Remove/empty to remove legend.
+  - `legends`: Array of array of HTML strings that will be inserted into elements at the bottom of the page for use as symbol legend(s). The logic expects each entry to be enclosed in a `<div>`. Remove/empty to remove legend.
   - `show_all_button`: Show "Show all" button at bottom of card. (default `false`)
   - `log`: Level of logging, pops up a logging field at bottom of page when level is met (`false` for none, `error` errors and `true` for errors and debug information, default `error`). Please provide this information if/when reporting errors/bugs.
 - Configuration can be overridden on an individual note by using Anki `Tags`, e.g add `fc2.cfg.front.scroll.initial.context-bottom` to set the front side initial scroll of the note to `context-bottom` (leave out the side to set for both front and back, e.g. `fc2.cfg.scroll.initial.context-bottom`)
@@ -212,8 +211,7 @@ var config = {
     },
     fields: {
         title: false,           // Title area
-        legend: [],             // Configurable legend at bottom
-        flags: [],              // Configurable flag legend at bottom
+        legends: [],            // Configurable legends at bottom
         show_all_button: false, // Optional "show all" button at bottom of page
         log: 'error'            // Debug information level (`false`, `'error'` or `true`)
     }
@@ -231,11 +229,12 @@ span.cloze-inactive { all: unset; }
 
 There is effectively no add-on, it's all JavaScript (and HTML/CSS) and runs 100% "client side" (the only python is the update logic). The logic requires an Anki version based on the 2.15.56+ back end (i.e. Anki desktop 2.15.56+, AnkiDroid 2.16alpha93+ with `Use new backend` enabled or AnkiMobile 2.0.88+).
 
+- The note type contains a search function for if/when using the anki collection as a knowledge db and accessing it from a phone.
 - Included is my note styling and configuration (the way it functions and which fields are present are more or less a complete rip-off from RisingOrange). However, you can edit the note type however you want if you know a little HTML and CSS.
 - This allows for keeping related content on the same note facilitating note creation (no need to search through the deck to see if you already added a card with similar content). It can also help when reviewing as you can look at the other related clozes if you need to check something (e.g. "Well if it wasn't that, what was it?"). This is how I design my notes, hence the layout.
-- I would recommend keeping any note type edits outside the FC2 `FUNCTIONALITY BEGIN`/`END` marks as content inside will be overwritten if the addon is updated (assuming you still have it installed). However if you want to keep the add-on for updates but want to muck about inside the begin/end tags I would suggest you duplicate the note type and rename your version to whatever (updates are made only on the appropriately named note type).
+- I would recommend keeping any note type edits outside the "functionality" marked parts as content inside will be overwritten on addon update (I will try to respect anything outside "functionality tags" but I don't always succeed). However if you want to keep the add-on for updates but want to muck about inside the "functionality" marked parts I would suggest you duplicate the note type and rename your version to whatever (updates are made only on the appropriately named note type).
 - Since all is on the note configurations (like how the clozes look etc.) are in the template there is no configuration from the add-on pane.
-- Hardly an important difference but I use the flags for marking cards that needs to be corrected in different ways so there is a flag legend at the bottom (colors and text configurable) that takes up minimal space. Similarly there is a figure legend at the bottom (edit the front template to insert/change symbols).
+- Hardly an important difference but I use the flags for marking cards that needs to be corrected in different ways so by default there is a flag legend at the bottom (configurable) that takes up minimal space. Similarly there is a symbol legend at the bottom (configurable).
 
 ## Similarities with the above two add-ons
 

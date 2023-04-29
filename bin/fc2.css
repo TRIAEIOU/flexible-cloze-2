@@ -1,52 +1,83 @@
 /*-- FC2 FUNCTIONALITY - DO NOT MAKE ANY CHANGES UNTIL AFTER "FC2 FUNCTIONALITY END" --*/
 /* z-order: text → top-bar → clozes → searches → side-bar → footer  */
+/* Colors */
+.card {
+    --fc2-log: #80000080;
+}
+.card:not(.night_mode) {
+    --fc2-bg1: white;
+    --fc2-bg2: #f5f5f5;
+    --fc2-fg: #020202;
+    --fc2-border: #020202;
+    --fc2-border-focus: #3b82f6;
+    --fc2-button:#0000001a;
+    --fc2-button-active: #005FB8;
+    --fc2-search-matches: #80bfff40;
+    --fc2-search-match: #00256b40;
+}
+.card.night_mode {
+    --fc2-bg1: #1f1f1f;
+    --fc2-bg2: #2c2c2c;
+    --fc2-fg: #d4d4d4;
+    --fc2-border: #474747;
+    --fc2-border-focus: #3b82f6;
+    --fc2-button:#FFFFFF0F;
+    --fc2-button-active: #0078d4;
+    --fc2-search-matches: #9e6a0340;
+    --fc2-search-match: #78c2ff40;
+}
+
+/* Light mode */
+.card:not(.night_mode) {
+    background-color: var(--fc2-bg1);
+}
+.card:not(.night_mode) #fc2-additional {
+    border-top: 2px solid var(--fc2-border);
+}
+
+/* Night mode */
+.card.night_mode {
+    background-color: var(--fc2-bg2);
+    font-weight: 100;
+}
+#fc2-viewport::-webkit-scrollbar-track {
+    background: var(--fc2-bg1);
+}
+.night_mode #fc2-content {
+    background-color: var(--fc2-bg1);
+}
+.card.card.night_mode hr {
+    background-color: transparent;
+    border: none;
+    border-bottom: 1px solid var(--fc2-border);
+}
+.card.night_mode #fc2-additional {
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+.night_mode::-webkit-scrollbar-track {
+    background: var(--fc2-bg1);
+}
+
 div[hidden], span[hidden], pre[hidden], [id^=fc2-meta-] { display: none !important; }
-
-.mobile .card {
-    --canvas: #f5f5f5;
-    --canvas-elevated: white;
-    --fg: #020202;
-    --border-focus: #3b82f6;
-    --border: #c4c4c4;
-    --button-bg:#fcfcfc;
-    --fg-faint: #afafaf;
-    --selected-bg: rgba(214, 214, 214, 0.5);
-}
-.mobile .card.night_mode {
-    --canvas: #2c2c2c;
-    --canvas-elevated: #1e1e1e;
-    --fg: #d4d4d4;
-    --border-focus: #3b82f6;
-    --border: #202020;
-    --button-bg:#404040;
-    --fg-faint: #545454;
-    --selected-bg: rgba(147, 197, 253, 0.5);
-}
-
 .card, .card.night_mode {
     display: flex;
     position: fixed !important; top: 0; bottom: 0; left: 0; right: 0;
     margin: 0px;
     font-family: Arial; font-size: 20px;
-    color: var(--fg); background-color: var(--canvas-elevated);
+    color: var(--fc2-fg);
 }
-.card.night_mode {
-    --canvas-elevated: #1e1e1e;
-    --fg: #d4d4d4;
-}
-
 #qa, #content {
     display: flex; flex: 1 1; flex-flow: column nowrap;
     overflow: auto;
     margin: 0px;
 }
-
 #fc2-title {
     flex: 0 0;
-    margin: 10px 10px 0px 10px;
-    border-bottom: solid var(--fg) 2px;
+    padding-left: 10px; padding-right: 10px; padding-top: 5px; padding-bottom: 5px;
     text-transform: uppercase; font-weight: bold;
 }
+.card:not(.night_mode) #fc2-title {border-bottom: solid var(--fc2-border) 2px;}
 #fc2-viewport {
     display: flex; flex: 1 1; flex-flow: column nowrap;
     overflow: auto;
@@ -54,7 +85,7 @@ div[hidden], span[hidden], pre[hidden], [id^=fc2-meta-] { display: none !importa
 }
     #fc2-content {
         display: none; flex: 1 1;
-        margin: 10px;
+        padding: 10px;
     }
         .cloze, .cloze-inactive {
             display: block;
@@ -62,20 +93,17 @@ div[hidden], span[hidden], pre[hidden], [id^=fc2-meta-] { display: none !importa
             min-width: 100px; min-height: 0.5em;
             margin: 1px; padding : 5px;
             vertical-align: middle;
-            border: 2px solid var(--border);
+            background-color: var(--fc2-bg2);
         }
         .cloze.hide, .cloze-inactive.hide {
             display: inline-block;
         }
-        .cloze { border: 2px solid var(--border-focus) }
-        .front .cloze { background-color: var(--canvas); }
-        .back .cloze { background-color: var(--canvas-elevated); }
-        .cloze-inactive { background-color: var(--canvas); }
+        .cloze { border: 3px solid var(--fc2-border-focus); }
+        .cloze-inactive { border: 1px solid var(--fc2-border); }
 
     #fc2-content-placeholder { flex: 1 1; }
     #fc2-additional {
         display: flex; flex: 0 0; flex-flow: column nowrap;
-        border-top: 2px solid var(--fg);
         margin: 0px 10px 0px 10px;
     }
         .fc2-additional-header {
@@ -86,35 +114,33 @@ div[hidden], span[hidden], pre[hidden], [id^=fc2-meta-] { display: none !importa
         }
         .fc2-additional-content {
             display: block;
-            margin-bottom: 10px; padding: 5px;
-            border: 1px solid var(--border);
-            background-color: var(--canvas);
+            margin-bottom: 10px; padding-top: 5px; padding-bottom: 5px;
         }
-        .fc2-additional-content * { pointer-events: none; }
+        .fc2-additional-content { pointer-events: none; }
 #fc2-search-panel {
     display: flex; flex-flow: row nowrap;
     z-index: 5;
-    border-top: 1px solid var(--border);
+    border-top: 1px solid var(--fc2-border);
     margin: 2px; padding: 2px;
 }
     #fc2-search-field {flex: 1 1; height: 20px;}
     #fc2-search-btn {
         flex: 0 0;
         margin-left: 5px; padding: 2px;
-        border: 1px solid var(--border); border-radius: 5px;
+        border: 1px solid var(--fc2-border); border-radius: 5px;
         font-size: 12px; line-height: 20px;
-        background-color: var(--button-bg);
+        background-color: var(--fc2-button-bg);
     }
-    #fc2-search-btn:active {background-color: var(--fg-faint);}
+    #fc2-search-btn:active {background-color: var(--fc2-button-active);}
     .fc2-search-matches {
         position: absolute; z-index: 3;
         vertical-align: top;
-        background-color: var(--selected-bg); color: var(--fg-faint);
+        background-color: var(--fc2-search-matches);
     }
     .fc2-search-match {
         position: absolute; z-index: 3;
         vertical-align: top;
-        background-color: var(--selected-bg);
+        background-color: var(--fc2-search-match);
     }
 #fc2-log-panel {
     display: flex; flex: initial; flex-flow: column nowrap;
@@ -122,33 +148,25 @@ div[hidden], span[hidden], pre[hidden], [id^=fc2-meta-] { display: none !importa
     height: 100px; overflow: auto;
     margin: 0px;
     font-size: 10px; word-wrap: break-word; white-space: pre-wrap;
-    background-color: #80000080;
+    background-color: var(--fc2-log);
 }
 #fc2-show-all-btn {
     flex: 0 0;
     z-index: 5;
     padding: 5px;
     text-align: center; text-transform: uppercase; font-size: 15px; font-weight: bold;
-    background-color: var(--canvas); color: var(--fg);
-    border-bottom: 1px solid var(--fg);
+    background-color: var(--fc2-button); color: var(--fg);
+    border-bottom: 1px solid var(--fc2-border);
     cursor: pointer;
 }
 
 #fc2-footer {z-index: 5; flex: 0 0;}
-	#fc2-legends {display: flex; flex-flow: row nowrap;}
+	.fc2-legends {display: flex; flex-flow: row nowrap; font-size: 8px;}
 		.fc2-legend {
-            flex: 1 1;
-            vertical-align: center; text-align: center;
-            text-transform: uppercase; font-size: 10px; font-weight: bold;
-            background-color: #465A65; color: white;
-        }
-        .fc2-legend:not(:first-child) {border-left: 1px solid white;}
-	#fc2-flags {display: flex; flex-flow: row nowrap}
-		.fc2-flag {
             flex: 1 1 100%;
-            font-size: 10px; text-transform: uppercase; text-align: center;
-            color: black;
+            vertical-align: center; text-align: center;
         }
+        .fc2-legend:not(:first-child) {border-left: 1px solid var(--fc2-border)}
 
 #fc2-nav-toggle-all {
     position: fixed; z-index: 1; top: 0; left: 0; right: 0; height: 30px;
@@ -203,8 +221,8 @@ span.cloze / span.cloze-inactive
 
 /* SEARCH STYLING =============================================== */
 /* Style search matches
-.search-matches
-.search-match
+.fc2-search-matches
+.fc2-search-match
 */
 
 /* SHOW ALL BUTTON ============================================== */
@@ -215,17 +233,15 @@ span.cloze / span.cloze-inactive
 /* ADDITIONAL FIELD STYLING ========================================= */
 /* Style the optional additional fields
 #fc2-additional
-.additional-header
-.additional-content
+.fc2-additional-header
+.fc2-additional-content
 */
 
 /* SYMBOL LEGEND AND FLAGS FOOTER STYLING =========================== */
-/* Style the optional legend
+/* Style the optional legends
 #fc2-footer
-#fc2-legends (the containing div)
+.fc2-legends (the containing div)
 .fc2-legend (the individual legend entries)
-#fc2-flags (the containing div)
-.fc2-flag (the individual flag entries)
 */
 
 /* MISCELLANEOUS STYLING, HAS NOTHING TO DO WITH FLEXIBLE CLOZE ============== */
@@ -266,9 +282,6 @@ h3 { font-weight: 900; font-style: italic; }
 h4 { text-decoration: underline; }
 h5 { font-style: italic; text-decoration: underline; }
 h6 { font-style: italic }
-
-/* Stronger bold weight */
-b { font-weight: bolder; }
 
 /* Definition lists formating */
 dt { font-weight: bold; }

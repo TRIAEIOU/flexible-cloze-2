@@ -48,14 +48,14 @@ export class FC2 {
     // Setup configuration tag overrides
     const tags = document.getElementById('fc2-meta-tags')!.innerText.split(' ')
     for (const tag of tags) {
-      if (!tag.startsWith('fc2.cfg.')) continue
-      const parts = tag.slice(8).split('.')
+      if (!tag.startsWith('fc2.')) continue
+      const parts = tag.slice(4).split('.')
       const tag_side = ['front', 'back'].includes(parts[0]) ? parts.shift() : undefined
       if (tag_side && tag_side !== side || this.cfg[parts[0]]?.[parts[1]] === undefined)
         continue
-        this.cfg[parts[0]][parts[1]] = typeof(this.cfg[parts[0]][parts[1]]) === 'boolean'
-          ? parts[2] === 'true'
-          : parts.slice(2)
+      this.cfg[parts[0]][parts[1]] = typeof(this.cfg[parts[0]][parts[1]]) === 'boolean'
+        ? parts[2] === 'true'
+        : parts.slice(2)
     }
 
     // Setup title
@@ -75,8 +75,8 @@ export class FC2 {
           }
           // Otherwise use deck name if we can find it
           else {
-            const ttxt = document.getElementById('deck')?.innerText.split('::').pop()
-            if (ttxt) title.innerText = ttxt
+            const tt = document.getElementById('fc2-meta-subdeck')?.innerText
+            if (tt) title.innerText = tt
             else title.remove()
           }
         }
@@ -103,36 +103,23 @@ export class FC2 {
         .forEach(nd => (nd as HTMLElement).hidden = true)
 
     // Setup footers
-    if (this.cfg.fields?.legend?.length || this.cfg.fields?.flags?.length) {
+    if (this.cfg.fields?.legends?.length) {
       const footer = document.createElement('div')
       footer.id = 'fc2-footer'
       this.viewport.insertAdjacentElement('afterend', footer)
 
-      // Legend
-      if (this.cfg.fields.legend?.length) {
-        const itms = document.createElement('div')
-        itms.id = 'fc2-legends'
-        footer.appendChild(itms)
-        for (const legend of this.cfg.fields.legend) {
-          const itm = document.createElement('div')
-          itm.className = 'fc2-legend'
-          itm.innerHTML = legend
-          itms.appendChild(itm)
-        }
-      }
-
-      // Flags
-      if (this.cfg.fields.flags?.length) {
-        const itms = document.createElement('div')
-        itms.id = 'fc2-flags'
-        footer.appendChild(itms)
-        for (const flag of this.cfg.fields.flags) {
-          const itm = document.createElement('div')
-          itm.className = 'fc2-flag'
-          itm.innerHTML = flag.text
-          itm.style.backgroundColor = flag.color
-          itms.appendChild(itm)
-        }
+      for (const legend of this.cfg.fields.legends) {
+          const row = document.createElement('div')
+          row.className = 'fc2-legends'
+          footer.appendChild(row)
+          for (const itm of legend) {
+            let cell = document.createElement('div') as HTMLElement
+            cell.innerHTML = itm
+            cell = cell.firstElementChild as HTMLElement
+            if (!cell) continue
+            cell.className = 'fc2-legend'
+            row.appendChild(cell)
+          }
       }
     }
 
@@ -270,8 +257,9 @@ export class FC2 {
   /** Toggle field visibility state */
   toggle_field(field: HTMLElement) {
     this.log('toggle_field')
-    const fld = field.parentElement?.querySelector('.fc2-additional-content')! as HTMLElement
-    fld.hidden = !fld.hidden
+    const fld = ancestor(field, '.fc2-additional-content') ||
+      ancestor(field, '.fc2-additional-header')!.nextElementSibling! as HTMLElement
+    if (fld) fld.hidden = !fld.hidden
   }
 
   /** Toggle all clozes and fields, sync towards show or force */
