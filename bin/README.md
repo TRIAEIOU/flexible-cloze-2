@@ -6,7 +6,10 @@ Reimplementation of [Flexible cloze](https://ankiweb.net/shared/info/1632356464)
 
 **ALL CREDIT FOR INNOVATION GOES TO TRGANKI AND RISINGORANGE**
 
-![Flexible cloze 2](https://raw.githubusercontent.com/TRIAEIOU/flexible-cloze-2/main/Screenshots/front-and-back.png){height=500px}
+![Flexible cloze 2](https://raw.githubusercontent.com/TRIAEIOU/flexible-cloze-2/main/Screenshots/front-and-back.png)
+
+![Night mode](https://raw.githubusercontent.com/TRIAEIOU/flexible-cloze-2/main/Screenshots/night-mode.png)
+
 
 The addon adds two note types:
 
@@ -23,7 +26,7 @@ Please note, I have no iOS device to test on, it *should* work as it is generic 
 
 One note generation strategy is keeping one cloze note per "subject", rather than lots of small notes. This allows using Anki as the primary "note keeping location" rather than having the actual notes somewhere else (in OneNote, markdown files etc.) and have to create Anki notes for quizzing as a separate step. It also greatly improves maintainability (at lecture: "hmm, I seem to remember it was X, not Y, now where is that Anki note so I can amend it?"). During reviewing it adds the posibility to easily look up related info ("so if it wasn't ABX X for Y, for what was ABX X used?"). This while following the general **card** principles of making individual cards "atomic" and brief.
 
-```text
+```markdown
 # ACLS
 
 ## Terminology
