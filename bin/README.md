@@ -69,8 +69,8 @@ Step 3: {{c1:someting completely different}}
 
 Configuration is made in the note template between:
 
-- At the top of `Front`/`Back` between the `<!-- CONFIGURATION BEGIN`/`END -->` tags.
-- At the bottom of `Styling` after the `/*-- FUNCTIONALITY END --*/` tag.
+- At the top of `Front`/`Back` between the `<!-- FC2 CONFIGURATION BEGIN`/`END -->` tags.
+- At the bottom of `Styling` after the `/*-- FC2 FUNCTIONALITY END --*/` tag.
 
 The update logic is dependent on the user keeping these tag intact and updates will overwrite everything that is marked as "functionality".
 
@@ -249,4 +249,4 @@ There is effectively no add-on, it's all JavaScript (and HTML/CSS) and runs 100%
 - 2023-02-07: Adapt JS to AnkiDroid behaviour, fix [expose bug](https://github.com/TRIAEIOU/flexible-cloze-2/issues/4).
 - 2023-02-10: Fix hint bug.
 - 2023-02-18: Fix scroll and hint bugs.
-- 2023-03-26: Restructure code, add `context-top` and `context-bottom`, add note specific config through tags, add log option/info, add search function, add `Flexible Cloze 2 (min)` template which only has `Text` and `Back Extra` fields.
+- 2023-03-26: Restructure code, add `context-top` and `context-bottom`, add note specific config through tags, add log option/info, add search function, add `Flexible Cloze 2 (min)` template which only has `Text` and `Back Extra` fields. Improve styling, esp. for night mode.

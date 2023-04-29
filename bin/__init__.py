@@ -1,6 +1,7 @@
 """Installation/update of template"""
 
 import os, codecs
+from datetime import datetime
 from aqt import mw, QPushButton, QMessageBox, gui_hooks
 from aqt.utils import *
 from aqt.qt import *
@@ -24,7 +25,7 @@ NVER = "1.2.0"
 
 #######################################################################
 # Current code base
-def read_files(files: tuple[str, ...]):
+def load_files(files: tuple[str, ...]):
     out = []
     for file in files:
         with codecs.open(os.path.join(ADDON_PATH, file), encoding='utf-8') as fh:
@@ -32,9 +33,11 @@ def read_files(files: tuple[str, ...]):
             out.append(tmp)
     return out
 
-def write_files(files: tuple[str, ...]):
+def backup_files(files: tuple[str, ...]):
+    path = os.path.join(ADDON_PATH, 'user_files')
+    os.makedirs(path, exist_ok=True)
     for file in files:
-        with codecs.open(os.path.join(ADDON_PATH, file[0], ), mode="w", encoding='utf-8') as fh:
+        with codecs.open(os.path.join(path, f"{file[0]}-{datetime.fromtimestamp(datetime.now().timestamp()).strftime('%Y.%m.%d-%H.%M.%S')}.bak"), mode="w", encoding='utf-8') as fh:
             fh.write(file[1])
 
 def update_model(model, col, nfront, nback, ncss):
@@ -106,12 +109,7 @@ def create_min_model(col, name, front, back, css):
 
 def upgrade_one(model, front, back, css):
     msgs = []
-    write_files((
-        (FNAME_FRONT + ".bak", model["tmpls"][0]["qfmt"]),
-        (FNAME_BACK + ".bak", model["tmpls"][0]["afmt"]),
-        (FNAME_CSS + ".bak", model["css"])
-    ))
-    msgs.append('The template and CSS has been refactored making automatic upgrade difficult. The new template has overwritten the old version, if you had made any customizations to the template you can find your old template (*.bak) in the addon folder (Tools → Add-ons → Flexible cloze 2 → View Files) to make a manual integration of your changes/configuration to the new template. <b>These temporary files will be overwritten on next update!</b> An additional template, with the same functionality but fewer fields (the same as core Anki cloze notes, `Text` and `Back Extra`) has also been added.')
+    msgs.append('The template and CSS has been refactored making automatic upgrade difficult. The new template has overwritten the old version, if you had made any customizations to the template you can find your old template (*-<timestamp>.bak) in the addon folder/user_files (Tools → Add-ons → Flexible cloze 2 → View Files) to make a manual integration of your changes/configuration to the new template. An additional template, with the same functionality but fewer fields (the same as core Anki cloze notes, `Text` and `Back Extra`) has also been added.')
     model["tmpls"][0]["qfmt"] = front
     model["tmpls"][0]["afmt"] = back
     model['css'] = css
@@ -120,33 +118,38 @@ def upgrade_one(model, front, back, css):
 
 def update():
     msgs = []
-    (nfront, nback, ncss) = read_files((FNAME_FRONT, FNAME_BACK, FNAME_CSS))
-    (nmfront, nmback, nmcss) = read_files((FNAME_MIN_FRONT, FNAME_MIN_BACK, FNAME_MIN_CSS))
+    (nfront, nback, ncss) = load_files((FNAME_FRONT, FNAME_BACK, FNAME_CSS))
+    (nmfront, nmback, nmcss) = load_files((FNAME_MIN_FRONT, FNAME_MIN_BACK, FNAME_MIN_CSS))
     model = mw.col.models.by_name(FC2_NAME)
     mmodel = mw.col.models.by_name(FC2_MIN_NAME)
 
     if model and strvercmp(CVER, '1.2.0') < 0: # Old existing model
-        upgrade_one(model, nfront, nback, ncss)
+        backup_files((
+            (FNAME_FRONT, model["tmpls"][0]["qfmt"]),
+            (FNAME_BACK, model["tmpls"][0]["afmt"]),
+            (FNAME_CSS, model["css"])
+        ))
+        msgs += upgrade_one(model, nfront, nback, ncss)
 
-    if not model:
+    elif not model:
         create_model(mw.col, nfront, nback, ncss)
     else:
-        write_files((
-            (FNAME_FRONT + ".bak", model["tmpls"][0]["qfmt"]),
-            (FNAME_BACK + ".bak", model["tmpls"][0]["afmt"]),
-            (FNAME_CSS + ".bak", model["css"])
+        backup_files((
+            (FNAME_FRONT, model["tmpls"][0]["qfmt"]),
+            (FNAME_BACK, model["tmpls"][0]["afmt"]),
+            (FNAME_CSS, model["css"])
         ))
-        msgs.extend(update_model(model, mw.col, nfront, nback, ncss))
+        msgs += update_model(model, mw.col, nfront, nback, ncss)
 
     if not mmodel:
         create_min_model(mw.col, nmfront, nmback, nmcss)
     else:
-        write_files((
-            (FNAME_MIN_FRONT + ".bak", mmodel["tmpls"][0]["qfmt"]),
-            (FNAME_MIN_BACK + ".bak", mmodel["tmpls"][0]["afmt"]),
-            (FNAME_MIN_CSS + ".bak", mmodel["css"])
+        backup_files((
+            (FNAME_MIN_FRONT, mmodel["tmpls"][0]["qfmt"]),
+            (FNAME_MIN_BACK, mmodel["tmpls"][0]["afmt"]),
+            (FNAME_MIN_CSS, mmodel["css"])
         ))
-        msgs.extend(update_model(mmodel, mw.col, nmfront, nmback, nmcss))
+        msgs += update_model(mmodel, mw.col, nmfront, nmback, nmcss)
 
     if len(msgs) > 0:
         msg_box = QMessageBox(mw)
