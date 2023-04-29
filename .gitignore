@@ -1,4 +1,6 @@
+dist/*
 dist
 build
 */**/meta.json
 bin/*.bak
+bin/user_files
