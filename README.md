@@ -10,7 +10,6 @@ Reimplementation of [Flexible cloze](https://ankiweb.net/shared/info/1632356464)
 
 ![Night mode](https://raw.githubusercontent.com/TRIAEIOU/flexible-cloze-2/main/Screenshots/night-mode.png)
 
-
 The addon adds two note types:
 
 - `Flexible cloze 2`: Has 5 fields: `Title`, `Text`, `Notes`, `Mnemonics` and `Extra` where `Text` is the cloze field and `Title` the default sort field/shown in the card/note table.
@@ -253,3 +252,4 @@ There is effectively no add-on, it's all JavaScript (and HTML/CSS) and runs 100%
 - 2023-02-10: Fix hint bug.
 - 2023-02-18: Fix scroll and hint bugs.
 - 2023-03-26: Restructure code, add `context-top` and `context-bottom`, add note specific config through tags, add log option/info, add search function, add `Flexible Cloze 2 (min)` template which only has `Text` and `Back Extra` fields. Improve styling, esp. for night mode.
+- 2023-05-03: Fix update bug thanks to [comienzo2093](https://github.com/comienzo2093) for solution!

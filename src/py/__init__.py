@@ -21,7 +21,7 @@ TAG_FUNC = "<!-- FC2 FUNCTIONALITY - DO NOT EDIT BELOW THIS POINT -->"
 TAG_CSS_FUNC = "/*-- FC2 FUNCTIONALITY END --*/"
 
 CVER = get_version()
-NVER = "1.2.0"
+NVER = "1.2.1"
 
 #######################################################################
 # Current code base
