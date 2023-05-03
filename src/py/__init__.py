@@ -132,7 +132,7 @@ def update():
         msgs += upgrade_one(model, nfront, nback, ncss)
 
     elif not model:
-        create_model(mw.col, nfront, nback, ncss)
+        create_model(mw.col, FC2_NAME, nfront, nback, ncss)
     else:
         backup_files((
             (FNAME_FRONT, model["tmpls"][0]["qfmt"]),
@@ -142,7 +142,7 @@ def update():
         msgs += update_model(model, mw.col, nfront, nback, ncss)
 
     if not mmodel:
-        create_min_model(mw.col, nmfront, nmback, nmcss)
+        create_min_model(mw.col, FC2_MIN_NAME, nmfront, nmback, nmcss)
     else:
         backup_files((
             (FNAME_MIN_FRONT, mmodel["tmpls"][0]["qfmt"]),
