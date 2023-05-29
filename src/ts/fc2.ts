@@ -60,41 +60,44 @@ export class FC2 {
 
     // Setup title
     let title = document.getElementById('fc2-title')
-    if (this.cfg.fields?.title) {
-      if (!title) {
+    // Setup title for min version - MODEL SPECIFIC CODE
+    if (!title && this.cfg.fields?.title) {
+      let titles
+      // Use first `<h1>` as title
+      const h1 = this.content.querySelector('h1')
+      if (h1) {
+        titles = h1.innerText
+        h1.remove()
+      }
+      // Otherwise use deck name if we can find it
+      else titles = document.getElementById('fc2-meta-subdeck')?.innerText
+      if (titles) {
         title = document.createElement('div')
         title.id = 'fc2-title'
+        title.innerText = titles
         this.viewport.insertAdjacentElement('beforebegin', title)
-        // Setup title for min version - MODEL SPECIFIC CODE
-        if (!title.innerText) {
-          // Use first `<h1>` as title
-          const h1 = this.content.querySelector('h1')
-          if (h1) {
-            title.innerText = h1.innerText
-            h1.remove()
-          }
-          // Otherwise use deck name if we can find it
-          else {
-            const tt = document.getElementById('fc2-meta-subdeck')?.innerText
-            if (tt) title.innerText = tt
-            else title.remove()
-          }
-        }
       }
     }
-    else if (title) title.remove()
 
-    // Strip expose char from active clozes and hide if front
+    // Prepare active clozes: strip cloze when exposed, store hint and hide as required
     this.content.querySelectorAll('.cloze').forEach(((cloze: HTMLElement) => {
-      this.expose(cloze)
-      if (this.cfg.front) this.hide(cloze)
+      if (this.expose(cloze)) return
+      if (this.cfg.front) {
+        cloze.dataset.hint = cloze.innerHTML === '[...]'
+          ? this.cfg.prompt
+          : this.cfg.hint.replace('%h', cloze.innerHTML.slice(1, cloze.innerHTML.length - 1)) || ""
+        this.hide(cloze)
+      } else cloze.dataset.hint = this.cfg.prompt
     }) as any)
 
-    // Expose inactive clozes from expose char or containing active cloze
+    // Prepare inactive clozes: expose from expose char or containing active cloze
     this.content.querySelectorAll('.cloze-inactive').forEach(((cloze: HTMLElement) => {
-      if (this.expose(cloze) || cloze.querySelector('.cloze'))
+      if (this.expose(cloze) || cloze.querySelector('.cloze')) {
         cloze.classList.remove('cloze-inactive')
-      else if (!this.cfg.show.inactive) this.hide(cloze)
+        return
+      }
+      cloze.dataset.hint = this.cfg.prompt
+      if (!this.cfg.show.inactive) this.hide(cloze)
     }) as any)
 
     // Show additional fields per default depending on config
@@ -157,41 +160,49 @@ export class FC2 {
     )
   }
 
-  /** Create expose function from config */
+  /** Create expose function from config, return true if exposed, else false */
   generate_expose() {
   this.log('generate_expose')
     let expose_
     if (this.cfg.expose.pos === 'pre') {
       expose_ = (el) => {
-        if (el.previousSibling?.data?.endsWith(this.cfg.expose.char))
+        if (el.previousSibling?.data?.endsWith(this.cfg.expose.char)) {
           el.previousSibling.data = el.previousSibling.data.slice(0, -1)
-        else return false
-        return true
+          return true
+        }
+        return false
       }
     } else if (this.cfg.expose.pos === 'post') {
       expose_ = (el) => {
-        if (el.nextSibling?.data?.startsWith(this.cfg.expose.char))
+        if (el.nextSibling?.data?.startsWith(this.cfg.expose.char)) {
           el.nextSibling.data = el.nextSibling.data.substring(1)
-        else return false
-        return true
+          return true
+        }
+        return false
       }
     } else if (this.cfg.expose.pos === 'end') {
       expose_ = (el) => {
-        if (el.dataset.cloze?.endsWith(this.cfg.expose.char))
+        if (el.dataset.cloze?.endsWith(this.cfg.expose.char)) {
           el.dataset.cloze = el.dataset.cloze.slice(0, -1)
-        else if (el.lastChild?.data?.endsWith(this.cfg.expose.char))
+          return true
+        }          
+        else if (el.lastChild?.data?.endsWith(this.cfg.expose.char)) {
           el.lastChild.data = el.lastChild.data.slice(0, -1)
-        else return false
-        return true
+          return true
+        }
+        return false
       }
     } else {
       expose_ = (el) => { // begin
-        if (el.dataset.cloze?.startsWith(this.cfg.expose.char))
+        if (el.dataset.cloze?.startsWith(this.cfg.expose.char)){
           el.dataset.cloze = el.dataset.cloze.substring(1)
-        else if (el.firstChild?.data?.startsWith(this.cfg.expose.char))
+          return true
+        }
+        else if (el.firstChild?.data?.startsWith(this.cfg.expose.char)) {
           el.firstChild.data = el.firstChild.data.substring(1)
-        else return false
-        return true
+          return true
+        }
+        return false
       }
     }
     return this.cfg.expose.reverse ? (el) => { return !expose_(el) } : expose_
@@ -215,14 +226,7 @@ export class FC2 {
     if (!this.search.hidden) this.search.hidden = true
     // Store cloze content and hint PRN
     if (el.dataset.cloze === undefined) el.dataset.cloze = el.innerHTML
-    // Store hint PRN and possible
-    if (el.dataset.hint === undefined) {
-      if (el.innerHTML === '[...]' || el.classList.contains('cloze-inactive'))
-        el.dataset.hint = this.cfg.prompt
-      else
-        el.dataset.hint = "" // this should try to parse hint from content and format?
-    }
-    el.innerHTML = el.dataset.hint
+    el.innerHTML = el.dataset.hint!
   }
 
   /** Iterate forward or backward, start by showing current if hidden */

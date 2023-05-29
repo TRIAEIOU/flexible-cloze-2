@@ -30,21 +30,22 @@ One note generation strategy is keeping one cloze note per "subject", rather tha
 
 ## Terminology
 
-Bla: {{c1::bla}}
-Bla: {{c2::bla}}
+Bla: {{c1::bla}}  
+Bla: {{c2::bla}}  
 
 ## Drugs
 
-Epi: {{c3::bla}}
-Amiodarone: {{c4::bla}}
+Epi: {{c3::bla}}  
+Amiodarone: {{c4::bla}}  
 
 ## Process
 
 Unwitnessed arrest: {{c5::
+
 1. Bla
 2. Bla
-}}
-```
+
+}}```
 
 You can of course also use FC2 if you just want some more configurability/functionality for "regular clozes".
 
@@ -252,4 +253,5 @@ There is effectively no add-on, it's all JavaScript (and HTML/CSS) and runs 100%
 - 2023-02-10: Fix hint bug.
 - 2023-02-18: Fix scroll and hint bugs.
 - 2023-03-26: Restructure code, add `context-top` and `context-bottom`, add note specific config through tags, add log option/info, add search function, add `Flexible Cloze 2 (min)` template which only has `Text` and `Back Extra` fields. Improve styling, esp. for night mode.
-- 2023-05-03: Fix update bug thanks to [comienzo2093](https://github.com/comienzo2093) for solution!
+- 2023-05-03: Fix update bug thanks to [comienzo2093](https://github.com/comienzo2093).
+- 2023-05-29: Fix hint bug.

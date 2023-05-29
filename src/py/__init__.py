@@ -5,7 +5,7 @@ from datetime import datetime
 from aqt import mw, QPushButton, QMessageBox, gui_hooks
 from aqt.utils import *
 from aqt.qt import *
-from .version import *
+from .ankiutils import *
 
 FC2_NAME = "Flexible Cloze 2"
 FNAME_FRONT = "fc2-front.html"
@@ -21,7 +21,7 @@ TAG_FUNC = "<!-- FC2 FUNCTIONALITY - DO NOT EDIT BELOW THIS POINT -->"
 TAG_CSS_FUNC = "/*-- FC2 FUNCTIONALITY END --*/"
 
 CVER = get_version()
-NVER = "1.2.1"
+NVER = "1.2.2"
 
 #######################################################################
 # Current code base
