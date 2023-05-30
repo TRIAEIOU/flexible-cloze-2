@@ -2,7 +2,7 @@ import os, re
 from dataclasses import fields, is_dataclass, asdict
 from types import GenericAlias
 from typing import TypeVar
-#from aqt import mw
+from aqt import mw
 
 
 # Versioning ######################################################################
