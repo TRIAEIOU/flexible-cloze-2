@@ -317,10 +317,15 @@ var fc2
                     this.viewport.insertAdjacentElement('beforebegin', title);
                 }
             }
-            this.content.querySelectorAll('.cloze').forEach(((cloze) => {
-                if (this.expose(cloze))
+            let active_found = false;
+            this.content.querySelectorAll('.cloze-inactive, .cloze').forEach(((cloze) => {
+                const active = cloze.classList.contains('.cloze');
+                active_found || (active_found = active);
+                if (this.expose(cloze) || !active && cloze.querySelector('.cloze')) {
+                    cloze.classList.remove('cloze-inactive');
                     return;
-                if (this.cfg.front) {
+                }
+                if (active && this.cfg.front) {
                     cloze.dataset.hint = cloze.innerHTML === '[...]'
                         ? this.cfg.prompt
                         : this.cfg.hint.replace('%h', cloze.innerHTML.slice(1, cloze.innerHTML.length - 1)) || "";
@@ -328,14 +333,8 @@ var fc2
                 }
                 else
                     cloze.dataset.hint = this.cfg.prompt;
-            }));
-            this.content.querySelectorAll('.cloze-inactive').forEach(((cloze) => {
-                if (this.expose(cloze) || cloze.querySelector('.cloze')) {
-                    cloze.classList.remove('cloze-inactive');
-                    return;
-                }
-                cloze.dataset.hint = this.cfg.prompt;
-                if (!this.cfg.show.inactive)
+                if (!active && (!this.cfg.show.inactive ||
+                    active_found && this.cfg.show.inactive === 'preceding'))
                     this.hide(cloze);
             }));
             if (!this.cfg.show.additional)

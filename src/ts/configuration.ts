@@ -21,9 +21,9 @@ export interface Configuration {
     previous: string    // Iterate to previous cloze
     toggle_all: string  // Toggle all clozes and fields
   }
-  show: {                 // `false` means initially collapsed/hidden
-    inactive: boolean   // Inactive clozes
-    additional: boolean // Additional fields (Note, Mnemonics etc.)
+  show: {                         // `false` means initially collapsed/hidden
+    inactive: boolean|'preceding' // Inactive clozes
+    additional: boolean           // Additional fields (Note, Mnemonics etc.)
   },
   fields: {
     title: boolean|undefined

@@ -80,24 +80,26 @@ export class FC2 {
     }
 
     // Prepare active clozes: strip cloze when exposed, store hint and hide as required
-    this.content.querySelectorAll('.cloze').forEach(((cloze: HTMLElement) => {
-      if (this.expose(cloze)) return
-      if (this.cfg.front) {
+    // Prepare inactive clozes: expose from expose char or containing active cloze
+    let active_found = false
+    this.content.querySelectorAll('.cloze-inactive, .cloze').forEach(((cloze: HTMLElement) => {
+      const active = cloze.classList.contains('.cloze')
+      active_found ||= active
+      if (this.expose(cloze) || !active && cloze.querySelector('.cloze')) {
+        cloze.classList.remove('cloze-inactive')
+        return
+      }
+      if (active && this.cfg.front) {
         cloze.dataset.hint = cloze.innerHTML === '[...]'
           ? this.cfg.prompt
           : this.cfg.hint.replace('%h', cloze.innerHTML.slice(1, cloze.innerHTML.length - 1)) || ""
         this.hide(cloze)
-      } else cloze.dataset.hint = this.cfg.prompt
-    }) as any)
-
-    // Prepare inactive clozes: expose from expose char or containing active cloze
-    this.content.querySelectorAll('.cloze-inactive').forEach(((cloze: HTMLElement) => {
-      if (this.expose(cloze) || cloze.querySelector('.cloze')) {
-        cloze.classList.remove('cloze-inactive')
-        return
-      }
-      cloze.dataset.hint = this.cfg.prompt
-      if (!this.cfg.show.inactive) this.hide(cloze)
+      } else cloze.dataset.hint = this.cfg.prompt      
+      if (
+        !active && (!this.cfg.show.inactive ||
+        active_found && this.cfg.show.inactive === 'preceding')
+      )
+        this.hide(cloze)
     }) as any)
 
     // Show additional fields per default depending on config
