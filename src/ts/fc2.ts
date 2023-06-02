@@ -79,25 +79,29 @@ export class FC2 {
       }
     }
 
-    // Prepare active clozes: strip cloze when exposed, store hint and hide as required
-    // Prepare inactive clozes: expose from expose char or containing active cloze
-    let active_found = false
+    // Prepare clozes: strip cloze when exposed
+    // Active clozes: store hint and hide as required
+    // Inactive clozes: expose if containing active cloze
+    let active_seen = false
     this.content.querySelectorAll('.cloze-inactive, .cloze').forEach(((cloze: HTMLElement) => {
-      const active = cloze.classList.contains('.cloze')
-      active_found ||= active
+      const active = cloze.classList.contains('cloze')
+      active_seen ||= active
+
       if (this.expose(cloze) || !active && cloze.querySelector('.cloze')) {
-        cloze.classList.remove('cloze-inactive')
+        cloze.classList.remove('cloze', 'cloze-inactive')
         return
       }
-      if (active && this.cfg.front) {
-        cloze.dataset.hint = cloze.innerHTML === '[...]'
-          ? this.cfg.prompt
-          : this.cfg.hint.replace('%h', cloze.innerHTML.slice(1, cloze.innerHTML.length - 1)) || ""
-        this.hide(cloze)
-      } else cloze.dataset.hint = this.cfg.prompt      
+
+      cloze.dataset.hint = this.cfg.front && active && cloze.innerHTML !== '[...]'
+        ? this.cfg.hint.replace('%h', cloze.innerHTML.slice(1, cloze.innerHTML.length - 1)) || ""
+        : this.cfg.prompt
+
       if (
-        !active && (!this.cfg.show.inactive ||
-        active_found && this.cfg.show.inactive === 'preceding')
+        active && this.cfg.front ||
+        !active && (
+          !this.cfg.show.inactive ||
+          this.cfg.show.inactive === 'preceding' && active_seen
+        )
       )
         this.hide(cloze)
     }) as any)

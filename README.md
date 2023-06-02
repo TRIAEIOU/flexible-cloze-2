@@ -105,7 +105,7 @@ The update logic is dependent on the user keeping these tag intact and updates w
   - Loop iteration once you reach the first/last (otherwise you will stop): `loop`
   - Always start iteration from the top (otherwise iteration will "continue" from the last clicked item): `top`
 - `show` cloze initial display behavior:
-  - `inactive`: inactive clozes (setting to `true`will make FC2 behave similar to core Anki clozes).
+  - `inactive`: inactive clozes. Setting to `true` will make FC2 behave similar to core Anki clozes. Setting to `'preceding'` will show inactive clozes that come before the first active cloze (document order) and hide all other inactive clozes (if your note builds on access to preceding clozes to answer the current one(s)).
   - `addtional`: Additional fields.
 - `fields`: customizations of the interface
   - `title`: (only relevant for the min version) Wether to show the note "title field" (will parse out first `<h1>` or deck name if not found).
@@ -209,7 +209,7 @@ var config = {
         toggle_all: 'k'         // Toggle all clozes and fields
     },
     show: {                     // `false` means initially collapsed/hidden
-        inactive: true,         // Inactive clozes
+        inactive: true,         // Inactive clozes (`false`, `true` or `'preceding'`)
         additional: false,      // Additional fields (Note, Mnemonics etc.)
     },
     fields: {
@@ -255,3 +255,4 @@ There is effectively no add-on, it's all JavaScript (and HTML/CSS) and runs 100%
 - 2023-03-26: Restructure code, add `context-top` and `context-bottom`, add note specific config through tags, add log option/info, add search function, add `Flexible Cloze 2 (min)` template which only has `Text` and `Back Extra` fields. Improve styling, esp. for night mode.
 - 2023-05-03: Fix update bug thanks to [comienzo2093](https://github.com/comienzo2093).
 - 2023-05-29: Fix hint bug.
+- 2023-05-30: Fix search bug, add `show.inactive: 'preceding'` option.

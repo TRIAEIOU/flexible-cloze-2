@@ -102,7 +102,7 @@ export class Searcher {
         }
         if (
           match.index + sstr.length >= index &&
-          match.index + sstr.length < index + res.value.length &&
+          match.index + sstr.length <= index + res.value.length &&
           rng
         ) {
           // when we find the end node, we can set the range end

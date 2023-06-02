@@ -24,17 +24,16 @@ var config = {
         toggle_all: 'k'         // Toggle all clozes and fields
     },
     show: {                     // `false` means initially collapsed/hidden
-        inactive: false,        // Inactive clozes
-        additional: true       // Additional fields (Note, Mnemonics etc.)
+        inactive: false,        // Inactive clozes (`true`, `false` or `'preceding'`)
+        additional: true        // Additional fields (Note, Mnemonics etc.)
     },
     fields: {
         title: true,                // Title area
         legends: [                  // Configurable legends at bottom
         [
-                '<div style="background-color: #465A65; color: #d4d4d4; font-weight: bold;"><span style="font-size: 150%;">&#8594;</span> BECOMES</div>',
-                '<div style="background-color: #465A65; color: #d4d4d4; font-weight: bold;"><span style="font-size: 150%;">&#8658;</span> LEADS TO</div>',
-                '<div style="background-color: #465A65; color: #d4d4d4; font-weight: bold;"><span style="font-size: 150%;">&#10521;</span> EXCITE/ACTIVATE</div>',
-                '<div style="background-color: #465A65; color: #d4d4d4; font-weight: bold;"><span style="font-size: 150%;">&#10979;</span> INHIBIT/DEACTIVATE</div>'
+                '<div style="background-color: #465A65; color: #d4d4d4; font-weight: bold;"><span style="font-size: 150%;">&#8594;</span> BECOMES/LEADS TO</div>',
+                '<div style="background-color: #465A65; color: #d4d4d4; font-weight: bold;"><span style="font-size: 150%;">&#8702;</span> EXCITE/ACTIVATE</div>',
+                '<div style="background-color: #465A65; color: #d4d4d4; font-weight: bold;"><span style="font-size: 150%;">&#8867;</span> INHIBIT/DEACTIVATE</div>'
             ], [
                 '<div style="background-color: #FD7C6E; color: #020202; font-weight: bold;">INCORRECT</div>',
                 '<div style="background-color: #FAA76C; color: #020202; font-weight: bold;">DUPLICATE</div>',

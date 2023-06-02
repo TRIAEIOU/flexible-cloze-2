@@ -22,7 +22,7 @@ export interface Configuration {
     toggle_all: string  // Toggle all clozes and fields
   }
   show: {                         // `false` means initially collapsed/hidden
-    inactive: boolean|'preceding' // Inactive clozes
+    inactive: boolean|'preceding' // Inactive clozes (`true`, `false` or `'preceding'`)
     additional: boolean           // Additional fields (Note, Mnemonics etc.)
   },
   fields: {
