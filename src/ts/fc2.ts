@@ -8,7 +8,6 @@ export class FC2 {
   cfg!: Configuration
   log!: Logger
   search!: Searcher
-  expose!: (el: HTMLElement) => boolean;
   content!: HTMLElement
   viewport!: HTMLElement
   current!: HTMLElement
@@ -35,11 +34,8 @@ export class FC2 {
     this.current = this.content.querySelector('.cloze')!
     // Check backend version
     if (this.current.dataset.ordinal === undefined) return
-
     this.search = new Searcher(this.viewport, 'fc2-', this.log)
-
     this.ordinal ||= parseInt(this.current.dataset.ordinal!)
-    this.expose = this.generate_expose()
 
     // Setup class lists
     this.content.parentElement!.classList.remove(this.cfg.front ? 'back' : 'front')
@@ -82,13 +78,14 @@ export class FC2 {
     // Prepare clozes: strip cloze when exposed
     // Active clozes: store hint and hide as required
     // Inactive clozes: expose if containing active cloze
+    const expose = this.generate_expose() // Generate after tag overrides
     let active_seen = false
     this.content.querySelectorAll('.cloze-inactive, .cloze').forEach(((cloze: HTMLElement) => {
       const active = cloze.classList.contains('cloze')
       active_seen ||= active
-
-      if (this.expose(cloze) || !active && cloze.querySelector('.cloze')) {
-        cloze.classList.remove('cloze', 'cloze-inactive')
+      const exposed = expose(cloze)
+      if (!active && (exposed || cloze.querySelector('.cloze'))) {
+        cloze.classList.remove('cloze-inactive')
         return
       }
 

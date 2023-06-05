@@ -45,7 +45,8 @@ Unwitnessed arrest: {{c5::
 1. Bla
 2. Bla
 
-}}```
+}}
+```
 
 You can of course also use FC2 if you just want some more configurability/functionality for "regular clozes".
 
@@ -256,3 +257,4 @@ There is effectively no add-on, it's all JavaScript (and HTML/CSS) and runs 100%
 - 2023-05-03: Fix update bug thanks to [comienzo2093](https://github.com/comienzo2093).
 - 2023-05-29: Fix hint bug.
 - 2023-05-30: Fix search bug, add `show.inactive: 'preceding'` option.
+- 2023-06-05: Fix expose bug.
