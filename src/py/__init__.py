@@ -21,7 +21,7 @@ TAG_FUNC = "<!-- FC2 FUNCTIONALITY - DO NOT EDIT BELOW THIS POINT -->"
 TAG_CSS_FUNC = "/*-- FC2 FUNCTIONALITY END --*/"
 
 CVER = get_version()
-NVER = "1.2.4"
+NVER = "1.2.5"
 
 #######################################################################
 # Current code base
@@ -122,6 +122,12 @@ def update():
     (nmfront, nmback, nmcss) = load_files((FNAME_MIN_FRONT, FNAME_MIN_BACK, FNAME_MIN_CSS))
     model = mw.col.models.by_name(FC2_NAME)
     mmodel = mw.col.models.by_name(FC2_MIN_NAME)
+
+    if strvercmp(CVER, '1.2.4') < 0: # Possibly old erronous update, remove erronous files
+        if p := os.path.isfile(os.path.join(ADDON_PATH, 'defaults.json')):
+            os.remove(p)
+        if p := os.path.isfile(os.path.join(ADDON_PATH, 'config.md')):
+            os.remove(p)
 
     if model and strvercmp(CVER, '1.2.0') < 0: # Old existing model
         backup_files((

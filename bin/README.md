@@ -45,7 +45,8 @@ Unwitnessed arrest: {{c5::
 1. Bla
 2. Bla
 
-}}```
+}}
+```
 
 You can of course also use FC2 if you just want some more configurability/functionality for "regular clozes".
 
