@@ -217,17 +217,23 @@ export class FC2 {
     if (!el?.classList.contains('hide')) return
     el.classList.remove('hide')
     el.innerHTML = el.dataset.cloze!
-    for (const child of el.querySelectorAll(':scope .cloze, :scope .cloze-inactive'))
-      this.hide(child as HTMLElement)
+    for (const child of el.querySelectorAll(':scope .cloze, :scope .cloze-inactive') as NodeListOf<HTMLElement>) {
+      // Potentially first parse of nested inactive, hint has never been available
+      if (child.dataset.hint === undefined) child.dataset.hint = ''
+      this.hide(child)
+    }
   }
 
-  /** Hide cloze (and save cloze content PRN) */
+  /** Hide cloze (and save cloze content PRN) 
+   * Also, in case of nested inactive clozes: they were not parsed initially (as they were
+   * in dataset.cloze) and therefore needs setting hint to `''`
+   */
   hide(el: HTMLElement) {
     this.log('hide')
     if (el?.classList.contains('hide')) return
     el.classList.add('hide')
     if (!this.search.hidden) this.search.hidden = true
-    // Store cloze content and hint PRN
+    // Store cloze content PRN
     if (el.dataset.cloze === undefined) el.dataset.cloze = el.innerHTML
     el.innerHTML = el.dataset.hint!
   }

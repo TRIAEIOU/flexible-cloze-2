@@ -258,3 +258,4 @@ There is effectively no add-on, it's all JavaScript (and HTML/CSS) and runs 100%
 - 2023-05-29: Fix hint bug.
 - 2023-05-30: Fix search bug, add `show.inactive: 'preceding'` option.
 - 2023-06-05: Fix expose bug.
+- 2023-06-26: Fix nested cloze hint bug.

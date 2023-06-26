@@ -427,8 +427,11 @@ var fc2
                 return;
             el.classList.remove('hide');
             el.innerHTML = el.dataset.cloze;
-            for (const child of el.querySelectorAll(':scope .cloze, :scope .cloze-inactive'))
+            for (const child of el.querySelectorAll(':scope .cloze, :scope .cloze-inactive')) {
+                if (child.dataset.hint === undefined)
+                    child.dataset.hint = '';
                 this.hide(child);
+            }
         }
         hide(el) {
             this.log('hide');
