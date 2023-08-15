@@ -11,7 +11,8 @@ var config = {
     scroll: {                   // Valid values: `none`, `min`, `center`, `context`, `context-top` or `context-bottom`
         initial: 'min',         // Scoll on initial show
         click: 'min',           // Scroll on cloze click
-        iterate: 'min'          // Scroll on iteration
+        iterate: 'min',         // Scroll on iteration
+        delay: 1                // Increase if scrolling incorrectly on large/complex cards
     },
     iteration: {
         top: false,             // Always start iteration from top
@@ -370,7 +371,13 @@ var fc2
             }
             this.content.style.display = 'block';
             document.getElementById('fc2-content-placeholder').remove();
-            window.requestAnimationFrame(() => window.requestAnimationFrame(() => window.requestAnimationFrame(() => this.scroll_to({ scroll: this.cfg.scroll.initial }))));
+            window.requestAnimationFrame(() => this.await_animation_frame((this.cfg.scroll.delay || 1) - 1));
+        }
+        await_animation_frame(i) {
+            if (i > 0)
+                window.requestAnimationFrame(() => this.await_animation_frame(i - 1));
+            else
+                this.scroll_to({ scroll: this.cfg.scroll.initial });
         }
         generate_expose() {
             this.log('generate_expose');

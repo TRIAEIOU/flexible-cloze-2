@@ -1,4 +1,4 @@
 dist
 build
-*/**/meta.json
-bin/user_files
+**/meta.json
+bin/user_files/

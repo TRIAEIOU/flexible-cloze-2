@@ -10,6 +10,7 @@ export interface Configuration {
     initial: 'none' | 'min' | 'center' | 'context' | 'context-top' | 'context-bottom'
     click: 'none' | 'min' | 'center' | 'context' | 'context-top' | 'context-bottom'
     iterate: 'none' | 'min' | 'center' | 'context' | 'context-top' | 'context-bottom'
+    delay: number
   }
   iteration: {
     top: boolean        // Always start iteration from top

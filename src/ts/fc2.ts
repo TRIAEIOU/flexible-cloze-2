@@ -155,12 +155,18 @@ export class FC2 {
     document.getElementById('fc2-content-placeholder')!.remove()
     // Stacked requests as AnkiDroid takes a few frames to finish layout
     window.requestAnimationFrame(() =>
-      window.requestAnimationFrame(() =>
-        window.requestAnimationFrame(() =>
-          this.scroll_to({scroll: this.cfg.scroll.initial})
-        )
-      )
+      this.await_animation_frame((this.cfg.scroll.delay || 1)  - 1)
     )
+  }
+
+  /** Configurable stacked calls for animationFrame to correctly render
+   * long/complex notes before calculating scroll
+   */
+  await_animation_frame(i: number) {
+    if (i > 0)
+      window.requestAnimationFrame(() => this.await_animation_frame(i - 1))
+    else
+      this.scroll_to({scroll: this.cfg.scroll.initial})
   }
 
   /** Create expose function from config, return true if exposed, else false */

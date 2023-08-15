@@ -11,7 +11,8 @@ var config = {
     scroll: {                   // Valid values: `none`, `min`, `center`, `context`, `context-top` or `context-bottom`
         initial: 'context',     // Scoll on initial show
         click: 'min',           // Scroll on cloze click
-        iterate: 'min'          // Scroll on iteration
+        iterate: 'min',         // Scroll on iteration
+        delay: 1                // Increase if scrolling incorrectly on large/complex cards
     },
     iteration: {
         top: false,             // Always start iteration from top
